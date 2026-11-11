@@ -796,7 +796,7 @@ var GUIA = [
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v1';
+var APP_VER   = 'v2';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1676,13 +1676,14 @@ function formPerfil(em, pf){
   function sel(name, opts, val){ return '<select data-f="' + name + '">' + opts.map(function(o){ return '<option value="' + o[0] + '"' + (String(val) === String(o[0]) ? ' selected' : '') + '>' + o[1] + '</option>'; }).join('') + '</select>'; }
   var esGym = D.gym && D.gym.email === em;
   return '<div class="card pf-form" data-em="' + em + '">' +
-    '<div class="fld"><label>Nombre</label><input data-f="nombre" type="text" value="' + esc(pf.nombre || '') + '" placeholder="' + esc(em.split('@')[0]) + '"></div>' +
-    '<div class="grid2"><div class="fld"><label>Sexo</label>' + sel('sexo', [['h','Hombre'],['m','Mujer']], pf.sexo || 'h') + '</div>' +
+    '<div class="fld"><label>Nombre</label><input data-f="nombre" type="text" value="' + esc(pf.nombre || ((usuarios().filter(function(u){ return u.email === em; })[0] || {}).nombre) || '') + '" placeholder="' + esc(em.split('@')[0]) + '"></div>' +
+    '<div class="grid2"><div class="fld"><label>Sexo</label>' + sel('sexo', [['','Eleg&iacute;'],['h','Hombre'],['m','Mujer']], pf.sexo || '') + '</div>' +
     '<div class="fld"><label>A&ntilde;o de nacimiento</label><input data-f="nac" type="number" inputmode="numeric" value="' + (pf.nac || '') + '" placeholder="' + (anio - 35) + '"></div></div>' +
     '<div class="grid2"><div class="fld"><label>Altura (cm)</label><input data-f="alt" type="number" inputmode="numeric" value="' + (pf.alt || '') + '" placeholder="170"></div>' +
     '<div class="fld"><label>Peso actual (kg)</label><input data-f="peso" type="number" inputmode="decimal" step="0.1" value="' + (pf.peso || '') + '" placeholder="75"></div></div>' +
     '<div class="grid2"><div class="fld"><label>Peso meta (opcional)</label><input data-f="meta" type="number" inputmode="decimal" step="0.1" value="' + (pf.meta || '') + '"></div>' +
-    '<div class="fld"><label>Ritmo</label>' + sel('ritmo', Object.keys(RITMOS).map(function(k){ return [k, RITMOS[k][1] + ' (' + String(RITMOS[k][0] * 100).replace('.', ',') + '% por sem.)']; }), pf.ritmo || 'normal') + '</div></div>' +
+    '<div class="fld"><label>Ritmo</label>' + sel('ritmo', Object.keys(RITMOS).map(function(k){ return [k, RITMOS[k][1]]; }), pf.ritmo || 'normal') + '</div></div>' +
+    '<div class="hint" style="margin:-6px 4px 14px">Ritmo: suave 0,35%, recomendado 0,5% y r&aacute;pido 0,75% del peso por semana.</div>' +
     '<div class="fld"><label>En el d&iacute;a a d&iacute;a</label>' + sel('trab', Object.keys(TRABAJO).map(function(k){ return [k, TRABAJO[k][1]]; }), pf.trab || 'sentado') + '</div>' +
     (esGym ? '<div class="hint" style="margin:-4px 0 12px">&#127947; El entrenamiento sale de Gym Bro.</div>'
            : '<div class="fld"><label>Entrenamientos por semana</label><input data-f="ses" type="number" inputmode="numeric" value="' + (pf.ses != null ? pf.ses : '') + '" placeholder="2"><div class="hint">Se usa hasta que empieces a registrar la actividad en la app.</div></div>') +
@@ -1700,14 +1701,14 @@ function leerPerfiles(){
       if (['nac','alt','peso','meta','ses'].indexOf(f) !== -1) v = v === '' ? '' : parseFloat(String(v).replace(',', '.'));
       pf[f] = v;
     }
-    if (!(pf.alt > 100 && pf.peso > 30 && pf.nac > 1920)) ok = false;
+    if (!(pf.alt > 100 && pf.peso > 30 && pf.nac > 1920 && pf.sexo)) ok = false;
     out.push([em, pf]);
   }
   return ok ? out : null;
 }
 function guardarPerfiles(){
   var out = leerPerfiles();
-  if (!out){ toast('Faltan altura, peso o a&ntilde;o', 'err'); return false; }
+  if (!out){ toast('Faltan sexo, altura, peso o a&ntilde;o', 'err'); return false; }
   out.forEach(function(x){
     var em = x[0], pf = x[1], prev = perfil(em) || {};
     setKV('perfil:' + em, pf);
@@ -1780,10 +1781,13 @@ function elegirPaleta(k){
 }
 function openAjustes(){
   var h = mh('Ajustes');
+  /* cada uno edita solo lo suyo; del otro se ve si ya completo */
   h += '<div class="section-t">Perfiles</div>' + usuarios().map(function(u){
-    return '<div class="card row"><div style="flex:1"><b>' + nombre(u.email) + '</b><div class="small muted">' + esc(u.email) + '</div></div>' +
-      (perfil(u.email) && perfil(u.email).alt ? '<span class="tag">' + fN(objetivo(u.email).kcal) + ' kcal</span>' : '<span class="tag a">sin perfil</span>') +
-      '<button class="btn small sec" onclick="editarPerfil(\'' + u.email + '\')">Editar</button></div>';
+    var mio = u.email === userEmail, ok = perfil(u.email) && perfil(u.email).alt;
+    return '<div class="card row"><div style="flex:1"><b>' + nombre(u.email) + '</b><div class="small muted">' +
+      (mio ? 'Tu perfil' : (ok ? 'Lo completa ' + nombre(u.email) : 'Todav&iacute;a no entr&oacute;')) + '</div></div>' +
+      (ok ? '<span class="tag">' + fN(objetivo(u.email).kcal) + ' kcal</span>' : '<span class="tag a">sin perfil</span>') +
+      (mio ? '<button class="btn small sec" onclick="editarPerfil(\'' + u.email + '\')">Editar</button>' : '') + '</div>';
   }).join('');
   h += '<div class="section-t">Qu&eacute; comen</div><button class="btn sec block" onclick="editarGustos()">Platos de siempre</button>';
   var nos = Object.keys((hogar().likes || {})).filter(function(k){ return hogar().likes[k] === -1 && REC[k]; });
@@ -1818,18 +1822,28 @@ function rearmarSilencioso(){
 }
 
 /* ==================================================================
-   BIENVENIDA: perfiles, platos de siempre, oficina
+   BIENVENIDA
+   Cada uno completa SOLO sus datos, al entrar por primera vez (decision de
+   Diego: los datos de peso y cuerpo son de cada uno). Los pasos de la casa
+   (platos de siempre y oficina) los hace solo el primero que entra; el
+   segundo termina con su perfil y ya ve la semana armada.
    ================================================================== */
 var onbPaso = 0;
+function onbPasos(){ return hogar().onb ? 1 : 3; }
 function onboarding(){
   $('onb').classList.add('on');
-  var p = onbPaso, h = '<div class="steps">' + [0,1,2].map(function(i){ return '<i class="' + (i <= p ? 'on' : '') + '"></i>'; }).join('') + '</div>';
+  var p = onbPaso, n = onbPasos();
+  var h = n > 1 ? '<div class="steps">' + [0,1,2].map(function(i){ return '<i class="' + (i <= p ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '';
   function burbuja(t){ return '<div class="bubble"><svg><use href="#cerdo"/></svg><div class="txt">' + t + '</div></div>'; }
   if (p === 0){
-    h += burbuja('&iexcl;Hola! Soy el cerdito de la olla. Primero, unos datos de cada uno para calcular cu&aacute;nto le toca comer.');
-    h += usuarios().map(function(u){ return '<div class="section-t">' + esc(u.nombre || u.email) + '</div>' + formPerfil(u.email, perfil(u.email)); }).join('');
-    if (usuarios().length < 2) h += '<div class="aviso b">Para sumar a tu pareja: agregar su mail en la hoja ACCESO de la planilla. Le va a aparecer su perfil al entrar.</div>';
-    h += '<button class="btn block" onclick="if(guardarPerfiles()){onbPaso=1;onboarding();window.scrollTo(0,0)}">Siguiente</button>';
+    var u = usuarios().filter(function(x){ return x.email === userEmail; })[0] || {email:userEmail};
+    var hola = u.nombre ? ' ' + esc(u.nombre) : '';
+    h += burbuja('&iexcl;Hola' + hola + '! Soy el cerdito de la olla. Contame de vos para calcular cu&aacute;nto te toca comer.' +
+      (n === 1 ? ' La semana ya est&aacute; armada: con esto le sumo tus porciones.' : ''));
+    h += formPerfil(userEmail, perfil(userEmail));
+    h += '<div class="hint" style="margin:-6px 4px 16px">Solo vos ves y cambi&aacute;s estos datos. Cada uno completa los suyos al entrar.</div>';
+    h += '<button class="btn block" onclick="if(guardarPerfiles()){' + (n === 1 ? 'finOnb()' : 'onbPaso=1;onboarding();window.scrollTo(0,0)') + '}">' +
+      (n === 1 ? '&iexcl;A cocinar!' : 'Siguiente') + '</button>';
   } else if (p === 1){
     h += burbuja('&iquest;Qu&eacute; comen en un mes normal? Si comen milanesas, pizza y fideos, eso propongo, en versi&oacute;n liviana. Nada de vivir de sopa.');
     h += tipicosHTML();

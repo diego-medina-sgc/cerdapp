@@ -868,7 +868,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v7';
+var APP_VER   = 'v8';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1411,6 +1411,7 @@ function puntaje(r, fecha, slot, excl){
   var fr = frecuencia(r.ti);
   if (fr === 0) return -1e9;
   var s = 1 + (fr - 1) * 2;   /* los dos "a veces" = 1, los dos "seguido" = 3 */
+  if (r.propia) s += 1.5;     /* la cargaron ustedes: les gusta */
   if (likes[r.id] === 1) s += 2;
   /* la cena de la noche anterior a un dia de oficina tiene que servir de vianda */
   if (slot === 'ce' && esOficina(addDays(fecha, 1)) && r.v === 0) return -1e9;
@@ -1539,6 +1540,7 @@ function toggleDespensa(k){
 function render(){
   if (!D) return;
   aplicarVariantes();
+  cargarPropias();
   if (activeTab === 'hoy') renderHoy();
   else if (activeTab === 'semana') renderSemana();
   else if (activeTab === 'heladera') renderHeladera();
@@ -1575,12 +1577,83 @@ function afueraPP(fecha, slot, em, conBoton){
   var R = restDe(fecha, slot, em), m = metaSlot(em, slot);
   var h = '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + (R.k ? '~' + fN(R.k) + ' kcal' : 'afuera') + '</span></div>';
   if (R.l.length){
-    h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + c[2] + ' ' + c[3] + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
+    h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + c[2] + ' ' + nomRest(x) + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
     h += '<div class="small" style="margin-top:6px;font-weight:700;color:' + (R.k > m.k + 30 ? 'var(--amber)' : 'var(--green)') + '">' +
       (R.k > m.k + 30 ? fN(R.k - m.k) + ' kcal m&aacute;s que esta comida: se descuentan de lo que queda del d&iacute;a.' : 'Dentro de lo que tocaba en esta comida.') + '</div>';
   } else h += '<div class="small muted">Come afuera. Anot&aacute; qu&eacute; comi&oacute; y lo compenso en el resto del d&iacute;a.</div>';
   if (conBoton) h += '<button class="tick" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">&iquest;Qu&eacute; comi&oacute;?</button>';
   return h + '</div>';
+}
+/* nombre del plato afuera: el real si vino del menu/ticket, si no el de la carta */
+function nomRest(x){
+  var c = CAR[x[0]];
+  return x[2] ? esc(x[2]) + ' <span class="g">(&asymp; ' + c[3] + ')</span>' : c[3];
+}
+/* Lee un menu o ticket pegado: una linea por plato. Saca cantidades, precios y
+   las lineas de la factura, y busca el plato de la carta mas parecido por palabras.
+   Sin API ni servidor: todo pasa en el telefono. */
+var NO_PLATO = ['total','subtotal','iva','cuit','factura','mesa','mozo','fecha','hora','cliente','descrip','regimen','impuesto',
+                'ingresos','domicilio','inicio','srl','electronica','cae','dto','propina','gracias','www','cant','unit','resp',
+                'impuestos','indirectos','contenido','transparencia','consumidor','ley','descuento','servicio','tarjeta','efectivo','vuelto'];
+function leerTexto(){
+  var txt = String($('ca-txt').value || '');
+  var lineas = txt.split(/\n+/), out = [];
+  lineas.forEach(function(l){
+    var bruto = l.trim(); if (!bruto) return;
+    var qty = 1, m = bruto.match(/^(\d{1,2})\s*[xX]?\s+(.*)$/);
+    if (m){ qty = +m[1]; bruto = m[2]; }
+    var limpio = bruto.replace(/\$?\s*\d[\d.,]*\s*$/g, '').replace(/\$?\s*\d[\d.,]*\s*$/g, '').replace(/[\.\-:_]+$/, '').trim();
+    var norm = quitarAcentos(esc(limpio));
+    if (norm.replace(/[^a-z]/g, '').length < 3) return;
+    /* palabra por palabra: "C.A.E: 864..." tiene que caer igual que "cae" */
+    var pals = norm.replace(/[^a-z]+/g, ' ').trim().split(' ');
+    if (pals.some(function(w){ return NO_PLATO.indexOf(w) !== -1; }) || NO_PLATO.indexOf(norm.replace(/[^a-z]/g, '')) !== -1) return;
+    out.push({n:limpio.charAt(0).toUpperCase() + limpio.slice(1).toLowerCase(), q:qty, id:matchCarta(norm)});
+  });
+  _carta.leido = out;
+  pintarLeido();
+}
+function matchCarta(norm){
+  var ws = norm.split(/[^a-z]+/).filter(function(w){ return w.length >= 4; }), best = null, bs = 0;
+  CARTA.forEach(function(c){
+    var qs = (c[6] + ' ' + quitarAcentos(c[3])).split(/[^a-z]+/), sc = 0;
+    ws.forEach(function(w){ if (qs.some(function(q){ return q.length >= 4 && (q.indexOf(w.slice(0, 5)) === 0 || w.indexOf(q.slice(0, 5)) === 0); })) sc++; });
+    if (sc > bs){ bs = sc; best = c[0]; }
+  });
+  return best;
+}
+function pintarLeido(){
+  var L = _carta.leido || [], qs = quienesAfuera(_carta.f, _carta.s);
+  if (!L.length){ $('ca-leido').innerHTML = '<div class="small muted" style="margin-top:8px">No encontr&eacute; platos en ese texto.</div>'; return; }
+  $('ca-leido').innerHTML = (qs.length > 1 ? '<button class="btn green block" style="margin:12px 0 4px" onclick="todoCompartido()">Todo compartido</button>' : '') +
+    L.map(function(x, i){
+      var c = CAR[x.id || 'otromed'];
+      return '<div style="padding:8px 0;border-top:1px solid var(--surface2)"><div style="font-weight:700">' + (x.q > 1 ? x.q + ' &times; ' : '') + esc(x.n) + '</div>' +
+        '<div class="small muted">' + (x.id ? '&asymp; ' + c[3] : 'No lo reconozco: lo cuento como algo mediano') + ' &middot; ~' + c[4] + ' kcal</div>' +
+        '<div class="row wrap" style="gap:6px;margin-top:6px">' + qs.map(function(em){
+          return '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarLeido(' + i + ',\'' + em + '\')">+ ' + nombre(em) + '</button>';
+        }).join('') + (qs.length > 1 ? '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarLeido(' + i + ',\'comp\')">Compartido</button>' : '') +
+        '</div></div>';
+    }).join('');
+}
+function sumarLeido(i, quien){
+  var x = _carta.leido[i], id = x.id || 'otromed', qs = quienesAfuera(_carta.f, _carta.s);
+  /* compartido: la cantidad se reparte entre los que comieron. El cubierto y el agua
+     vienen "por persona" en el ticket pero la panera de la carta ya es de la mesa. */
+  var n = quien === 'comp' ? x.q / qs.length : x.q;
+  if (id === 'panera' || id === 'agua') n = quien === 'comp' ? 1 / qs.length : 1;
+  setRest(function(r){
+    (quien === 'comp' ? qs : [quien]).forEach(function(em){
+      r.it[em] = r.it[em] || [];
+      r.it[em].push([id, n, x.n]);
+    });
+  });
+  pintarCarta(); render(); toast(esc(x.n) + (quien === 'comp' ? ' compartido' : ' para ' + nombre(quien)), 'ok');
+}
+function todoCompartido(){
+  var L = _carta.leido || [];
+  L.forEach(function(x, i){ sumarLeido(i, 'comp'); });
+  toast(L.length + ' platos compartidos', 'ok');
 }
 /* ---------- la carta ---------- */
 var _carta = null;
@@ -1592,6 +1665,13 @@ function abrirCarta(fecha, slot){
   h += '<div class="row"><div class="fld" style="flex:1;margin:0"><input id="ca-lugar" type="text" placeholder="Restaurante (opcional)" value="' + esc(R.lugar || '') + '" onchange="setLugar(this.value)"></div>' +
     '<button class="btn small sec" onclick="verMenuGoogle()">Ver el men&uacute;</button></div>' +
     '<div class="hint" style="margin-bottom:12px">Eleg&iacute; lo que m&aacute;s se parezca a cada plato. Si lo compartieron, toc&aacute; <b>Compartido</b>: le suma la mitad a cada uno.</div>';
+  h += '<div class="card" style="padding:12px 14px"><h3>&#128203; Peg&aacute; el men&uacute; o el ticket</h3>' +
+    '<div class="small muted" style="margin:-2px 0 8px">En el iPhone: sac&aacute;le una foto, manten&eacute; apretado el texto y toc&aacute; <b>Copiar</b>. ' +
+    'Tambi&eacute;n sirve copiar el men&uacute; de la web del lugar.</div>' +
+    '<div class="fld" style="margin:0"><textarea id="ca-txt" placeholder="1 Burrata con pesto 28000&#10;1 Trucha al horno 63000"></textarea></div>' +
+    '<div class="row" style="margin-top:10px"><button class="btn small" onclick="leerTexto()">Leer</button>' +
+    '<span class="small muted" style="flex:1">Reconozco cada plato y le pongo las calor&iacute;as de uno parecido.</span></div>' +
+    '<div id="ca-leido"></div></div>';
   h += '<div id="ca-sel"></div>';
   h += '<div class="fld" style="margin:14px 0 6px"><input id="ca-q" type="search" placeholder="Buscar: trucha, burrata, helado..." oninput="filtrarCarta()"></div>';
   var cat = '';
@@ -1651,7 +1731,7 @@ function pintarCarta(){
     return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>~' + fN(R.k) + ' kcal</span></div>' +
       (R.l.length ? '<ul>' + R.l.map(function(x, i){
         var c = CAR[x[0]];
-        return '<li class="row" style="gap:6px"><span style="flex:1">' + c[3] + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</span>' +
+        return '<li class="row" style="gap:6px"><span style="flex:1">' + nomRest(x) + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</span>' +
           '<button class="vote" style="width:26px;height:26px;font-size:12px" onclick="quitarCarta(\'' + em + '\',' + i + ')" aria-label="Quitar">&#10005;</button></li>';
       }).join('') + '</ul>' : '<div class="small muted">Todav&iacute;a nada.</div>') +
       '<div class="small muted" style="margin-top:4px">Esta comida ten&iacute;a ~' + fN(m.k) + ' kcal.</div></div>';
@@ -2061,6 +2141,7 @@ function elegirSlot(fecha, slot){
   if (slot === 'al' && dia(addDays(fecha, -1)).ce)
     h += '<button class="btn sec block" style="margin-bottom:8px" onclick="setSlot(\'' + fecha + '\',\'al\',\'sobras\');closeModal();render()">Sobras de la cena de ayer</button>';
   h += '<button class="btn sec block" style="margin-bottom:12px" onclick="setSlot(\'' + fecha + '\',\'' + slot + '\',\'afuera\');closeModal();render()">Comen afuera</button>';
+  h += '<button class="btn sec block" style="margin-bottom:12px" onclick="nuevaReceta()">+ Cargar una receta nuestra</button>';
   h += '<div class="card">' + lst.map(function(x){
     var m = matchHeladera(x.r);
     return '<div class="match" onclick="setSlot(\'' + fecha + '\',\'' + slot + '\',\'' + x.r.id + '\');closeModal();render()">' +
@@ -2089,6 +2170,114 @@ function rearmar(){
   }
   completar(l < hoy ? hoy : l, fin);
   renderSemana(); toast('Semana rearmada', 'ok');
+}
+
+/* ==================================================================
+   RECETAS PROPIAS
+   Ustedes eligen los ingredientes; las cantidades las pone el mismo motor que
+   al resto: la proteina se escala a la de cada uno, los hidratos cierran las
+   calorias, la verdura es fija. hogar.recetas = [{id, n, t, c, x, pa}]
+   ================================================================== */
+function cargarPropias(){
+  for (var i = RECETAS.length - 1; i >= 0; i--) if (RECETAS[i].propia){ delete REC[RECETAS[i].id]; RECETAS.splice(i, 1); }
+  (hogar().recetas || []).forEach(function(r){
+    var o = JSON.parse(JSON.stringify(r));
+    o.propia = 1; o.ti = 'propias'; o.pa = o.pa && o.pa.length ? o.pa : ['Como la hacen siempre.'];
+    o.tr = 'Receta de ustedes: las cantidades las calcula la app para cada uno.';
+    var pp = o.c.filter(function(c){ return c[1] === 'P'; })[0];
+    o.pr = pp ? pp[0] : 'propia';
+    RECETAS.push(o); REC[o.id] = o;
+  });
+}
+/* rol y porcion base de cada ingrediente, para no pedirle a nadie que pese nada */
+function rolDe(k){
+  var a = ALI[k], kc = a.k || 1;
+  if (a.ing) return 'U';
+  if (a.libre || a.alt) return 'V';
+  if (a.g * 9 / kc > .8) return 'G';
+  if (a.p * 4 / kc >= .35) return 'P';
+  if (a.k <= 45) return 'V';
+  if (a.c * 4 / kc >= .5) return 'H';
+  return 'F';
+}
+function baseDe(k, rol){
+  var u = ALI[k].u[1];
+  if (rol === 'P') return u < 80 ? u * 2 : u;
+  if (rol === 'H') return u < 60 ? u * 2 : u;
+  if (rol === 'U') return u * 2;
+  return u;
+}
+var ROL_N = {P:'Prote&iacute;na', H:'Hidrato', U:'Plato por unidad', V:'Verdura', F:'Extra', G:'Grasa'};
+var _rd = null;
+function nuevaReceta(){ _rd = {id:'r-' + Date.now().toString(36), n:'', t:'ac', c:[], x:[], pa:''}; pintarRD(); }
+function editarReceta(id){
+  var r = (hogar().recetas || []).filter(function(x){ return x.id === id; })[0]; if (!r) return;
+  _rd = JSON.parse(JSON.stringify(r));
+  _rd.pa = (r.pa || []).map(function(t){ var d = document.createElement('div'); d.innerHTML = t; return d.textContent; }).join('\n');
+  pintarRD();
+}
+function pintarRD(){
+  var r = _rd, h = mh((hogar().recetas || []).some(function(x){ return x.id === r.id; }) ? 'Editar receta' : 'Receta nueva');
+  h += '<div class="fld"><label>Nombre</label><input type="text" value="' + esc(r.n) + '" placeholder="Ej: Pollo al verdeo de Kiki" onchange="_rd.n=this.value"></div>';
+  h += '<div class="fld"><label>Para</label><div class="seg">' + [['a','Almuerzo'],['c','Cena'],['m','Merienda']].map(function(o){
+    return '<button class="chip' + (r.t.indexOf(o[0]) !== -1 ? ' on' : '') + '" onclick="toggleRT(\'' + o[0] + '\')">' + o[1] + '</button>';
+  }).join('') + '</div></div>';
+  h += '<div class="fld"><label>Ingredientes</label>' + (r.c.length ? '<div class="card" style="padding:4px 14px;margin:0 0 10px"><ul class="lst">' + r.c.map(function(c, i){
+    return '<li><div style="flex:1"><b>' + ALI[c[0]].n + '</b><div class="small muted">' + ROL_N[c[1]] + '</div></div>' +
+      '<button class="vote" onclick="_rd.c.splice(' + i + ',1);pintarRD()" aria-label="Sacar">&#10005;</button></li>';
+  }).join('') + (r.x.length ? '<li><div class="small muted">Adem&aacute;s: ' + r.x.map(function(x){ return nombreIng(x[0]).toLowerCase(); }).join(', ') + '</div></li>' : '') +
+    '</ul></div>' : '<div class="small muted" style="margin-bottom:8px">Toc&aacute; lo que lleva. Las cantidades las pongo yo para cada uno.</div>');
+  var grupos = {prot:[], lac:[], ver:[], alm:[]}, usados = r.c.map(function(c){ return c[0]; });
+  Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (usados.indexOf(k) === -1) grupos[a.h].push(k); });
+  ['prot','lac','ver','alm'].forEach(function(g){
+    h += '<div class="small" style="font-weight:700;margin:10px 4px 6px">' + GRUPO_H[g].split(':')[0] + '</div><div class="chips">' +
+      grupos[g].map(function(k){ return '<button class="chip" onclick="sumarIng(\'' + k + '\')">' + ALI[k].n + '</button>'; }).join('') + '</div>';
+  });
+  h += '<div class="small" style="font-weight:700;margin:10px 4px 6px">Sin calor&iacute;as (para la heladera)</div><div class="chips">' +
+    Object.keys(EXTRA).map(function(k){
+      var on = r.x.some(function(x){ return x[0] === k; });
+      return '<button class="chip' + (on ? ' on' : '') + '" onclick="toggleRX(\'' + k + '\')">' + EXTRA[k][0] + '</button>';
+    }).join('') + '</div></div>';
+  h += '<div class="fld"><label>Pasos (opcional)</label><textarea style="height:96px" placeholder="Un paso por l&iacute;nea" onchange="_rd.pa=this.value">' + esc(r.pa) + '</textarea></div>';
+  h += '<div id="rd-prev"></div>';
+  h += '<div class="row"><button class="btn sec" onclick="previewRD()">Ver cantidades</button><button class="btn" style="flex:1" onclick="guardarRD()">Guardar</button></div>';
+  if ((hogar().recetas || []).some(function(x){ return x.id === r.id; }))
+    h += '<button class="btn sec block" style="margin-top:12px" onclick="borrarRD()">Borrar receta</button>';
+  openModal(h);
+}
+function toggleRT(t){ var i = _rd.t.indexOf(t); _rd.t = i === -1 ? _rd.t + t : _rd.t.replace(t, ''); pintarRD(); }
+function sumarIng(k){ var rol = rolDe(k); _rd.c.push([k, rol, baseDe(k, rol)]); pintarRD(); }
+function toggleRX(k){ var i = -1; _rd.x.forEach(function(x, j){ if (x[0] === k) i = j; }); if (i === -1) _rd.x.push([k, 1]); else _rd.x.splice(i, 1); pintarRD(); }
+function recetaDeRD(){
+  return {id:_rd.id, n:esc(String(_rd.n || '').trim().slice(0, 60)), t:_rd.t, c:_rd.c, x:_rd.x,
+          pa:String(_rd.pa || '').split(/\n+/).map(function(t){ return esc(t.trim()); }).filter(Boolean), min:0};
+}
+function validarRD(){
+  if (!String(_rd.n || '').trim()){ toast('Ponele un nombre', 'err'); return false; }
+  if (!_rd.t){ toast('Eleg&iacute; para qu&eacute; comida es', 'err'); return false; }
+  if (!_rd.c.some(function(c){ return c[1] === 'P' || c[1] === 'H' || c[1] === 'U'; })){ toast('Agreg&aacute; una prote&iacute;na o un hidrato', 'err'); return false; }
+  return true;
+}
+function previewRD(){
+  if (!validarRD()) return;
+  var r = recetaDeRD(), s = r.t.indexOf('c') !== -1 ? 'ce' : r.t.indexOf('a') !== -1 ? 'al' : 'me';
+  $('rd-prev').innerHTML = '<div class="porc">' + personas().filter(function(em){ return enSlot(em, s); }).map(function(em){
+    var P = porciones(r, em, s);
+    return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div><ul>' +
+      P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul></div>';
+  }).join('') + '</div>';
+}
+function guardarRD(){
+  if (!validarRD()) return;
+  var h = JSON.parse(JSON.stringify(hogar())), r = recetaDeRD();
+  h.recetas = (h.recetas || []).filter(function(x){ return x.id !== r.id; }).concat([r]);
+  setKV('hogar', h); cargarPropias();
+  closeModal(); render(); toast('Receta guardada: ya entra en las propuestas', 'ok');
+}
+function borrarRD(){
+  if (!confirm('Borrar esta receta?')) return;
+  var h = JSON.parse(JSON.stringify(hogar())); h.recetas = (h.recetas || []).filter(function(x){ return x.id !== _rd.id; });
+  setKV('hogar', h); cargarPropias(); closeModal(); render();
 }
 
 /* ---------- compras ---------- */
@@ -2359,6 +2548,12 @@ function openAjustes(){
   }).join('');
   h += '<div class="section-t">Qu&eacute; comen</div><button class="btn sec block" onclick="editarGustos()">Mis platos de siempre</button>' +
     '<button class="btn sec block" style="margin-top:12px" onclick="tourI=0;verTour()">C&oacute;mo se usa</button>';
+  var mias = hogar().recetas || [];
+  h += '<div class="section-t">Recetas propias</div><div class="card">' +
+    (mias.length ? '<ul class="lst">' + mias.map(function(r){
+      return '<li><div style="flex:1;font-weight:700">' + r.n + '</div><button class="btn small sec" onclick="editarReceta(\'' + r.id + '\')">Editar</button></li>';
+    }).join('') + '</ul>' : '<div class="small muted">Carguen las que hacen siempre: eligen los ingredientes y yo calculo cu&aacute;nto le toca a cada uno.</div>') +
+    '<button class="btn block" style="margin-top:12px" onclick="nuevaReceta()">+ Receta nueva</button></div>';
   var nos = Object.keys((hogar().likes || {})).filter(function(k){ return hogar().likes[k] === -1 && REC[k]; });
   if (nos.length) h += '<div class="card" style="margin-top:12px"><h3>Recetas descartadas</h3><ul class="lst">' + nos.map(function(k){
     return '<li><div style="flex:1">' + REC[k].n + '</div><button class="btn small sec" onclick="votar(\'' + k + '\',-1);openAjustes()">Volver a proponer</button></li>';

@@ -881,7 +881,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v12';
+var APP_VER   = 'v13';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1348,17 +1348,48 @@ function excesoAfuera(fecha, em){
   });
   return {k:k, p:p};
 }
+/* Lo comido de verdad: dia.real = {slot: {email: {alimento: cantidad en su medida}}}.
+   Se guarda al tildar "Comi otra cantidad". La diferencia con lo propuesto (de mas o
+   de menos) se reparte en las comidas que quedan del dia. */
+function realDe(fecha, slot, em){ return (((dia(fecha).real || {})[slot]) || {})[em] || null; }
+/* el plato con las cantidades reales, si las hay. kProp = lo que se habia propuesto */
+function platoComido(r, em, slot, fecha){
+  var P = porciones(r, em, slot, fecha), R = realDe(fecha, slot, em);
+  P.kProp = P.kcal; P.real = !!R;
+  if (!R) return P;
+  var tk = 0, tp = 0;
+  P.it.forEach(function(x){
+    if (R[x.f] !== undefined){ x.q = R[x.f]; x.gr = x.q * x.u[1]; x.kcal = x.a.k * x.gr / 100; x.prot = x.a.p * x.gr / 100; }
+    tk += x.kcal; tp += x.prot;
+  });
+  P.kcal = tk; P.prot = tp;
+  return P;
+}
+function excesoReal(fecha, em){
+  var k = 0, p = 0;
+  slotsDe().forEach(function(s){
+    if (!realDe(fecha, s, em) || !comido(fecha, s, em)) return;
+    var r = recDe(fecha, s); if (!r) return;
+    var P = platoComido(r, em, s, fecha);
+    k += P.kcal - P.kProp;
+    p += P.prot - porciones(r, em, s, fecha).prot;
+  });
+  return {k:k, p:p};
+}
 function extraTotal(fecha, em){
-  var a = extrasDe(fecha, em), b = excesoAfuera(fecha, em);
-  return {k:a.k + b.k, p:a.p + b.p};
+  var a = extrasDe(fecha, em), b = excesoAfuera(fecha, em), c = excesoReal(fecha, em);
+  return {k:a.k + b.k + c.k, p:a.p + b.p + c.p};
 }
 function descuento(em, fecha, slot){
   if (!fecha) return {k:0, p:0};
-  var ex = extraTotal(fecha, em); if (!ex.k) return {k:0, p:0};
+  /* primero ver si este plato todavia se puede ajustar: asi calcular lo ya comido no
+     vuelve a pedir el descuento y no se arma una vuelta infinita */
   var rest = slotsRestantes(em, fecha); if (rest.indexOf(slot) === -1) return {k:0, p:0};
+  var ex = extraTotal(fecha, em); if (!ex.k) return {k:0, p:0};
   var tot = rest.reduce(function(a, s){ return a + metaSlot(em, s).k; }, 0) || 1;
   var m = metaSlot(em, slot), share = m.k / tot;
-  return {k:Math.min(ex.k * share, m.k * .5), p:Math.min(ex.p * share, m.p * .5)};
+  /* de mas: se achica hasta la mitad. De menos: se agranda hasta un 30% */
+  return {k:clamp(ex.k * share, -m.k * .3, m.k * .5), p:clamp(ex.p * share, -m.p * .3, m.p * .5)};
 }
 function porciones(rec, em, slot, fecha){
   var m = metaSlot(em, slot), dsc = descuento(em, fecha, slot), K = m.k - dsc.k, Pr = m.p - dsc.p;
@@ -1478,8 +1509,59 @@ function comido(fecha, slot, em){ return !!(((dia(fecha).ok || {})[slot] || {})[
 function toggleComido(fecha, slot, em){
   var o = JSON.parse(JSON.stringify(dia(fecha).ok || {}));
   o[slot] = o[slot] || {};
-  if (o[slot][em]) delete o[slot][em]; else o[slot][em] = 1;
+  if (o[slot][em]){
+    delete o[slot][em];
+    /* destildar borra tambien las cantidades reales */
+    if (realDe(fecha, slot, em)){ var rl = JSON.parse(JSON.stringify(dia(fecha).real || {})); delete rl[slot][em]; setSlot(fecha, 'real', rl); }
+  } else o[slot][em] = 1;
   setSlot(fecha, 'ok', o); render();
+}
+/* ---------- "comi otra cantidad" ---------- */
+var _ed = null;
+function editarComido(fecha, slot, em){
+  var r = recDe(fecha, slot); if (!r) return;
+  var P = platoComido(r, em, slot, fecha);
+  _ed = {f:fecha, s:slot, em:em, prop:P.kProp, q:{}};
+  P.it.forEach(function(x){ _ed.q[x.f] = x.q; });
+  pintarEd();
+}
+function pintarEd(){
+  var r = recDe(_ed.f, _ed.s), P = porciones(r, _ed.em, _ed.s, _ed.f), tot = 0;
+  var filas = P.it.map(function(x){
+    var q = _ed.q[x.f], st = x.u[3] || .5, k = x.a.k * q * x.u[1] / 100; tot += k;
+    var cambio = Math.abs(q - x.q) > 1e-9;
+    return '<li><div style="flex:1"><b>' + fq(q) + ' ' + (q <= 1 ? x.u[0] : x.u[2]) + '</b> ' + nombreCorto(x) +
+      '<div class="small ' + (cambio ? '' : 'muted') + '" style="' + (cambio ? 'color:var(--amber);font-weight:700' : '') + '">' +
+      (cambio ? 'Propuesto: ' + fq(x.q) + ' ' + (x.q <= 1 ? x.u[0] : x.u[2]) + ' &middot; ' : '') + '~' + fN(k) + ' kcal</div></div>' +
+      '<button class="vote" onclick="pasoEd(\'' + x.f + '\',-' + st + ')" aria-label="Menos">&minus;</button>' +
+      '<button class="vote" onclick="pasoEd(\'' + x.f + '\',' + st + ')" aria-label="M&aacute;s">+</button></li>';
+  }).join('');
+  var dif = tot - _ed.prop;
+  var h = mh('&iquest;Cu&aacute;nto comi&oacute; ' + nombre(_ed.em) + '?');
+  h += '<p class="small muted" style="margin-top:0">' + r.n + '. Sub&iacute; o baj&aacute; lo que haga falta.</p>';
+  h += '<div class="card" style="padding:4px 14px"><ul class="lst">' + filas + '</ul></div>';
+  h += '<div class="aviso ' + (dif > 15 ? 'a' : 'g') + '">Total ~<b>' + fN(tot) + ' kcal</b> (propuesta ~' + fN(_ed.prop) + ').' +
+    (Math.abs(dif) > 15 ? ' La diferencia (' + (dif > 0 ? '+' : '') + fN(dif) + ') se ajusta en lo que queda del d&iacute;a.' : '') + '</div>';
+  h += '<button class="btn block" onclick="guardarEd()">Guardar: lo comi&oacute; as&iacute;</button>';
+  h += '<button class="btn sec block" style="margin-top:12px" onclick="volverPropuesta()">Fue lo propuesto</button>';
+  openModal(h);
+}
+function pasoEd(f, d){ _ed.q[f] = Math.max(0, Math.round((_ed.q[f] + d) * 100) / 100); pintarEd(); }
+function guardarEd(){
+  var rl = JSON.parse(JSON.stringify(dia(_ed.f).real || {}));
+  rl[_ed.s] = rl[_ed.s] || {}; rl[_ed.s][_ed.em] = _ed.q;
+  setSlot(_ed.f, 'real', rl);
+  var o = JSON.parse(JSON.stringify(dia(_ed.f).ok || {})); o[_ed.s] = o[_ed.s] || {}; o[_ed.s][_ed.em] = 1;
+  setSlot(_ed.f, 'ok', o);
+  closeModal(); render(); toast('Guardado lo que comi&oacute; ' + nombre(_ed.em), 'ok');
+}
+function volverPropuesta(){
+  var rl = JSON.parse(JSON.stringify(dia(_ed.f).real || {}));
+  if (rl[_ed.s]) delete rl[_ed.s][_ed.em];
+  setSlot(_ed.f, 'real', rl);
+  var o = JSON.parse(JSON.stringify(dia(_ed.f).ok || {})); o[_ed.s] = o[_ed.s] || {}; o[_ed.s][_ed.em] = 1;
+  setSlot(_ed.f, 'ok', o);
+  closeModal(); render();
 }
 /* ultimos N dias sin contar hoy (hoy todavia no termino) */
 function adherencia(em, dias){
@@ -2048,12 +2130,16 @@ function comidaHTML(fecha, slot, opts){
   }
   var pp = personas().filter(function(em){ return enSlot(em, slot); }).map(function(em){
     if (!presente(em, fecha, slot)) return afueraPP(fecha, slot, em, true);
-    var P = porciones(r, em, slot, fecha), ok = comido(fecha, slot, em);
+    var P = platoComido(r, em, slot, fecha), ok = comido(fecha, slot, em);
     return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div><ul>' +
       P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul>' +
       avisoDescuento(r, em, slot, P) +
       (fecha > hoyISO() ? '' : '<button class="tick' + (ok ? ' on' : '') + '" onclick="toggleComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' +
-        (ok ? '&#10004; Comido' : 'Lo com&iacute;') + '</button>') + '</div>';
+        (ok ? '&#10004; Comido' : 'Lo com&iacute;') + '</button>' +
+        (P.real && ok ? '<div class="small" style="margin-top:6px;font-weight:700;color:' + (P.kcal > P.kProp + 15 ? 'var(--amber)' : 'var(--green)') + '">Comi&oacute; ~' + fN(P.kcal) +
+          ' kcal (propuesta ~' + fN(P.kProp) + ')' + (Math.abs(P.kcal - P.kProp) > 15 ? ': la diferencia se ajusta en lo que queda del d&iacute;a.' : '.') + '</div>' : '') +
+        '<button class="tick" style="min-height:32px;font-size:12.5px;margin-top:6px" onclick="editarComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' +
+        (P.real ? 'Cambiar cantidades' : 'Com&iacute; otra cantidad') + '</button>') + '</div>';
   }).join('');
   var aviso = '';
   if (slot === 'ce' && dia(addDays(fecha, 1)).al === 'sobras')

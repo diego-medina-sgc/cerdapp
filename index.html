@@ -868,7 +868,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v8';
+var APP_VER   = 'v9';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1068,6 +1068,36 @@ function setKV(k, v){
 /* Lo compartido (heladera, semana, compras) lo cambian los dos. Al volver a la
    app se relee, salvo que haya algo propio sin mandar o un modal abierto. */
 var _ultimaCarga = 0;
+/* ---------- version nueva ----------
+   Con la app en la pantalla de inicio, iOS guarda el HTML viejo y "Actualizar"
+   solo traia los datos. Ahora se compara APP_VER con el publicado al abrir y al
+   volver a la app, y "Actualizar" recarga la pagina entera sin cache. */
+function buscarVersion(){
+  if (DEMO || location.protocol === 'file:') return;
+  fetch(location.pathname + '?check=' + Date.now(), {cache:'no-store'})
+    .then(function(r){ return r.ok ? r.text() : ''; })
+    .then(function(t){
+      var m = t.match(/var APP_VER\s*=\s*'([^']+)'/);
+      if (m && m[1] !== APP_VER) mostrarNueva(m[1]);
+    }).catch(function(){});
+}
+function mostrarNueva(v){
+  if ($('nueva')) return;
+  var d = document.createElement('div');
+  d.id = 'nueva';
+  d.style.cssText = 'background:var(--hi-lt);color:var(--text);font-size:13.5px;font-weight:700;padding:10px 18px;display:flex;gap:10px;align-items:center';
+  d.innerHTML = '<span style="flex:1">Hay una versi&oacute;n nueva de Cerdapp (' + esc(v) + ').</span><button class="btn small" onclick="actualizarApp()">Actualizar</button>';
+  var hdr = document.querySelector('header');
+  if (hdr && hdr.parentNode) hdr.parentNode.insertBefore(d, hdr.nextSibling);
+}
+function actualizarApp(){
+  /* si hay algo sin mandar a la planilla, se espera un momento */
+  var espera = Object.keys(_kvSucio).length ? 1500 : 0;
+  setTimeout(function(){ location.replace(location.pathname + '?v=' + Date.now()); }, espera);
+}
+document.addEventListener('visibilitychange', function(){
+  if (document.visibilityState === 'visible') buscarVersion();
+});
 document.addEventListener('visibilitychange', function(){
   if (document.visibilityState !== 'visible' || DEMO || !D) return;
   if (Date.now() - _ultimaCarga < 60000 || Object.keys(_kvSucio).length) return;
@@ -1125,17 +1155,32 @@ function actsDe(em){
   return ((D && D.actividad) || []).filter(function(a){ return a.email === em; })
     .sort(function(a, b){ return a.date < b.date ? 1 : -1; });
 }
+/* kcal netas de un entrenamiento de pesas: unas 7 por serie hecha (con el descanso
+   incluido), entre 80 y 400. Si el backend no manda las series, 3,5 por kilo. */
+function kcalSesion(f, peso){
+  var s = (((D && D.gym) || {}).series || {})[f];
+  if (s === undefined) return 3.5 * peso;
+  return s > 0 ? clamp(s * 7, 80, 400) : 0;
+}
+/* cardio: las kcal activas de Fitness si estan; si no, ~1 kcal por kilo por km */
+function kcalCardio(c, peso){ return +c.kcal > 0 ? +c.kcal : (+c.km || 0) * peso; }
 function actividad(em){
   var peso = pesoActual(em) || 70, hoy = hoyISO(), desde = addDays(hoy, -28);
   var out = {kcalDia:0, fuente:'perfil', ses:0, km:0, regs:0};
   var g = (D && D.gym) || {};
   if (g.email && g.email === em){
+    /* Lo quemado sale de Gym Bro: las kcal reales del cardio (Fitness) y cada
+       entrenamiento segun las series que hizo. Se promedia en 4 semanas para que la
+       meta diaria no salte: un dia de gimnasio no hay que "comerselo" ese mismo dia. */
     var fechas = {}; (g.ses || []).forEach(function(f){ if (f > desde && f <= hoy) fechas[f] = 1; });
-    var ses = Object.keys(fechas).length / 4;
-    var km = (g.cardio || []).filter(function(c){ return c.date > desde && c.date <= hoy; })
-      .reduce(function(a, c){ return a + (+c.km || 0); }, 0) / 4;
-    out.ses = ses; out.km = km; out.fuente = 'gym';
-    out.kcalDia = (ses * 3.5 * peso + km * peso) / 7;
+    var cs = (g.cardio || []).filter(function(c){ return c.date > desde && c.date <= hoy; });
+    var kGym = Object.keys(fechas).reduce(function(a, f){ return a + kcalSesion(f, peso); }, 0);
+    var kCar = cs.reduce(function(a, c){ return a + kcalCardio(c, peso); }, 0);
+    out.ses = Object.keys(fechas).length / 4;
+    out.km = cs.reduce(function(a, c){ return a + (+c.km || 0); }, 0) / 4;
+    out.kcalSem = (kGym + kCar) / 4; out.real = cs.some(function(c){ return +c.kcal > 0; });
+    out.fuente = 'gym';
+    out.kcalDia = (kGym + kCar) / 28;
   }
   var regs = actsDe(em).filter(function(a){ return a.date > desde && a.date <= hoy; });
   if (regs.length){
@@ -1989,18 +2034,29 @@ function sugerenciaAjuste(em){
 }
 function gymHTML(A){
   var g = D.gym || {}, hoy = hoyISO(), ev = [];
-  (g.ses || []).forEach(function(f){ if (diasEntre(f, hoy) <= 14 && f <= hoy) ev.push({f:f, t:'&#127947;&#65039; Entrenamiento'}); });
-  (g.cardio || []).forEach(function(c){ if (diasEntre(c.date, hoy) <= 14 && c.date <= hoy) ev.push({f:c.date, t:'&#127939; Cardio &middot; ' + fKg(c.km) + ' km'}); });
+  var peso = pesoActual(g.email) || 70, se = g.series || {};
+  (g.ses || []).forEach(function(f){
+    if (diasEntre(f, hoy) <= 14 && f <= hoy)
+      ev.push({f:f, t:'&#127947;&#65039; Entrenamiento' + (se[f] !== undefined ? ' &middot; ' + se[f] + ' series' : ''), k:kcalSesion(f, peso), est:true});
+  });
+  (g.cardio || []).forEach(function(c){
+    if (diasEntre(c.date, hoy) <= 14 && c.date <= hoy)
+      ev.push({f:c.date, t:'&#127939; Cardio &middot; ' + fKg(c.km) + ' km', k:kcalCardio(c, peso), est:!(+c.kcal > 0)});
+  });
   ev.sort(function(a, b){ return a.f < b.f ? 1 : -1; });
   var sem = (g.ses || []).filter(function(f){ return f >= lunes(hoy) && f <= hoy; }).length;
   return '<div class="card"><h3>Entrenamiento &middot; desde Gym Bro</h3>' +
     '<div class="stats"><div class="stat"><div class="v">' + sem + '</div><div class="l">esta semana</div></div>' +
     '<div class="stat"><div class="v">' + fKg(A.ses).replace(',0', '') + '</div><div class="l">por semana (4 sem.)</div></div>' +
-    '<div class="stat"><div class="v">' + fKg(A.km) + '</div><div class="l">km de cardio por semana</div></div></div>' +
+    '<div class="stat"><div class="v">' + fN(A.kcalSem || 0) + '</div><div class="l">kcal quemadas por semana</div></div></div>' +
     (ev.length ? '<ul class="lst">' + ev.slice(0, 8).map(function(e){
-      return '<li><div style="flex:1">' + e.t + '</div><span class="small muted">' + DIASC[parse(e.f).getDay()] + ' ' + fechaCorta(e.f) + '</span></li>';
+      return '<li><div style="flex:1">' + e.t + '<div class="small muted">' + DIASC[parse(e.f).getDay()] + ' ' + fechaCorta(e.f) + '</div></div>' +
+        '<span class="tag a">' + (e.est ? '~' : '') + fN(e.k) + ' kcal</span></li>';
     }).join('') + '</ul>' : '<div class="small muted">Sin entrenamientos en las &uacute;ltimas 2 semanas.</div>') +
-    '<div class="small muted" style="margin-top:8px">Suma unas <b>' + fN(A.kcalDia) + ' kcal por d&iacute;a</b> al gasto. Se carga en Gym Bro: ac&aacute; no hay que registrar nada.</div>' +
+    '<div class="small muted" style="margin-top:8px">Suma unas <b>' + fN(A.kcalDia) + ' kcal por d&iacute;a</b> a tus calor&iacute;as: el promedio de las &uacute;ltimas 4 semanas, ' +
+      'as&iacute; la meta no salta entre un d&iacute;a de gimnasio y uno de descanso. ' +
+      (A.real ? 'El cardio usa las kcal de Fitness; las pesas se estiman por series.' : 'Lo marcado con ~ es estimado.') +
+      ' Se carga en Gym Bro: ac&aacute; no hay que registrar nada.</div>' +
     (g.error ? '<div class="aviso a">No pude leer Gym Bro: ' + esc(g.error) + '</div>' : '') + '</div>';
 }
 function renderProgreso(){
@@ -2563,7 +2619,7 @@ function openAjustes(){
     return '<button class="' + (paletaActual() === k ? 'on' : '') + '" onclick="elegirPaleta(\'' + k + '\')"><div class="sw">' +
       P.c.map(function(c){ return '<i style="background:' + c + '"></i>'; }).join('') + '</div>' + P.n + '</button>';
   }).join('') + '</div>';
-  h += '<div class="section-t">App</div><div class="row"><button class="btn sec" style="flex:1" onclick="closeModal();reintentar()">Actualizar</button>' +
+  h += '<div class="section-t">App</div><div class="row"><button class="btn sec" style="flex:1" onclick="actualizarApp()">Actualizar</button>' +
     '<button class="btn sec" style="flex:1" onclick="salir()">Salir</button></div>' +
     '<p class="small dim" style="text-align:center;margin-top:14px">Cerdapp ' + APP_VER + (DEMO ? ' &middot; demo' : '') + ' &middot; ' + esc(userEmail) + '</p>';
   openModal(h);
@@ -2828,6 +2884,7 @@ window.addEventListener('load', function(){
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeModal(); });
   try { var t = localStorage.getItem('cerd_tab'); if (t && $('p-' + t)) activeTab = t; } catch(e){}
   initAuth();
+  setTimeout(buscarVersion, 2500);
 });
 </script>
 </body>

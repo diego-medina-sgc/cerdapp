@@ -15,9 +15,11 @@
 <meta name="apple-mobile-web-app-title" content="Cerdapp">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<link rel="icon" href="icon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
-<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="icon-192.png?v=5">
+<!-- ?v=N en los iconos: iOS cachea el icono de inicio por URL; al cambiarlo hay que subir N. -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png?v=5">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png?v=5">
+<link rel="manifest" href="manifest.json?v=5">
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <style>
@@ -269,66 +271,53 @@ ol.pasos{padding-left:20px;margin:6px 0} ol.pasos li{margin:5px 0}
   max-width:90vw;display:none;text-align:center}
 #toast.err{background:var(--red);color:#fff} #toast.ok{background:var(--pri);color:var(--pri-ink)}
 #offline{background:var(--amber-lt);color:var(--text);font-size:13px;font-weight:600;padding:8px 18px;display:flex;gap:8px;align-items:center}
+
+/* ---------- el cerdito animado ---------- */
+.big-logo,.logo{display:block}
+.big-logo svg,.logo svg{display:block;width:100%;height:100%}
+.pig{overflow:visible}
+.pig .drop{transform-box:fill-box;transform-origin:50% 0;animation:pigdrop 1.9s ease-in infinite}
+.pig .drop.d2{animation-delay:.5s}.pig .drop.d3{animation-delay:1s}.pig .drop.d4{animation-delay:1.45s}
+@keyframes pigdrop{0%{transform:translateY(-4px) scale(.4);opacity:0}18%{transform:translateY(0) scale(1);opacity:1}
+  100%{transform:translateY(34px) scale(.85);opacity:0}}
+.pig .cuerpo{transform-box:view-box;transform-origin:100px 194px}
+.pig .lid{transform-box:fill-box;transform-origin:50% 0;transform:scaleY(0)}
+.pig .boca{transform-box:fill-box;transform-origin:50% 0}
+.pig .hocico{transform-box:fill-box;transform-origin:50% 50%}
+.pig .cachete{transform-box:fill-box;transform-origin:50% 50%}
+.pig .puff{opacity:0;transform-box:fill-box;transform-origin:0 100%}
+/* suspiro: inhala, entrecierra los ojos, larga el aire */
+.pig.a-sigh .cuerpo{animation:pigsigh 2.4s ease-in-out}
+.pig.a-sigh .lid{animation:piglid 2.4s ease-in-out}
+.pig.a-sigh .puff{animation:pigpuff 2.4s ease-out}
+@keyframes pigsigh{0%,100%{transform:none}35%{transform:scale(1.03,1.06)}72%{transform:scale(1,.96)}}
+@keyframes piglid{0%,25%,100%{transform:scaleY(0)}45%,80%{transform:scaleY(.5)}}
+@keyframes pigpuff{0%,55%{opacity:0;transform:translate(0,0) scale(.4)}72%{opacity:1;transform:translate(10px,-4px) scale(1)}
+  100%{opacity:0;transform:translate(24px,-14px) scale(1.3)}}
+/* mastica */
+.pig.a-chew .boca{animation:pigchew .34s ease-in-out 6}
+.pig.a-chew .hocico{animation:pigsnout .34s ease-in-out 6}
+.pig.a-chew .cachete{animation:pigcheek .34s ease-in-out 6}
+@keyframes pigchew{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.25)}}
+@keyframes pigsnout{0%,100%{transform:translateY(0)}50%{transform:translateY(3px)}}
+@keyframes pigcheek{0%,100%{transform:scale(1)}50%{transform:scale(1.3)}}
+/* parpadea */
+.pig.a-blink .lid{animation:pigblink .5s ease-in-out}
+@keyframes pigblink{0%,100%{transform:scaleY(0)}45%,55%{transform:scaleY(1)}}
+.pig.static *{animation:none!important}
+@media (prefers-reduced-motion: reduce){.pig *{animation:none!important}}
 </style>
 </head>
 <body>
 
-<!-- ===== el cerdito (se reusa por id) ===== -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="cerdo" viewBox="0 0 120 120">
-      <!-- gotas de transpiracion -->
-      <path d="M12 40c-4.5 6.5-4.5 10.5 0 12.5 4.5-2 4.5-6 0-12.5z" fill="#6CCBFF"/>
-      <path d="M106 30c-4.5 6.5-4.5 10.5 0 12.5 4.5-2 4.5-6 0-12.5z" fill="#6CCBFF"/>
-      <path d="M111 58c-3.2 4.6-3.2 7.4 0 8.8 3.2-1.4 3.2-4.2 0-8.8z" fill="#6CCBFF"/>
-      <path d="M6 64c-3 4.3-3 7 0 8.3 3-1.3 3-4 0-8.3z" fill="#6CCBFF"/>
-      <!-- remera deportiva -->
-      <path d="M24 104c12-9 24-12 36-12s24 3 36 12l4 16H20z" fill="#18B8A0"/>
-      <path d="M48 93l12 13 12-13" fill="none" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
-      <!-- orejas -->
-      <path d="M27 40C21 30 20 18 23 9c10 2 20 9 26 18z" fill="#FF9AB3"/>
-      <path d="M93 40c6-10 7-22 4-31-10 2-20 9-26 18z" fill="#FF9AB3"/>
-      <path d="M30 34c-3-6-4-13-3-18 6 2 11 6 15 11z" fill="#F27396"/>
-      <path d="M90 34c3-6 4-13 3-18-6 2-11 6-15 11z" fill="#F27396"/>
-      <!-- cabeza -->
-      <ellipse cx="60" cy="62" rx="40" ry="37" fill="#FFB8C8"/>
-      <path d="M96 52c4 18-6 38-26 45 18-2 31-17 30-36z" fill="#FFA1B7"/>
-      <!-- vincha con las tiras al viento -->
-      <path d="M22 44c10-8 24-12 38-12s28 4 38 12l-1 11c-10-7-23-11-37-11s-27 4-37 11z" fill="#FFFFFF"/>
-      <path d="M21.6 48.5c10-7.6 24-11.4 38.4-11.4s28.4 3.8 38.4 11.4l-.3 3.4c-10-7.3-23.9-11-38.1-11s-28.1 3.7-38.1 11z" fill="#FF4B5C"/>
-      <path d="M23 47L6 40l3 9-4 7 18-4z" fill="#FFFFFF"/>
-      <path d="M22 50L9 46l1.4 4.4z" fill="#FF4B5C"/>
-      <!-- cejas decididas -->
-      <path d="M35 59l15 4M85 59l-15 4" stroke="#4A2230" stroke-width="4" stroke-linecap="round"/>
-      <!-- ojos -->
-      <ellipse cx="44" cy="70" rx="8.5" ry="9.5" fill="#FFFFFF"/>
-      <ellipse cx="76" cy="70" rx="8.5" ry="9.5" fill="#FFFFFF"/>
-      <circle cx="46" cy="71.5" r="5" fill="#2B1B22"/>
-      <circle cx="78" cy="71.5" r="5" fill="#2B1B22"/>
-      <circle cx="47.6" cy="69.6" r="1.7" fill="#FFFFFF"/>
-      <circle cx="79.6" cy="69.6" r="1.7" fill="#FFFFFF"/>
-      <!-- cachetes -->
-      <ellipse cx="29" cy="83" rx="6" ry="4" fill="#FF7F9C" opacity=".55"/>
-      <ellipse cx="91" cy="83" rx="6" ry="4" fill="#FF7F9C" opacity=".55"/>
-      <!-- hocico -->
-      <ellipse cx="60" cy="84" rx="15" ry="10.5" fill="#FF8FAB"/>
-      <ellipse cx="54.5" cy="84" rx="2.6" ry="3.8" fill="#C2456A"/>
-      <ellipse cx="65.5" cy="84" rx="2.6" ry="3.8" fill="#C2456A"/>
-      <!-- boca jadeando -->
-      <path d="M51 95.5c3 5.5 15 5.5 18 0-6 2-12 2-18 0z" fill="#7A2E45"/>
-      <path d="M56 98.4c2 2.2 6 2.2 8 0-2.6.6-5.4.6-8 0z" fill="#FF6F93"/>
-    </symbol>
-  </defs>
-</svg>
-
 <div id="loader" class="full">
-  <div class="logo-big"><svg class="big-logo"><use href="#cerdo"/></svg></div>
+  <div class="logo-big"><span class="big-logo" data-pig=""></span></div>
   <h1>Cerdapp</h1>
   <p>Calentando la olla...</p>
 </div>
 
 <div id="login-screen" class="full" style="display:none">
-  <div class="logo-big"><svg class="big-logo"><use href="#cerdo"/></svg></div>
+  <div class="logo-big"><span class="big-logo" data-pig=""></span></div>
   <h1>Cerdapp</h1>
   <p>Una olla, dos platos. Te digo qu&eacute; comer y cu&aacute;nto, sin contar calor&iacute;as.</p>
   <button class="btn" id="btn-login">Entrar con Google</button>
@@ -336,7 +325,7 @@ ol.pasos{padding-left:20px;margin:6px 0} ol.pasos li{margin:5px 0}
 </div>
 
 <div id="denied" class="full" style="display:none">
-  <div class="logo-big"><svg class="big-logo"><use href="#cerdo"/></svg></div>
+  <div class="logo-big"><span class="big-logo" data-pig=""></span></div>
   <h1>Ups</h1>
   <p id="denied-mail"></p>
   <button class="btn sec" onclick="salir()">Probar con otra cuenta</button>
@@ -346,7 +335,7 @@ ol.pasos{padding-left:20px;margin:6px 0} ol.pasos li{margin:5px 0}
 
 <div id="app" style="display:none">
   <header>
-    <div class="logo-w"><svg class="logo"><use href="#cerdo"/></svg></div>
+    <div class="logo-w"><span class="logo" data-pig=""></span></div>
     <div>
       <h1>Cerdapp</h1>
       <div class="sub" id="h-update"></div>
@@ -797,9 +786,89 @@ var GUIA = [
                               'Una comida libre no arruina la semana. El d&eacute;ficit se mira por semana, no por d&iacute;a.']]
 ];
 /* ==================================================================
+   EL CERDITO
+   Personaje propio en estilo plano y redondo: cara que llena el cuadro, ojos
+   blancos grandes, pupilas altas, sin contornos. Vincha de tenista y gotas de
+   transpiracion.
+   Va en linea (no con <use>) para poder animar sus partes desde el CSS:
+     .drop    gotas que caen siempre
+     a-sigh   suspira: inhala, entrecierra los ojos y sale una nubecita
+     a-chew   mastica: la boca y el hocico se mueven, los cachetes se inflan
+     a-blink  parpadea
+   pigCiclo() va alternando las tres ultimas en cada cerdito de la pantalla.
+   ================================================================== */
+var _pigN = 0;
+function pigSVG(cls){
+  var n = ++_pigN, cl = 'pc' + n, cr = 'pr' + n;
+  var gota = function(x, y, c){
+    return '<g transform="translate(' + x + ',' + y + ')"><path class="drop ' + c + '" fill="#4FC3FF" d="M0-10C4-3 7 1 7 5A7 7 0 0 1-7 5C-7 1-4-3 0-10Z"/></g>';
+  };
+  return '<svg class="pig ' + (cls || '') + '" viewBox="0 0 200 200" aria-hidden="true">' +
+    '<defs><clipPath id="' + cl + '"><rect x="38" y="84" width="52" height="60" rx="24"/></clipPath>' +
+    '<clipPath id="' + cr + '"><rect x="110" y="84" width="52" height="60" rx="24"/></clipPath></defs>' +
+    '<g class="cuerpo">' +
+      /* orejas */
+      '<path fill="#FF8DAA" d="M26 78C18 46 22 22 30 12c18 6 34 20 42 34z"/>' +
+      '<path fill="#FF8DAA" d="M174 78c8-32 4-56-4-66-18 6-34 20-42 34z"/>' +
+      '<path fill="#FF6B92" d="M36 60c-4-16-2-30 2-38 9 4 18 12 23 21z"/>' +
+      '<path fill="#FF6B92" d="M164 60c4-16 2-30-2-38-9 4-18 12-23 21z"/>' +
+      /* cabeza: frente mas oscura arriba, cachetes claros abajo */
+      '<rect x="16" y="36" width="168" height="158" rx="72" fill="#FFA3BA"/>' +
+      '<path fill="#FF8DAA" d="M16 108V100C16 62 52 36 100 36s84 26 84 64v8C160 92 132 86 100 104 68 86 40 92 16 108z"/>' +
+      '<ellipse cx="100" cy="158" rx="76" ry="36" fill="#FFBCCD"/>' +
+      /* vincha con las tiras al viento */
+      '<path fill="#FFFFFF" d="M18 70c22-16 50-24 82-24s60 8 82 24v17c-22-15-50-23-82-23s-60 8-82 23z"/>' +
+      '<path fill="#FF4B4B" d="M18 75c22-16 50-24 82-24s60 8 82 24v6c-22-15-50-23-82-23s-60 8-82 23z"/>' +
+      '<path fill="#FFFFFF" d="M178 72l20-10-2 15z"/><path fill="#FFFFFF" d="M178 82l21 4-9 10z"/>' +
+      /* ojos */
+      '<rect x="38" y="84" width="52" height="60" rx="24" fill="#FFFFFF"/>' +
+      '<rect x="110" y="84" width="52" height="60" rx="24" fill="#FFFFFF"/>' +
+      '<rect x="62" y="98" width="24" height="38" rx="12" fill="#1E2A36"/>' +
+      '<rect x="114" y="98" width="24" height="38" rx="12" fill="#1E2A36"/>' +
+      '<circle cx="71" cy="108" r="6" fill="#FFFFFF"/><circle cx="123" cy="108" r="6" fill="#FFFFFF"/>' +
+      '<g clip-path="url(#' + cl + ')"><rect class="lid" transform="scale(1,0)" x="36" y="82" width="56" height="64" fill="#FF8DAA"/></g>' +
+      '<g clip-path="url(#' + cr + ')"><rect class="lid" transform="scale(1,0)" x="108" y="82" width="56" height="64" fill="#FF8DAA"/></g>' +
+      /* cachetes */
+      '<ellipse class="cachete" cx="34" cy="150" rx="12" ry="7" fill="#FF5C86" opacity=".45"/>' +
+      '<ellipse class="cachete" cx="166" cy="150" rx="12" ry="7" fill="#FF5C86" opacity=".45"/>' +
+      /* hocico y boca */
+      '<g class="hocico"><ellipse cx="100" cy="156" rx="34" ry="21" fill="#FF7799"/>' +
+      '<ellipse cx="100" cy="148" rx="25" ry="8" fill="#FF8FAB"/>' +
+      '<ellipse cx="88" cy="158" rx="6" ry="9" fill="#B23560"/><ellipse cx="112" cy="158" rx="6" ry="9" fill="#B23560"/></g>' +
+      '<g transform="translate(100,180)"><g class="boca"><path fill="#7A2440" d="M-12 0C-8 9 8 9 12 0-4 3-4 3-12 0z"/>' +
+      '<path fill="#FF5C86" d="M-5 4.5C-2 7.5 2 7.5 5 4.5-1 5.8-1 5.8-5 4.5z"/></g></g>' +
+    '</g>' +
+    /* nubecita del suspiro */
+    '<g transform="translate(122,176)"><g class="puff" opacity="0"><circle cx="0" cy="0" r="7" fill="#FFFFFF" opacity=".9"/>' +
+      '<circle cx="9" cy="-4" r="8" fill="#FFFFFF" opacity=".9"/><circle cx="17" cy="1" r="6" fill="#FFFFFF" opacity=".9"/></g></g>' +
+    gota(10, 104, 'd1') + gota(192, 118, 'd2') + gota(184, 46, 'd3') + gota(14, 44, 'd4') +
+    '</svg>';
+}
+var _pigAnims = ['a-sigh', 'a-chew', 'a-blink', 'a-chew', 'a-sigh', 'a-blink'];
+var _pigI = 0;
+function pigCiclo(){
+  var a = _pigAnims[_pigI++ % _pigAnims.length];
+  var ps = document.querySelectorAll('.pig:not(.static)');
+  for (var i = 0; i < ps.length; i++){
+    (function(p){
+      p.classList.remove('a-sigh', 'a-chew', 'a-blink');
+      void p.getBoundingClientRect();   /* reinicia la animacion */
+      p.classList.add(a);
+      setTimeout(function(){ p.classList.remove(a); }, 2600);
+    })(ps[i]);
+  }
+}
+/* los lugares fijos del HTML (carga, login, header) */
+(function(){
+  var ss = document.querySelectorAll('[data-pig]');
+  for (var i = 0; i < ss.length; i++) ss[i].innerHTML = pigSVG(ss[i].getAttribute('data-pig'));
+  setTimeout(pigCiclo, 1200);
+  setInterval(pigCiclo, 4200);
+})();
+/* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v4';
+var APP_VER   = 'v5';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1957,7 +2026,7 @@ function onboarding(){
   $('onb').classList.add('on');
   var p = onbPaso, armada = hogar().onb;
   var h = '<div class="steps">' + [0,1,2].map(function(i){ return '<i class="' + (i <= p ? 'on' : '') + '"></i>'; }).join('') + '</div>';
-  function burbuja(t){ return '<div class="bubble"><svg><use href="#cerdo"/></svg><div class="txt">' + t + '</div></div>'; }
+  function burbuja(t){ return '<div class="bubble">' + pigSVG() + '<div class="txt">' + t + '</div></div>'; }
   if (p === 0){
     var u = usuarios().filter(function(x){ return x.email === userEmail; })[0] || {email:userEmail};
     var hola = u.nombre ? ' ' + esc(u.nombre) : '';
@@ -1994,7 +2063,7 @@ function tourSlides(){
 }
 function tourHTML(fin){
   var S = tourSlides(), i = clamp(tourI, 0, S.length - 1), t = S[i];
-  return '<div class="bubble"><svg><use href="#cerdo"/></svg><div class="txt">C&oacute;mo se usa: ' + (i + 1) + ' de ' + S.length + '</div></div>' +
+  return '<div class="bubble">' + pigSVG() + '<div class="txt">C&oacute;mo se usa: ' + (i + 1) + ' de ' + S.length + '</div></div>' +
     '<div class="card" style="text-align:center;padding:26px 18px">' +
     '<div style="font-size:38px;width:78px;height:78px;margin:0 auto 14px;border-radius:50%;box-shadow:var(--in);background:var(--hi-lt);display:flex;align-items:center;justify-content:center">' + t[0] + '</div>' +
     '<h2>' + t[1] + '</h2><div class="muted" style="font-size:15px;line-height:1.5">' + t[2] + '</div>' +

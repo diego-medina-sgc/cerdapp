@@ -768,6 +768,10 @@ var ZONAS = [['core','Core / abdomen'],['piernas','Piernas'],['gluteos','Gl&uacu
    GUIA PARA COMER AFUERA (sin registrar nada)
    ================================================================== */
 var GUIA = [
+  ['Comedor del colegio', ['Prote&iacute;na primero: carne, pollo, pescado o huevo. La porci&oacute;n que sirven suele alcanzar.',
+                           'Media porci&oacute;n de pasta, arroz o papa; la otra mitad del plato, verdura o ensalada.',
+                           'Un pan, no la panera. De postre, fruta o gelatina; lo dulce, de vez en cuando.',
+                           'Agua o gaseosa zero.']],
   ['Asado', ['Eleg&iacute; vac&iacute;o, entra&ntilde;a, colita, lomo o pollo. Un chorizo para compartir, como mucho.',
              'Dos palmas de carne y la ensalada primero. Morcilla y achuras son las m&aacute;s pesadas.',
              'Un pancito, no la panera.']],
@@ -868,7 +872,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v9';
+var APP_VER   = 'v10';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -931,6 +935,9 @@ var EXTRAS_COMIDA = [
   ['factura','&#129360;','Factura o medialuna',200,3], ['chocolate','&#127851;','2 cuadraditos de chocolate',110,1.5], ['helado','&#127848;','Helado (1 bocha)',150,3],
   ['empanada','&#129375;','Empanada',250,10], ['pizza','&#127829;','Porci&oacute;n de pizza',300,12], ['cerveza','&#127866;','Lata de cerveza',150,1],
   ['vino','&#127863;','Copa de vino',120,0], ['fernet','&#129380;','Fernet con coca',200,0], ['gaseosa','&#129380;','Vaso de gaseosa com&uacute;n',100,0],
+  ['barrita','&#127851;','Barrita de cereal',100,2], ['mani','&#129372;','Pu&ntilde;ado de man&iacute;',170,7], ['papitas','&#129364;','Papitas de paquete (chico)',200,2],
+  ['turron','&#127852;','Turr&oacute;n',90,2], ['bizcochitos','&#127850;','4 bizcochitos de grasa',150,2], ['golosinas','&#127852;','Caramelos o golosinas',60,0],
+  ['ddl','&#127855;','Cucharada de dulce de leche',60,1],
   ['chico','&#10133;','Otra cosa chica',100,2], ['mediano','&#10133;','Otra cosa mediana',250,5], ['grande','&#10133;','Otra cosa grande',500,10]
 ];
 var EXC = {}; EXTRAS_COMIDA.forEach(function(e){ EXC[e[0]] = e; });
@@ -1417,16 +1424,37 @@ function adherencia(em, dias){
   }
   return {plan:plan, ok:ok, pct:plan ? ok / plan : null, usa:usa};
 }
-function setOficina(fecha, v){
+/* Dia de oficina: Diego almuerza en el comedor del colegio (hay menu), no lleva
+   vianda. Ese almuerzo queda "afuera" solo para el; el otro almuerza en casa con la
+   propuesta normal, y nadie cocina de mas la noche anterior. */
+function oficinista(){
+  var g = (D && D.gym) || {}, ps = personas();
+  if (g.email && ps.indexOf(g.email) !== -1) return g.email;
+  return ps.indexOf(userEmail) !== -1 ? userEmail : ps[0];
+}
+function aplicarOficina(fecha, v){
+  var em = oficinista(), f = JSON.parse(JSON.stringify(dia(fecha).fuera || {})), l = f.al || [], i = l.indexOf(em);
   setSlot(fecha, 'of', v ? 1 : 0);
-  var ayer = addDays(fecha, -1), ce = dia(ayer).ce;
+  if (v && i === -1) l.push(em);
+  if (!v && i !== -1) l.splice(i, 1);
+  f.al = l; setSlot(fecha, 'fuera', f);
   if (v){
-    if (REC[ce] && REC[ce].v === 0){ var r = mejor(ayer, 'ce'); if (r){ setSlot(ayer, 'ce', r.id); ce = r.id; toast('Cambi&eacute; la cena de la noche anterior por una que sirve de vianda'); } }
-    if (REC[ce]) setSlot(fecha, 'al', 'sobras');
-  } else if (dia(fecha).al === 'sobras'){
-    var r2 = mejor(fecha, 'al'); setSlot(fecha, 'al', r2 ? r2.id : '');
+    var r = JSON.parse(JSON.stringify(dia(fecha).rest || {}));
+    r.al = r.al || {it:{}}; if (!r.al.lugar) r.al.lugar = 'Comedor del colegio';
+    setSlot(fecha, 'rest', r);
   }
-  render();
+  var al = dia(fecha).al;
+  if (al === 'sobras' || (al === 'afuera' && v)){ var r2 = mejor(fecha, 'al'); setSlot(fecha, 'al', r2 ? r2.id : ''); }
+}
+function setOficina(fecha, v){ aplicarOficina(fecha, v); render(); }
+/* Hasta v9 la oficina era vianda (almuerzo 'sobras'). Los dias ya marcados se pasan
+   al esquema nuevo una sola vez: no tocan nada si ya estan bien. */
+function migrarOficina(){
+  var hoy = hoyISO(), em = oficinista(); if (!em) return;
+  for (var i = 0; i <= 13; i++){
+    var f = addDays(hoy, i), d = dia(f);
+    if (d.of && (d.al === 'sobras' || fueraDe(f, 'al').indexOf(em) === -1)) aplicarOficina(f, 1);
+  }
 }
 function tipoSlot(slot){ return slot === 'al' ? 'a' : slot === 'ce' ? 'c' : 'm'; }
 
@@ -1459,7 +1487,6 @@ function puntaje(r, fecha, slot, excl){
   if (r.propia) s += 1.5;     /* la cargaron ustedes: les gusta */
   if (likes[r.id] === 1) s += 2;
   /* la cena de la noche anterior a un dia de oficina tiene que servir de vianda */
-  if (slot === 'ce' && esOficina(addDays(fecha, 1)) && r.v === 0) return -1e9;
   usadoCerca(fecha, 7).forEach(function(u){
     if (u.r.id === r.id) s -= 6 - u.d * .5;
     else if (u.r.ti === r.ti && u.d <= 3) s -= 3 - u.d * .5;   /* el mismo tipico, no dia por medio */
@@ -1491,10 +1518,6 @@ function completar(desde, hasta){
     KV[k] = p;   /* en memoria ya, para que el puntaje vea lo elegido en esta vuelta */
     slotsDe().forEach(function(s){
       if (d[s]) return;
-      if (s === 'al' && esOficina(f)){
-        var ayer = dia(addDays(f, -1)).ce;
-        if (REC[ayer] && REC[ayer].v !== 0){ d[s] = 'sobras'; return; }
-      }
       var r = mejor(f, s);
       if (r) d[s] = r.id;
     });
@@ -1625,7 +1648,10 @@ function afueraPP(fecha, slot, em, conBoton){
     h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + c[2] + ' ' + nomRest(x) + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
     h += '<div class="small" style="margin-top:6px;font-weight:700;color:' + (R.k > m.k + 30 ? 'var(--amber)' : 'var(--green)') + '">' +
       (R.k > m.k + 30 ? fN(R.k - m.k) + ' kcal m&aacute;s que esta comida: se descuentan de lo que queda del d&iacute;a.' : 'Dentro de lo que tocaba en esta comida.') + '</div>';
-  } else h += '<div class="small muted">Come afuera. Anot&aacute; qu&eacute; comi&oacute; y lo compenso en el resto del d&iacute;a.</div>';
+  } else if (slot === 'al' && esOficina(fecha) && em === oficinista())
+    h += '<div class="small muted">Almuerza en el colegio. Anot&aacute; qu&eacute; eligi&oacute; del men&uacute; y lo compenso en el resto del d&iacute;a. ' +
+      '<a href="#" onclick="verGuia();return false" style="color:var(--pri);font-weight:700">Qu&eacute; elegir</a></div>';
+  else h += '<div class="small muted">Come afuera. Anot&aacute; qu&eacute; comi&oacute; y lo compenso en el resto del d&iacute;a.</div>';
   if (conBoton) h += '<button class="tick" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">&iquest;Qu&eacute; comi&oacute;?</button>';
   return h + '</div>';
 }
@@ -1817,10 +1843,11 @@ function comidaHTML(fecha, slot, opts){
   }).join('');
   var aviso = '';
   if (slot === 'ce' && dia(addDays(fecha, 1)).al === 'sobras')
-    aviso = '<div class="aviso a">&#127857; Cocin&aacute; de m&aacute;s: ma&ntilde;ana hay oficina y el almuerzo sale de esta olla.</div>';
+    aviso = '<div class="aviso a">&#127857; Cocin&aacute; de m&aacute;s: el almuerzo de ma&ntilde;ana son las sobras de esta olla.</div>';
   if (slot === 'ce' && fecha >= hoyISO()){
     var man = addDays(fecha, 1), of = esOficina(man);
-    aviso += '<div class="row" style="margin:8px 0 2px"><span class="small" style="flex:1;font-weight:700">&iquest;Ma&ntilde;ana hay oficina?</span>' +
+    aviso += '<div class="row" style="margin:8px 0 2px"><span class="small" style="flex:1;font-weight:700">&iquest;Ma&ntilde;ana hay oficina?' +
+      '<span class="dim" style="display:block;font-weight:600;font-size:12px">' + nombre(oficinista()) + ' almuerza en el colegio</span></span>' +
       '<button class="chip' + (of ? ' on' : '') + '" onclick="setOficina(\'' + man + '\',1)">S&iacute;</button>' +
       '<button class="chip' + (of ? '' : ' on') + '" onclick="setOficina(\'' + man + '\',0)">No</button></div>';
   }
@@ -1871,13 +1898,14 @@ function renderHoy(){
 }
 
 function fueraPlanHTML(f){
-  var h = '<div class="card"><h3>&#127859; Fuera del plan</h3>' +
-    '<div class="small muted" style="margin:-2px 0 6px">&iquest;Alguien comi&oacute; algo de m&aacute;s? Anotalo: se descuenta de lo que le queda del d&iacute;a.</div>';
+  var h = '<div class="card"><h3>&#127871; Snacks y algo de m&aacute;s</h3>' +
+    '<div class="small muted" style="margin:-2px 0 6px">Un snack, un picoteo o cualquier cosa fuera de las comidas. Se descuenta de lo que queda del d&iacute;a.</div>' +
+    (personas().length > 1 ? '<button class="btn small block" style="margin:8px 0 4px" onclick="abrirExtra(\'ambos\')">+ Snack de los dos</button>' : '');
   personas().forEach(function(em){
     var ex = extrasDe(f, em), tot = extraTotal(f, em).k;
     var aplicado = slotsRestantes(em, f).reduce(function(a, s){ return a + descuento(em, f, s).k; }, 0);
     h += '<div class="row wrap" style="padding:8px 0;border-top:1px solid var(--surface2)"><b style="flex:1;min-width:90px">' + nombre(em) + '</b>' +
-      '<button class="btn small sec" onclick="abrirExtra(\'' + em + '\')">+ Comi&oacute; algo</button></div>';
+      '<button class="btn small sec" onclick="abrirExtra(\'' + em + '\')">+ Snack</button></div>';
     if (ex.l.length){
       /* agrupado: "Huevo duro x2"; la cruz saca uno */
       var grp = {}, orden = [];
@@ -1894,7 +1922,7 @@ function fueraPlanHTML(f){
   return h + '</div>';
 }
 function abrirExtra(em){
-  var h = mh('&iquest;Qu&eacute; comi&oacute; ' + nombre(em) + '?');
+  var h = mh(em === 'ambos' ? '&iquest;Qu&eacute; comieron los dos?' : '&iquest;Qu&eacute; comi&oacute; ' + nombre(em) + '?');
   h += '<p class="small muted" style="margin-top:0">Toc&aacute; lo que se parezca. Si fueron dos, tocalo dos veces.</p><div class="chips">' +
     EXTRAS_COMIDA.map(function(e){
       return '<button class="chip" onclick="sumarExtra(\'' + em + '\',\'' + e[0] + '\')">' + e[1] + ' ' + e[2] + ' <span class="dim" style="font-weight:600">~' + e[3] + '</span></button>';
@@ -1903,10 +1931,11 @@ function abrirExtra(em){
 }
 function sumarExtra(em, id){
   var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
-  o[em] = o[em] || []; o[em].push(id);
+  var quienes = em === 'ambos' ? personas() : [em];
+  quienes.forEach(function(e){ o[e] = o[e] || []; o[e].push(id); });
   setSlot(f, 'extra', o); render();
-  var n = o[em].filter(function(x){ return x === id; }).length;
-  toast('Anotado: ' + EXC[id][2] + (n > 1 ? ' (x' + n + ')' : '') + '. Le achico lo que le queda del d&iacute;a.', 'ok');
+  var n = o[quienes[0]].filter(function(x){ return x === id; }).length;
+  toast('Anotado: ' + EXC[id][2] + (n > 1 ? ' (x' + n + ')' : '') + (em === 'ambos' ? ' para los dos' : '') + '. Se descuenta de lo que queda del d&iacute;a.', 'ok');
 }
 function quitarExtra(em, i){
   var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
@@ -1932,7 +1961,8 @@ function renderSemana(){
     slotsDe().forEach(function(s){
       var v = d[s], r = recDe(f, s);
       var txt = v === 'afuera' ? '<span class="muted">Comen afuera</span>' : r ? (v === 'sobras' ? '<span class="tag b">sobras</span> ' : '') + r.n : '<span class="dim">&mdash;</span>';
-      if (r && v !== 'afuera' && fueraDe(f, s).length) txt += ' <span class="tag b">' + fueraDe(f, s).map(function(em){ return nombre(em); }).join(' y ') + ' afuera</span>';
+      if (r && v !== 'afuera' && fueraDe(f, s).length) txt += ' <span class="tag b">' + fueraDe(f, s).map(function(em){
+        return nombre(em) + (s === 'al' && esOficina(f) && em === oficinista() ? ' en el colegio' : ' afuera'); }).join(', ') + '</span>';
       if (r && !pasado && v !== 'afuera' && despensa().length){ var fm = matchHeladera(r).falta.length; txt += fm ? ' <span class="tag a">falta ' + fm + '</span>' : ' <span class="tag g">&#10004;</span>'; }
       h += '<div class="sl" onclick="abrirSlot(\'' + f + '\',\'' + s + '\')"><div class="k">' + SLOTS[s][0] + '</div><div class="v">' + txt + '</div></div>';
     });
@@ -2679,7 +2709,7 @@ function tourSlides(){
     ['&#127869;', 'Hoy', 'Cada comida trae la receta y lo que le toca a cada uno en medidas caseras: palmas, tazas, cucharadas. Es una sola olla: lo que cambia es el plato de cada uno.'],
     ['&#10004;', 'Tild&aacute; lo que comen', 'Cuando terminan, toc&aacute; <b>Lo com&iacute;</b> en el plato de cada uno. No hay que contar nada: con eso s&eacute; cu&aacute;nto del plan se sigue, y si el peso no baja te digo si es por las calor&iacute;as o por el plan.'],
     ['&#128260;', 'Si no tienen ganas', '<b>Otra</b> propone otra receta, <b>Elegir</b> las muestra todas y <b>Afuera</b> es para cuando comen afuera, los dos o uno solo. Con &#128077; la propongo m&aacute;s; con &#128078; no la propongo m&aacute;s.'],
-    ['&#128188;', 'Oficina', 'La noche antes, contest&aacute; <b>S&iacute;</b> en &iquest;Ma&ntilde;ana hay oficina? (est&aacute; en la cena). Se cocina de m&aacute;s y el almuerzo va de vianda.'],
+    ['&#128188;', 'Oficina', 'La noche antes, contest&aacute; <b>S&iacute;</b> en &iquest;Ma&ntilde;ana hay oficina? (est&aacute; en la cena). Ese d&iacute;a Diego almuerza en el colegio: despu&eacute;s anot&aacute;s qu&eacute; eligi&oacute; del men&uacute; y se compensa en la cena.'],
     ['&#128197;', 'Semana y compras', 'La semana se arma sola y es la misma para los dos. La lista de compras suma lo de los dos; tild&aacute; lo que compraste y pasalo a la heladera.'],
     ['&#129482;', 'Heladera', 'Marc&aacute; lo que hay en casa (lo ven los dos) y te digo qu&eacute; se puede cocinar con eso. La semana prioriza esas recetas.'],
     ['&#128200;', 'Progreso', gym
@@ -2780,6 +2810,7 @@ function afterData(){
   if (!PAL_URL && hogar().pal && hogar().pal !== paletaActual()) aplicarPaleta(hogar().pal);
   else if (PAL_URL) aplicarPaleta(PAL_URL);
   migrarTipicos();
+  if (!faltaOnb()) migrarOficina();
   if (faltaOnb()){
     onbPaso = (perfil(userEmail) || {}).alt ? 1 : 0;
     onboarding(); return;

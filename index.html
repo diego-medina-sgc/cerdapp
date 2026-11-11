@@ -868,7 +868,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v5';
+var APP_VER   = 'v6';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -884,6 +884,46 @@ var SLOTS = {de:['Desayuno','&#9749;'], al:['Almuerzo','&#127869;'], me:['Merien
 var DIAS  = ['domingo','lunes','martes','mi&eacute;rcoles','jueves','viernes','s&aacute;bado'];
 var DIASC = ['Dom','Lun','Mar','Mi&eacute;','Jue','Vie','S&aacute;b'];
 var MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+
+/* Tipo de cada producto (lo elige la casa en la Heladera). Cambia el nombre y las
+   calorias con que se calculan las porciones. [clave, nombre, kcal, prot, hc, grasa, corto] */
+var VARIANTES = {
+  leche:     [['desc','Leche descremada',35,3.4,5,.1,'Descremada'], ['semi','Leche parcialmente descremada',47,3.3,4.8,1.5,'Semi'], ['entera','Leche entera',62,3.2,4.7,3.3,'Entera']],
+  untable:   [['light','Queso untable light',140,9,6,9,'Light'], ['comun','Queso untable com&uacute;n',250,6,4,24,'Com&uacute;n']],
+  yogur:     [['desc','Yogur natural descremado',56,5.5,7.5,.2,'Descremado'], ['entero','Yogur natural entero',70,3.8,5,3.5,'Entero'], ['griego','Yogur griego',97,9,4,5,'Griego']],
+  muzza:     [['light','Muzzarella o cremoso light',250,23,2,16.5,'Light'], ['comun','Muzzarella o cremoso com&uacute;n',300,22,2,23,'Com&uacute;n']],
+  panint:    [['integral','Pan integral',250,10,43,4,'Integral'], ['blanco','Pan lactal blanco',265,8,49,3.5,'Blanco']],
+  picada:    [['especial','Carne picada especial',220,26,0,13,'Especial'], ['comun','Carne picada com&uacute;n',280,24,0,20,'Com&uacute;n']],
+  atun:      [['natural','At&uacute;n al natural',116,26,0,1,'Al natural'], ['aceite','At&uacute;n en aceite',198,25,0,10,'En aceite']],
+  mayo:      [['light','Mayonesa light',300,1,8,30,'Light'], ['comun','Mayonesa com&uacute;n',680,1,1,75,'Com&uacute;n']],
+  mermelada: [['light','Mermelada light',100,0,25,0,'Light'], ['comun','Mermelada com&uacute;n',250,0,62,0,'Com&uacute;n']]
+};
+var VAR_LABEL = {leche:'Leche', untable:'Queso untable', yogur:'Yogur', muzza:'Muzzarella', panint:'Pan de molde',
+                 picada:'Carne picada', atun:'At&uacute;n', mayo:'Mayonesa', mermelada:'Mermelada'};
+function aplicarVariantes(){
+  var v = hogar().variantes || {};
+  Object.keys(VARIANTES).forEach(function(k){
+    var op = VARIANTES[k], sel = op.filter(function(o){ return o[0] === v[k]; })[0] || op[0];
+    ALI[k].n = sel[1]; ALI[k].k = sel[2]; ALI[k].p = sel[3]; ALI[k].c = sel[4]; ALI[k].g = sel[5];
+  });
+}
+function setVariante(k, key){
+  var h = JSON.parse(JSON.stringify(hogar())); h.variantes = h.variantes || {}; h.variantes[k] = key;
+  setKV('hogar', h); aplicarVariantes(); renderHeladera();
+}
+
+/* Lo que alguien comio fuera del plan: [id, emoji, nombre, kcal, prot]. Porciones
+   tipicas ya calculadas, para que nadie tenga que contar nada. */
+var EXTRAS_COMIDA = [
+  ['huevo','&#129370;','Huevo duro',75,6.3], ['fruta','&#127822;','Una fruta',80,1], ['fsecos','&#129372;','Pu&ntilde;adito de frutos secos',120,4],
+  ['yogur','&#129371;','Un yogur',110,7], ['queso','&#129472;','Feta de queso',70,5], ['jamon','&#129363;','Feta de jam&oacute;n',25,4],
+  ['pan','&#127838;','Pan o tostada',80,3], ['galletitas','&#127850;','3 galletitas',130,2], ['alfajor','&#127851;','Alfajor',250,3],
+  ['factura','&#129360;','Factura o medialuna',200,3], ['chocolate','&#127851;','2 cuadraditos de chocolate',110,1.5], ['helado','&#127848;','Helado (1 bocha)',150,3],
+  ['empanada','&#129375;','Empanada',250,10], ['pizza','&#127829;','Porci&oacute;n de pizza',300,12], ['cerveza','&#127866;','Lata de cerveza',150,1],
+  ['vino','&#127863;','Copa de vino',120,0], ['fernet','&#129380;','Fernet con coca',200,0], ['gaseosa','&#129380;','Vaso de gaseosa com&uacute;n',100,0],
+  ['chico','&#10133;','Otra cosa chica',100,2], ['mediano','&#10133;','Otra cosa mediana',250,5], ['grande','&#10133;','Otra cosa grande',500,10]
+];
+var EXC = {}; EXTRAS_COMIDA.forEach(function(e){ EXC[e[0]] = e; });
 
 var REC = {};
 RECETAS.forEach(function(r){ REC[r.id] = r; });
@@ -1083,8 +1123,29 @@ function metaSlot(em, slot){
    el hidrato cierra sus calorias, la verdura es fija. Despues se redondea a
    medidas caseras (no hay balanza) y se recalcula lo que de verdad comeria.
    ================================================================== */
-function porciones(rec, em, slot){
-  var m = metaSlot(em, slot), K = m.k, Pr = m.p;
+/* dia.extra = {email: [ids de EXTRAS_COMIDA]}. Se descuenta de las comidas del dia que
+   todavia no se tildaron como comidas, en proporcion a cada una, sin bajar ninguna
+   de la mitad. Lo ya comido no se toca. */
+function extrasDe(fecha, em){
+  var ids = ((dia(fecha).extra || {})[em]) || [], k = 0, p = 0;
+  var l = ids.map(function(id, i){ var e = EXC[id] || EXC.chico; k += e[3]; p += e[4]; return {i:i, e:e}; });
+  return {l:l, k:k, p:p};
+}
+function slotsRestantes(em, fecha){
+  return slotsDe().filter(function(s){
+    return presente(em, fecha, s) && dia(fecha)[s] !== 'afuera' && recDe(fecha, s) && !comido(fecha, s, em);
+  });
+}
+function descuento(em, fecha, slot){
+  if (!fecha) return {k:0, p:0};
+  var ex = extrasDe(fecha, em); if (!ex.k) return {k:0, p:0};
+  var rest = slotsRestantes(em, fecha); if (rest.indexOf(slot) === -1) return {k:0, p:0};
+  var tot = rest.reduce(function(a, s){ return a + metaSlot(em, s).k; }, 0) || 1;
+  var m = metaSlot(em, slot), share = m.k / tot;
+  return {k:Math.min(ex.k * share, m.k * .5), p:Math.min(ex.p * share, m.p * .5)};
+}
+function porciones(rec, em, slot, fecha){
+  var m = metaSlot(em, slot), dsc = descuento(em, fecha, slot), K = m.k - dsc.k, Pr = m.p - dsc.p;
   var it = rec.c.map(function(c){ var a = ALI[c[0]]; return {f:c[0], a:a, r:c[1], g:c[2], u:c[3] || a.u}; });
   function kc(x, g){ return x.a.k * g / 100; }
   var kF = 0, kP = 0, pP = 0, kH = 0, kU = 0;
@@ -1110,7 +1171,7 @@ function porciones(rec, em, slot){
     x.q = q; x.gr = q * x.u[1]; x.kcal = kc(x, x.gr); x.prot = x.a.p * x.gr / 100;
     tk += x.kcal; tp += x.prot;
   });
-  return {it:it, kcal:tk, prot:tp, K:K};
+  return {it:it, kcal:tk, prot:tp, K:K, dsc:dsc};
 }
 function cantTxt(x){
   var u = x.u, nm = x.q <= 1 ? u[0] : u[2];
@@ -1320,6 +1381,23 @@ function matchHeladera(r){
   });
   return {pct:req.length ? ok / req.length : 0, falta:falta};
 }
+/* cosas propias de la casa: hogar.propios = [{id, n, h}] */
+function propios(){ return hogar().propios || []; }
+function agregarPropio(){
+  var n = String($('np-n').value || '').trim(), g = $('np-h').value;
+  if (!n){ toast('Escrib&iacute; qu&eacute; es', 'err'); return; }
+  var h = JSON.parse(JSON.stringify(hogar())); h.propios = h.propios || [];
+  var id = 'u-' + Date.now().toString(36);
+  h.propios.push({id:id, n:n.slice(0, 40), h:g}); setKV('hogar', h);
+  var d = despensa().slice(); d.push(id); setKV('despensa', d);
+  renderHeladera(); toast('Agregado a la heladera', 'ok');
+}
+function borrarPropio(id){
+  if (!confirm('Sacar de la lista?')) return;
+  var h = JSON.parse(JSON.stringify(hogar())); h.propios = (h.propios || []).filter(function(x){ return x.id !== id; }); setKV('hogar', h);
+  setKV('despensa', despensa().filter(function(x){ return x !== id; }));
+  renderHeladera();
+}
 function toggleDespensa(k){
   var d = despensa().slice(), i = d.indexOf(k);
   if (i === -1) d.push(k); else d.splice(i, 1);
@@ -1332,6 +1410,7 @@ function toggleDespensa(k){
    ================================================================== */
 function render(){
   if (!D) return;
+  aplicarVariantes();
   if (activeTab === 'hoy') renderHoy();
   else if (activeTab === 'semana') renderSemana();
   else if (activeTab === 'heladera') renderHeladera();
@@ -1352,7 +1431,8 @@ function metasHTML(){
     var o = objetivo(em);
     return '<div class="meta p' + idx(em) + '"><div class="nm">' + nombre(em) + '</div>' +
       '<div class="kc">' + fN(o.kcal) + ' <span style="font-size:13px">kcal</span></div>' +
-      '<div class="pr">' + o.prot + ' g de prote&iacute;na</div></div>';
+      '<div class="pr">' + o.prot + ' g de prote&iacute;na</div>' +
+      (extrasDe(hoyISO(), em).k ? '<div class="pr" style="color:var(--amber)">+' + fN(extrasDe(hoyISO(), em).k) + ' kcal fuera del plan</div>' : '') + '</div>';
   }).join('') + '</div>';
 }
 
@@ -1377,9 +1457,10 @@ function comidaHTML(fecha, slot, opts){
     if (!presente(em, fecha, slot))
       return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>afuera</span></div>' +
         '<div class="small muted">Come afuera. <a href="#" onclick="verGuia();return false" style="color:var(--pri);font-weight:700">Qu&eacute; elegir</a></div></div>';
-    var P = porciones(r, em, slot), ok = comido(fecha, slot, em);
+    var P = porciones(r, em, slot, fecha), ok = comido(fecha, slot, em);
     return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div><ul>' +
       P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul>' +
+      (P.dsc.k >= 10 ? '<div class="small" style="color:var(--amber);font-weight:700;margin-top:6px">Achicado ' + fN(P.dsc.k) + ' kcal por lo que comi&oacute; fuera del plan</div>' : '') +
       (fecha > hoyISO() ? '' : '<button class="tick' + (ok ? ' on' : '') + '" onclick="toggleComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' +
         (ok ? '&#10004; Comido' : 'Lo com&iacute;') + '</button>') + '</div>';
   }).join('');
@@ -1420,6 +1501,7 @@ function renderHoy(){
   }).filter(Boolean);
   if (man.length) h += '<div class="card"><div class="row"><span style="font-size:20px">&#129481;</span><b>Ma&ntilde;ana</b></div>' +
     '<div class="small" style="margin-top:4px">' + man.join('<br>') + '</div></div>';
+  h += fueraPlanHTML(f);
   slotsDe().forEach(function(s){ h += comidaHTML(f, s); });
   /* actividad de hoy, para quien no tiene Gym Bro */
   var sinGym = personas().filter(function(em){ return !(D.gym && D.gym.email === em); });
@@ -1434,6 +1516,50 @@ function renderHoy(){
   }
   h += '<button class="btn sec block" onclick="verGuia()">&#127829; Gu&iacute;a para comer afuera</button>';
   $('p-hoy').innerHTML = h;
+}
+
+function fueraPlanHTML(f){
+  var h = '<div class="card"><h3>&#127859; Fuera del plan</h3>' +
+    '<div class="small muted" style="margin:-2px 0 6px">&iquest;Alguien comi&oacute; algo de m&aacute;s? Anotalo: se descuenta de lo que le queda del d&iacute;a.</div>';
+  personas().forEach(function(em){
+    var ex = extrasDe(f, em);
+    var aplicado = slotsRestantes(em, f).reduce(function(a, s){ return a + descuento(em, f, s).k; }, 0);
+    h += '<div class="row wrap" style="padding:8px 0;border-top:1px solid var(--surface2)"><b style="flex:1;min-width:90px">' + nombre(em) + '</b>' +
+      '<button class="btn small sec" onclick="abrirExtra(\'' + em + '\')">+ Comi&oacute; algo</button></div>';
+    if (ex.l.length){
+      /* agrupado: "Huevo duro x2"; la cruz saca uno */
+      var grp = {}, orden = [];
+      ex.l.forEach(function(x){ var id = x.e[0]; if (!grp[id]){ grp[id] = {e:x.e, n:0, i:0}; orden.push(id); } grp[id].n++; grp[id].i = x.i; });
+      h += '<div class="chips" style="margin:0 0 6px">' + orden.map(function(id){
+        var g = grp[id];
+        return '<span class="chip" style="cursor:default">' + g.e[1] + ' ' + g.e[2] + (g.n > 1 ? ' <b>&times;' + g.n + '</b>' : '') +
+          ' <button class="vote" style="width:26px;height:26px;margin-left:4px;font-size:12px" onclick="quitarExtra(\'' + em + '\',' + g.i + ')" aria-label="Quitar uno">&#10005;</button></span>';
+      }).join('') + '</div><div class="small muted">~' + fN(ex.k) + ' kcal. ' +
+        (ex.k - aplicado > 30 ? 'Ya no entra todo en lo que queda del d&iacute;a: no pasa nada, el d&eacute;ficit se mira por semana.'
+                              : 'Ya est&aacute; descontado de las comidas que faltan.') + '</div>';
+    }
+  });
+  return h + '</div>';
+}
+function abrirExtra(em){
+  var h = mh('&iquest;Qu&eacute; comi&oacute; ' + nombre(em) + '?');
+  h += '<p class="small muted" style="margin-top:0">Toc&aacute; lo que se parezca. Si fueron dos, tocalo dos veces.</p><div class="chips">' +
+    EXTRAS_COMIDA.map(function(e){
+      return '<button class="chip" onclick="sumarExtra(\'' + em + '\',\'' + e[0] + '\')">' + e[1] + ' ' + e[2] + ' <span class="dim" style="font-weight:600">~' + e[3] + '</span></button>';
+    }).join('') + '</div>';
+  openModal(h);
+}
+function sumarExtra(em, id){
+  var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
+  o[em] = o[em] || []; o[em].push(id);
+  setSlot(f, 'extra', o); render();
+  var n = o[em].filter(function(x){ return x === id; }).length;
+  toast('Anotado: ' + EXC[id][2] + (n > 1 ? ' (x' + n + ')' : '') + '. Le achico lo que le queda del d&iacute;a.', 'ok');
+}
+function quitarExtra(em, i){
+  var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
+  (o[em] || []).splice(i, 1);
+  setSlot(f, 'extra', o); render();
 }
 
 function renderSemana(){
@@ -1468,11 +1594,30 @@ function renderHeladera(){
   var grupos = {prot:[], lac:[], ver:[], alm:[]};
   Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (a.base || a.alt || a.ing) return; grupos[a.h].push([k, a.n]); });
   Object.keys(EXTRA).forEach(function(k){ var e = EXTRA[k]; grupos[e[1] === 'lac' ? 'lac' : e[1] === 'ver' ? 'ver' : 'alm'].push([k, e[0]]); });
+  propios().forEach(function(x){ (grupos[x.h] || grupos.alm).push([x.id, esc(x.n), 1]); });
   ['prot','lac','ver','alm'].forEach(function(g){
     h += '<div class="card"><h3>' + GRUPO_H[g] + '</h3><div class="chips">' +
-      grupos[g].map(function(x){ return '<button class="chip g' + (tengo(x[0]) ? ' on' : '') + '" onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</button>'; }).join('') +
-      '</div></div>';
+      grupos[g].map(function(x){
+        return '<button class="chip g' + (tengo(x[0]) ? ' on' : '') + '" onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</button>' +
+          (x[2] ? '<button class="vote" style="width:30px;height:30px;font-size:12px;margin-left:-6px" onclick="borrarPropio(\'' + x[0] + '\')" aria-label="Borrar">&#10005;</button>' : '');
+      }).join('') + '</div></div>';
   });
+  /* el tipo de cada producto: cambia las calorias de las porciones */
+  var v = hogar().variantes || {};
+  h += '<div class="card"><h3>Qu&eacute; tipo compran</h3><div class="small muted" style="margin:-2px 0 8px">Cambia las calor&iacute;as con las que calculo las porciones.</div>' +
+    Object.keys(VARIANTES).map(function(k){
+      var cur = v[k] || VARIANTES[k][0][0];
+      return '<div class="tip-row"><div class="nm">' + VAR_LABEL[k] + '</div><div class="tri">' + VARIANTES[k].map(function(o){
+        return '<button class="' + (o[0] === cur ? 'on2' : '') + '" onclick="setVariante(\'' + k + '\',\'' + o[0] + '\')">' + o[6] + '</button>';
+      }).join('') + '</div></div>';
+    }).join('') + '</div>';
+  /* algo que tienen y no esta en la lista */
+  h += '<div class="card"><h3>&iquest;Algo que no est&aacute;?</h3>' +
+    '<div class="row"><div class="fld" style="flex:1;margin:0"><input id="np-n" type="text" placeholder="Ej: hummus, tofu, kale"></div></div>' +
+    '<div class="row" style="margin-top:10px"><div class="fld" style="flex:1;margin:0"><select id="np-h">' +
+    ['prot','lac','ver','alm'].map(function(g){ return '<option value="' + g + '"' + (g === 'alm' ? ' selected' : '') + '>' + GRUPO_H[g].split(':')[0] + '</option>'; }).join('') +
+    '</select></div><button class="btn" onclick="agregarPropio()">Agregar</button></div>' +
+    '<div class="hint">Queda en la heladera de los dos. Las recetas usan los ingredientes de la lista.</div></div>';
   var lista = RECETAS.map(function(r){ return {r:r, m:matchHeladera(r)}; })
     .filter(function(x){ return (hogar().likes || {})[x.r.id] !== -1; })
     .sort(function(a, b){ return b.m.pct - a.m.pct; }).slice(0, 12);
@@ -1613,7 +1758,7 @@ function ollaTotal(r, fecha, slot){
   if (!fecha) comidas = [[null, slot || (r.t.indexOf('c') !== -1 ? 'ce' : r.t.indexOf('a') !== -1 ? 'al' : 'me')]];
   comidas.forEach(function(c){
     personas().filter(function(em){ return presente(em, c[0], c[1]); }).forEach(function(em){
-      porciones(r, em, c[1]).it.forEach(function(x){
+      porciones(r, em, c[1], c[0]).it.forEach(function(x){
         tot[x.f] = tot[x.f] || {g:0, a:x.a, u:x.u, q:0};
         tot[x.f].g += x.gr; tot[x.f].q += x.q;
       });
@@ -1636,7 +1781,7 @@ function verReceta(id, fecha, slot){
     (r.v === 0 ? '<span class="tag">no va de vianda</span>' : '<span class="tag b">sirve de vianda</span>') + '</div>';
   var s = slot || (r.t.indexOf('c') !== -1 ? 'ce' : r.t.indexOf('a') !== -1 ? 'al' : 'me');
   h += '<div class="porc">' + personas().filter(function(em){ return presente(em, fecha, s); }).map(function(em){
-    var P = porciones(r, em, s);
+    var P = porciones(r, em, s, fecha);
     return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal &middot; ' + Math.round(P.prot) + ' g prot</span></div><ul>' +
       P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul></div>';
   }).join('') + '</div>';

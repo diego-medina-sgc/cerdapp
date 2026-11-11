@@ -868,7 +868,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v6';
+var APP_VER   = 'v7';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -900,15 +900,25 @@ var VARIANTES = {
 };
 var VAR_LABEL = {leche:'Leche', untable:'Queso untable', yogur:'Yogur', muzza:'Muzzarella', panint:'Pan de molde',
                  picada:'Carne picada', atun:'At&uacute;n', mayo:'Mayonesa', mermelada:'Mermelada'};
+/* hogar.variantes[k] es una lista: pueden tener light y comun a la vez. Las porciones
+   se calculan con la primera de VARIANTES que este marcada (estan de la mas liviana
+   a la mas pesada), o sea con la mas liviana que haya en casa. */
+function varSel(k){
+  var x = (hogar().variantes || {})[k];
+  if (!x) return [VARIANTES[k][0][0]];
+  return typeof x === 'string' ? [x] : x;
+}
 function aplicarVariantes(){
-  var v = hogar().variantes || {};
   Object.keys(VARIANTES).forEach(function(k){
-    var op = VARIANTES[k], sel = op.filter(function(o){ return o[0] === v[k]; })[0] || op[0];
+    var op = VARIANTES[k], sl = varSel(k), sel = op.filter(function(o){ return sl.indexOf(o[0]) !== -1; })[0] || op[0];
     ALI[k].n = sel[1]; ALI[k].k = sel[2]; ALI[k].p = sel[3]; ALI[k].c = sel[4]; ALI[k].g = sel[5];
   });
 }
 function setVariante(k, key){
-  var h = JSON.parse(JSON.stringify(hogar())); h.variantes = h.variantes || {}; h.variantes[k] = key;
+  var h = JSON.parse(JSON.stringify(hogar())); h.variantes = h.variantes || {};
+  var l = varSel(k).slice(), i = l.indexOf(key);
+  if (i === -1) l.push(key); else if (l.length > 1) l.splice(i, 1); else { toast('Tiene que quedar al menos uno'); return; }
+  h.variantes[k] = l;
   setKV('hogar', h); aplicarVariantes(); renderHeladera();
 }
 
@@ -924,6 +934,69 @@ var EXTRAS_COMIDA = [
   ['chico','&#10133;','Otra cosa chica',100,2], ['mediano','&#10133;','Otra cosa mediana',250,5], ['grande','&#10133;','Otra cosa grande',500,10]
 ];
 var EXC = {}; EXTRAS_COMIDA.forEach(function(e){ EXC[e[0]] = e; });
+
+/* Carta tipica de restaurante: [id, categoria, emoji, nombre, kcal, prot, busqueda].
+   Porciones de restaurante, no de casa. Se suman por persona o compartidas (la mitad). */
+var CARTA = [
+  ['panera','Entradas','&#127838;','Panera o cubierto',250,8,'panera cubierto pan'],
+  ['burrata','Entradas','&#129472;','Burrata (con tomates o pesto)',400,20,'burrata'],
+  ['provoleta','Entradas','&#129472;','Provoleta',450,28,'provoleta queso'],
+  ['empanada','Entradas','&#129375;','Empanada',250,10,'empanada'],
+  ['rabas','Entradas','&#129425;','Rabas',550,25,'rabas calamar'],
+  ['tabla','Entradas','&#129472;','Tabla de fiambres y quesos',650,32,'tabla picada fiambres quesos'],
+  ['bruschetta','Entradas','&#127838;','Bruschettas (3)',300,9,'bruschetta bruschettas tostadas'],
+  ['carpaccio','Entradas','&#129385;','Carpaccio',250,22,'carpaccio'],
+  ['croquetas','Entradas','&#127860;','Croquetas o bocaditos (4)',350,10,'croquetas bocaditos bunuelos'],
+  ['sopa','Entradas','&#127858;','Sopa o crema',200,6,'sopa crema'],
+  ['bife','Principales','&#129385;','Bife de chorizo, ojo de bife o lomo',700,65,'bife chorizo ojo lomo carne'],
+  ['vacio','Principales','&#129385;','Vac&iacute;o, entra&ntilde;a o asado',750,55,'vacio entrana asado parrilla tira'],
+  ['pollo','Principales','&#127831;','Pollo grillado',400,45,'pollo grillado suprema'],
+  ['mila','Principales','&#127869;','Milanesa (sola)',600,40,'milanesa'],
+  ['milanapo','Principales','&#127869;','Milanesa napolitana (sola)',800,48,'milanesa napolitana'],
+  ['pescado','Principales','&#128031;','Pescado a la plancha o al horno (trucha, merluza)',400,40,'pescado trucha merluza abadejo lenguado plancha horno'],
+  ['salmon','Principales','&#128031;','Salm&oacute;n',550,40,'salmon'],
+  ['pastaroja','Principales','&#127837;','Pastas con salsa de tomate',700,20,'pasta pastas fideos tallarines tomate fileto'],
+  ['pastacrema','Principales','&#127837;','Pastas con crema, cuatro quesos o pesto',950,25,'pasta pastas crema cuatro quesos pesto'],
+  ['rellenas','Principales','&#127837;','Ravioles o sorrentinos',800,30,'ravioles sorrentinos agnolotis'],
+  ['noquis','Principales','&#127837;','&Ntilde;oquis',700,15,'noquis gnocchi'],
+  ['lasana','Principales','&#127837;','Lasa&ntilde;a o canelones',800,35,'lasana canelones'],
+  ['risotto','Principales','&#127834;','Risotto',650,15,'risotto'],
+  ['pizza','Principales','&#127829;','Pizza (3 porciones)',750,30,'pizza'],
+  ['hamburguesa','Principales','&#127828;','Hamburguesa completa (sin papas)',750,40,'hamburguesa burger'],
+  ['lomito','Principales','&#129386;','Lomito o s&aacute;ndwich completo',800,45,'lomito sandwich'],
+  ['sushi','Principales','&#127843;','Sushi (15 piezas)',650,25,'sushi rolls'],
+  ['wok','Principales','&#129379;','Wok o salteado',650,30,'wok salteado'],
+  ['ensaladac','Principales','&#129367;','Ensalada completa o C&eacute;sar',550,28,'ensalada cesar completa'],
+  ['tortilla','Principales','&#129370;','Tortilla de papas (porci&oacute;n)',500,18,'tortilla papa'],
+  ['papasfritas','Guarniciones','&#127839;','Papas fritas',450,5,'papas fritas'],
+  ['pure','Guarniciones','&#129364;','Pur&eacute;',300,6,'pure'],
+  ['papashorno','Guarniciones','&#129364;','Papas al horno',300,6,'papas horno rusticas'],
+  ['ensalada','Guarniciones','&#129367;','Ensalada mixta',100,2,'ensalada mixta verde'],
+  ['vegetales','Guarniciones','&#129382;','Vegetales grillados',150,4,'vegetales grillados verduras'],
+  ['gratinados','Guarniciones','&#129382;','Esp&aacute;rragos o vegetales gratinados',250,12,'esparragos gratinados gratin vegetales'],
+  ['arroz','Guarniciones','&#127834;','Arroz',250,5,'arroz'],
+  ['helado1','Postres','&#127848;','Helado (1 bocha)',200,4,'helado bocha sambayon'],
+  ['helado2','Postres','&#127848;','Helado (2 bochas)',350,6,'helado bochas sambayon'],
+  ['flan','Postres','&#127854;','Flan con dulce de leche',450,9,'flan'],
+  ['tiramisu','Postres','&#127856;','Tiramis&uacute; o torta',450,7,'tiramisu torta'],
+  ['panqueque','Postres','&#129374;','Panqueque con dulce de leche',450,9,'panqueque'],
+  ['volcan','Postres','&#127851;','Volc&aacute;n o brownie con helado',600,8,'volcan brownie chocolate'],
+  ['frutas','Postres','&#127827;','Ensalada de frutas',120,1,'frutas'],
+  ['agua','Bebidas','&#128167;','Agua o soda',0,0,'agua soda'],
+  ['gaseosa','Bebidas','&#129380;','Gaseosa com&uacute;n',140,0,'gaseosa coca'],
+  ['gaseosal','Bebidas','&#129380;','Gaseosa light o zero',2,0,'gaseosa light zero'],
+  ['vino','Bebidas','&#127863;','Copa de vino',120,0,'vino copa'],
+  ['vinomedia','Bebidas','&#127863;','Media botella de vino',300,0,'vino botella'],
+  ['cerveza','Bebidas','&#127866;','Pinta de cerveza',250,2,'cerveza pinta'],
+  ['trago','Bebidas','&#127865;','Trago (fernet, aperol, gin tonic)',200,0,'trago fernet aperol gin'],
+  ['limonada','Bebidas','&#127819;','Limonada',150,0,'limonada'],
+  ['cafe','Bebidas','&#9749;','Caf&eacute;',5,0,'cafe'],
+  ['cortado','Bebidas','&#9749;','Caf&eacute; con leche o cortado',90,4,'cafe leche cortado'],
+  ['otrochico','Otros','&#10133;','Otra cosa chica',150,4,'otro otra'],
+  ['otromed','Otros','&#10133;','Otra cosa mediana',400,12,'otro otra'],
+  ['otrogrande','Otros','&#10133;','Otra cosa grande',800,25,'otro otra']
+];
+var CAR = {}; CARTA.forEach(function(c){ CAR[c[0]] = c; });
 
 var REC = {};
 RECETAS.forEach(function(r){ REC[r.id] = r; });
@@ -1136,9 +1209,30 @@ function slotsRestantes(em, fecha){
     return presente(em, fecha, s) && dia(fecha)[s] !== 'afuera' && recDe(fecha, s) && !comido(fecha, s, em);
   });
 }
+/* dia.rest = {slot: {lugar, it: {email: [[id, fraccion], ...]}}} */
+function restDe(fecha, slot, em){
+  var l = ((((dia(fecha).rest || {})[slot] || {}).it || {})[em]) || [], k = 0, p = 0;
+  l.forEach(function(x){ var c = CAR[x[0]]; if (c){ k += c[4] * x[1]; p += c[5] * x[1]; } });
+  return {l:l, k:k, p:p};
+}
+function comeAfuera(em, fecha, slot){ return enSlot(em, slot) && (dia(fecha)[slot] === 'afuera' || fueraDe(fecha, slot).indexOf(em) !== -1); }
+/* lo que se paso afuera, por encima de lo que tocaba en esa comida */
+function excesoAfuera(fecha, em){
+  var k = 0, p = 0;
+  slotsDe().forEach(function(s){
+    if (!comeAfuera(em, fecha, s)) return;
+    var R = restDe(fecha, s, em); if (!R.k) return;
+    var m = metaSlot(em, s); k += Math.max(0, R.k - m.k); p += Math.max(0, R.p - m.p);
+  });
+  return {k:k, p:p};
+}
+function extraTotal(fecha, em){
+  var a = extrasDe(fecha, em), b = excesoAfuera(fecha, em);
+  return {k:a.k + b.k, p:a.p + b.p};
+}
 function descuento(em, fecha, slot){
   if (!fecha) return {k:0, p:0};
-  var ex = extrasDe(fecha, em); if (!ex.k) return {k:0, p:0};
+  var ex = extraTotal(fecha, em); if (!ex.k) return {k:0, p:0};
   var rest = slotsRestantes(em, fecha); if (rest.indexOf(slot) === -1) return {k:0, p:0};
   var tot = rest.reduce(function(a, s){ return a + metaSlot(em, s).k; }, 0) || 1;
   var m = metaSlot(em, slot), share = m.k / tot;
@@ -1163,14 +1257,30 @@ function porciones(rec, em, slot, fecha){
   it.forEach(function(x){ if (x.r === 'P'){ x.gs = Math.min(x.g * sP, (x.a.mx || 1e9) * (chica ? .67 : 1)); kPa += kc(x, x.gs); } });
   if (kU > 0) sU = clamp((K - kF - kPa) / kU, .3, 4);
   if (kH > 0) sH = clamp((K - kF - kPa - kU * sU) / kH, .25, 3);
-  var tk = 0, tp = 0;
+  function upd(x){ x.gr = x.q * x.u[1]; x.kcal = kc(x, x.gr); x.prot = x.a.p * x.gr / 100; }
   it.forEach(function(x){
     var s = x.r === 'H' ? sH : x.r === 'U' ? sU : 1;
     var st = x.u[3] || .5, q = (x.r === 'P' ? x.gs : x.g * s) / x.u[1];
-    q = Math.max(st, Math.round(q / st) * st);
-    x.q = q; x.gr = q * x.u[1]; x.kcal = kc(x, x.gr); x.prot = x.a.p * x.gr / 100;
-    tk += x.kcal; tp += x.prot;
+    x.q = Math.max(st, Math.round(q / st) * st); upd(x);
   });
+  /* Ajuste fino. Redondear a medidas caseras puede comerse 50 o 100 kcal, y con eso
+     un descuento chico (o la diferencia entre dos personas) no se veia en el plato.
+     Se acerca el total a la meta de a un paso: primero hidratos, despues unidades y,
+     solo para bajar, la proteina. */
+  var orden = it.filter(function(x){ return x.r === 'H'; })
+    .concat(it.filter(function(x){ return x.r === 'U'; }), it.filter(function(x){ return x.r === 'P'; }));
+  function total(){ return it.reduce(function(a, x){ return a + x.kcal; }, 0); }
+  for (var vuelta = 0; vuelta < 8; vuelta++){
+    var dif = total() - K, hecho = false;
+    if (Math.abs(dif) < 35) break;
+    for (var j = 0; j < orden.length && !hecho; j++){
+      var x = orden[j], st = x.u[3] || .5, kst = kc(x, st * x.u[1]);
+      if (dif > 0 && x.q - st >= st - 1e-9 && kst <= dif * 1.6){ x.q -= st; upd(x); hecho = true; }
+      else if (dif < 0 && x.r !== 'P' && kst <= -dif * 1.6 && (x.q + st) * x.u[1] <= x.g * 3){ x.q += st; upd(x); hecho = true; }
+    }
+    if (!hecho) break;
+  }
+  var tk = total(), tp = it.reduce(function(a, x){ return a + x.prot; }, 0);
   return {it:it, kcal:tk, prot:tp, K:K, dsc:dsc};
 }
 function cantTxt(x){
@@ -1311,7 +1421,8 @@ function puntaje(r, fecha, slot, excl){
   });
   var hoyD = dia(fecha);
   ['al','ce'].forEach(function(o){ if (o !== slot && REC[hoyD[o]] && REC[hoyD[o]].pr === r.pr) s -= 2; });
-  if (diasEntre(hoyISO(), fecha) <= 2) s += 1.5 * matchHeladera(r).pct;
+  /* con la heladera cargada, lo que se puede hacer con lo que hay manda en los proximos 3 dias */
+  if (despensa().length && diasEntre(hoyISO(), fecha) <= 3) s += 5 * matchHeladera(r).pct;
   var dd = parse(fecha);
   if (dd.getDate() === 29 && r.ti === 'noquis') s += 6;        /* los noquis del 29 */
   if (dd.getDay() === 0 && slot === 'al' && /asado|pastas|fideos|noquis/.test(r.ti)) s += 1.5;
@@ -1398,6 +1509,23 @@ function borrarPropio(id){
   setKV('despensa', despensa().filter(function(x){ return x !== id; }));
   renderHeladera();
 }
+/* Vuelve a proponer hoy y los 2 dias siguientes priorizando lo que hay. No toca lo
+   que ya se tildo como comido, ni las sobras de vianda, ni lo que se come afuera. */
+function rearmarConHeladera(){
+  var hoy = hoyISO(), n = 0;
+  for (var i = 0; i < 3; i++){
+    var f = addDays(hoy, i), k = 'plan:' + lunes(f), p = JSON.parse(JSON.stringify(KV[k] || {})), d = p[f] = p[f] || {};
+    ['de','al','me','ce'].forEach(function(s){
+      var v = d[s];
+      if (!v || v === 'afuera' || v === 'sobras') return;
+      if (d.ok && d.ok[s] && Object.keys(d.ok[s]).length) return;
+      delete d[s]; n++;
+    });
+    KV[k] = p; setKV(k, p);
+  }
+  completar(hoy, addDays(hoy, 2));
+  renderHeladera(); toast('Listo: ' + n + ' comidas rearmadas con lo que hay', 'ok');
+}
 function toggleDespensa(k){
   var d = despensa().slice(), i = d.indexOf(k);
   if (i === -1) d.push(k); else d.splice(i, 1);
@@ -1436,14 +1564,110 @@ function metasHTML(){
   }).join('') + '</div>';
 }
 
+function avisoDescuento(r, em, slot, P){
+  if (P.dsc.k < 10) return '';
+  var ach = porciones(r, em, slot).kcal - P.kcal;
+  if (ach >= 15) return '<div class="small" style="color:var(--amber);font-weight:700;margin-top:6px">Achicado ' + fN(ach) + ' kcal por lo que comi&oacute; fuera del plan</div>';
+  return '<div class="small muted" style="margin-top:6px">Lo de m&aacute;s (' + fN(P.dsc.k) + ' kcal) es menos que media porci&oacute;n de este plato: no lo cambia. Se compensa en la semana.</div>';
+}
+/* lo que comio una persona afuera, dentro de la tarjeta de la comida */
+function afueraPP(fecha, slot, em, conBoton){
+  var R = restDe(fecha, slot, em), m = metaSlot(em, slot);
+  var h = '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + (R.k ? '~' + fN(R.k) + ' kcal' : 'afuera') + '</span></div>';
+  if (R.l.length){
+    h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + c[2] + ' ' + c[3] + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
+    h += '<div class="small" style="margin-top:6px;font-weight:700;color:' + (R.k > m.k + 30 ? 'var(--amber)' : 'var(--green)') + '">' +
+      (R.k > m.k + 30 ? fN(R.k - m.k) + ' kcal m&aacute;s que esta comida: se descuentan de lo que queda del d&iacute;a.' : 'Dentro de lo que tocaba en esta comida.') + '</div>';
+  } else h += '<div class="small muted">Come afuera. Anot&aacute; qu&eacute; comi&oacute; y lo compenso en el resto del d&iacute;a.</div>';
+  if (conBoton) h += '<button class="tick" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">&iquest;Qu&eacute; comi&oacute;?</button>';
+  return h + '</div>';
+}
+/* ---------- la carta ---------- */
+var _carta = null;
+function quienesAfuera(fecha, slot){ return personas().filter(function(em){ return comeAfuera(em, fecha, slot); }); }
+function abrirCarta(fecha, slot){
+  _carta = {f:fecha, s:slot};
+  var R = (dia(fecha).rest || {})[slot] || {}, qs = quienesAfuera(fecha, slot);
+  var h = mh('&iquest;Qu&eacute; comieron?');
+  h += '<div class="row"><div class="fld" style="flex:1;margin:0"><input id="ca-lugar" type="text" placeholder="Restaurante (opcional)" value="' + esc(R.lugar || '') + '" onchange="setLugar(this.value)"></div>' +
+    '<button class="btn small sec" onclick="verMenuGoogle()">Ver el men&uacute;</button></div>' +
+    '<div class="hint" style="margin-bottom:12px">Eleg&iacute; lo que m&aacute;s se parezca a cada plato. Si lo compartieron, toc&aacute; <b>Compartido</b>: le suma la mitad a cada uno.</div>';
+  h += '<div id="ca-sel"></div>';
+  h += '<div class="fld" style="margin:14px 0 6px"><input id="ca-q" type="search" placeholder="Buscar: trucha, burrata, helado..." oninput="filtrarCarta()"></div>';
+  var cat = '';
+  h += '<div class="card" style="padding:6px 14px">' + CARTA.map(function(c){
+    var t = '';
+    if (c[1] !== cat){ cat = c[1]; t += '<div class="section-t ca-cat" data-cat="' + cat + '" style="margin:14px 0 4px">' + cat + '</div>'; }
+    return t + '<div class="ca-row" data-q="' + c[6] + ' ' + quitarAcentos(c[3]) + '" data-cat="' + c[1] + '" style="padding:8px 0;border-top:1px solid var(--surface2)">' +
+      '<div class="row"><div style="flex:1;font-weight:700">' + c[2] + ' ' + c[3] + '</div><span class="small dim">~' + c[4] + '</span></div>' +
+      '<div class="row wrap" style="gap:6px;margin-top:6px">' + qs.map(function(em){
+        return '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarCarta(\'' + c[0] + '\',\'' + em + '\')">+ ' + nombre(em) + '</button>';
+      }).join('') + (qs.length > 1 ? '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarCarta(\'' + c[0] + '\',\'comp\')">Compartido</button>' : '') +
+      '</div></div>';
+  }).join('') + '</div>';
+  openModal(h);
+  pintarCarta();
+}
+/* para buscar sin acentos (el archivo es ASCII: los acentos vienen como entidades) */
+function quitarAcentos(t){
+  var d = document.createElement('div'); d.innerHTML = t;
+  var marcas = new RegExp('[' + String.fromCharCode(0x300) + '-' + String.fromCharCode(0x36f) + ']', 'g');
+  return (d.textContent || '').normalize('NFD').replace(marcas, '').toLowerCase();
+}
+function filtrarCarta(){
+  var q = quitarAcentos(esc($('ca-q').value || '')).trim(), rows = document.querySelectorAll('.ca-row'), vis = {};
+  for (var i = 0; i < rows.length; i++){
+    var ok = !q || q.split(/\s+/).every(function(w){ return rows[i].getAttribute('data-q').indexOf(w) !== -1; });
+    rows[i].style.display = ok ? '' : 'none'; if (ok) vis[rows[i].getAttribute('data-cat')] = 1;
+  }
+  var cs = document.querySelectorAll('.ca-cat');
+  for (var j = 0; j < cs.length; j++) cs[j].style.display = vis[cs[j].getAttribute('data-cat')] ? '' : 'none';
+}
+function setRest(fn){
+  var f = _carta.f, s = _carta.s, r = JSON.parse(JSON.stringify(dia(f).rest || {}));
+  r[s] = r[s] || {it:{}}; r[s].it = r[s].it || {};
+  fn(r[s]); setSlot(f, 'rest', r);
+}
+function setLugar(v){ setRest(function(x){ x.lugar = String(v || '').trim().slice(0, 60); }); render(); }
+function verMenuGoogle(){
+  var l = String(($('ca-lugar') || {}).value || '').trim();
+  if (!l){ toast('Escrib&iacute; el nombre del restaurante', 'err'); return; }
+  setLugar(l);
+  window.open('https://www.google.com/search?q=' + encodeURIComponent(l + ' carta menu'), '_blank');
+}
+function sumarCarta(id, quien){
+  var qs = quienesAfuera(_carta.f, _carta.s);
+  setRest(function(x){
+    (quien === 'comp' ? qs : [quien]).forEach(function(em){ x.it[em] = x.it[em] || []; x.it[em].push([id, quien === 'comp' ? 1 / qs.length : 1]); });
+  });
+  pintarCarta(); render();
+  toast(CAR[id][3] + (quien === 'comp' ? ' compartido' : ' para ' + nombre(quien)), 'ok');
+}
+function quitarCarta(em, i){ setRest(function(x){ (x.it[em] || []).splice(i, 1); }); pintarCarta(); render(); }
+function pintarCarta(){
+  var f = _carta.f, s = _carta.s;
+  $('ca-sel').innerHTML = '<div class="porc" style="margin:0">' + quienesAfuera(f, s).map(function(em){
+    var R = restDe(f, s, em), m = metaSlot(em, s);
+    return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>~' + fN(R.k) + ' kcal</span></div>' +
+      (R.l.length ? '<ul>' + R.l.map(function(x, i){
+        var c = CAR[x[0]];
+        return '<li class="row" style="gap:6px"><span style="flex:1">' + c[3] + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</span>' +
+          '<button class="vote" style="width:26px;height:26px;font-size:12px" onclick="quitarCarta(\'' + em + '\',' + i + ')" aria-label="Quitar">&#10005;</button></li>';
+      }).join('') + '</ul>' : '<div class="small muted">Todav&iacute;a nada.</div>') +
+      '<div class="small muted" style="margin-top:4px">Esta comida ten&iacute;a ~' + fN(m.k) + ' kcal.</div></div>';
+  }).join('') + '</div>';
+}
 function comidaHTML(fecha, slot, opts){
   opts = opts || {};
   var v = dia(fecha)[slot], S = SLOTS[slot];
   var head = '<div class="slot"><span class="em">' + S[1] + '</span><span class="lb">' + S[0] + '</span><span class="sp"></span>';
   if (v === 'afuera'){
+    var lug = ((dia(fecha).rest || {})[slot] || {}).lugar;
     return '<div class="card meal">' + head + '<span class="tag b">Afuera</span></div>' +
-      '<div class="nombre">Comen afuera</div><div class="muted small">Sin culpa: el d&eacute;ficit se mira por semana.</div>' +
-      '<div class="acts"><button class="btn small sec" onclick="verGuia()">Qu&eacute; elegir</button>' +
+      '<div class="nombre">Comen afuera' + (lug ? ' &middot; ' + esc(lug) : '') + '</div>' +
+      '<div class="porc">' + personas().filter(function(em){ return enSlot(em, slot); }).map(function(em){ return afueraPP(fecha, slot, em); }).join('') + '</div>' +
+      '<div class="acts"><button class="btn small" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">&iquest;Qu&eacute; comieron?</button>' +
+      '<button class="btn small sec" onclick="verGuia()">Qu&eacute; elegir</button>' +
       '<button class="btn small sec" onclick="volverPlan(\'' + fecha + '\',\'' + slot + '\')">Volver a la propuesta</button></div></div>';
   }
   var r = recDe(fecha, slot);
@@ -1453,14 +1677,16 @@ function comidaHTML(fecha, slot, opts){
   var tags = '';
   if (sobras) tags += '<span class="tag b">Vianda: sobras de anoche</span> ';
   if (r.min) tags += '<span class="tag">' + r.min + ' min</span> ';
+  if (despensa().length && fecha >= hoyISO()){
+    var mh0 = matchHeladera(r);
+    tags += mh0.falta.length ? '<span class="tag a">Falta: ' + mh0.falta.join(', ') + '</span> ' : '<span class="tag g">&#10004; Est&aacute; todo</span> ';
+  }
   var pp = personas().filter(function(em){ return enSlot(em, slot); }).map(function(em){
-    if (!presente(em, fecha, slot))
-      return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>afuera</span></div>' +
-        '<div class="small muted">Come afuera. <a href="#" onclick="verGuia();return false" style="color:var(--pri);font-weight:700">Qu&eacute; elegir</a></div></div>';
+    if (!presente(em, fecha, slot)) return afueraPP(fecha, slot, em, true);
     var P = porciones(r, em, slot, fecha), ok = comido(fecha, slot, em);
     return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div><ul>' +
       P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul>' +
-      (P.dsc.k >= 10 ? '<div class="small" style="color:var(--amber);font-weight:700;margin-top:6px">Achicado ' + fN(P.dsc.k) + ' kcal por lo que comi&oacute; fuera del plan</div>' : '') +
+      avisoDescuento(r, em, slot, P) +
       (fecha > hoyISO() ? '' : '<button class="tick' + (ok ? ' on' : '') + '" onclick="toggleComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' +
         (ok ? '&#10004; Comido' : 'Lo com&iacute;') + '</button>') + '</div>';
   }).join('');
@@ -1504,7 +1730,8 @@ function renderHoy(){
   h += fueraPlanHTML(f);
   slotsDe().forEach(function(s){ h += comidaHTML(f, s); });
   /* actividad de hoy, para quien no tiene Gym Bro */
-  var sinGym = personas().filter(function(em){ return !(D.gym && D.gym.email === em); });
+  /* cada uno ve solo su propia actividad */
+  var sinGym = personas().filter(function(em){ return em === userEmail && !(D.gym && D.gym.email === em); });
   if (sinGym.length){
     h += '<div class="card"><h3>&#129496; &iquest;Entrenaste hoy?</h3>' +
       sinGym.map(function(em){
@@ -1522,7 +1749,7 @@ function fueraPlanHTML(f){
   var h = '<div class="card"><h3>&#127859; Fuera del plan</h3>' +
     '<div class="small muted" style="margin:-2px 0 6px">&iquest;Alguien comi&oacute; algo de m&aacute;s? Anotalo: se descuenta de lo que le queda del d&iacute;a.</div>';
   personas().forEach(function(em){
-    var ex = extrasDe(f, em);
+    var ex = extrasDe(f, em), tot = extraTotal(f, em).k;
     var aplicado = slotsRestantes(em, f).reduce(function(a, s){ return a + descuento(em, f, s).k; }, 0);
     h += '<div class="row wrap" style="padding:8px 0;border-top:1px solid var(--surface2)"><b style="flex:1;min-width:90px">' + nombre(em) + '</b>' +
       '<button class="btn small sec" onclick="abrirExtra(\'' + em + '\')">+ Comi&oacute; algo</button></div>';
@@ -1535,7 +1762,7 @@ function fueraPlanHTML(f){
         return '<span class="chip" style="cursor:default">' + g.e[1] + ' ' + g.e[2] + (g.n > 1 ? ' <b>&times;' + g.n + '</b>' : '') +
           ' <button class="vote" style="width:26px;height:26px;margin-left:4px;font-size:12px" onclick="quitarExtra(\'' + em + '\',' + g.i + ')" aria-label="Quitar uno">&#10005;</button></span>';
       }).join('') + '</div><div class="small muted">~' + fN(ex.k) + ' kcal. ' +
-        (ex.k - aplicado > 30 ? 'Ya no entra todo en lo que queda del d&iacute;a: no pasa nada, el d&eacute;ficit se mira por semana.'
+        (tot - aplicado > 30 ? 'Ya no entra todo en lo que queda del d&iacute;a: no pasa nada, el d&eacute;ficit se mira por semana.'
                               : 'Ya est&aacute; descontado de las comidas que faltan.') + '</div>';
     }
   });
@@ -1581,6 +1808,7 @@ function renderSemana(){
       var v = d[s], r = recDe(f, s);
       var txt = v === 'afuera' ? '<span class="muted">Comen afuera</span>' : r ? (v === 'sobras' ? '<span class="tag b">sobras</span> ' : '') + r.n : '<span class="dim">&mdash;</span>';
       if (r && v !== 'afuera' && fueraDe(f, s).length) txt += ' <span class="tag b">' + fueraDe(f, s).map(function(em){ return nombre(em); }).join(' y ') + ' afuera</span>';
+      if (r && !pasado && v !== 'afuera' && despensa().length){ var fm = matchHeladera(r).falta.length; txt += fm ? ' <span class="tag a">falta ' + fm + '</span>' : ' <span class="tag g">&#10004;</span>'; }
       h += '<div class="sl" onclick="abrirSlot(\'' + f + '\',\'' + s + '\')"><div class="k">' + SLOTS[s][0] + '</div><div class="v">' + txt + '</div></div>';
     });
     h += '</div>';
@@ -1604,11 +1832,11 @@ function renderHeladera(){
   });
   /* el tipo de cada producto: cambia las calorias de las porciones */
   var v = hogar().variantes || {};
-  h += '<div class="card"><h3>Qu&eacute; tipo compran</h3><div class="small muted" style="margin:-2px 0 8px">Cambia las calor&iacute;as con las que calculo las porciones.</div>' +
+  h += '<div class="card"><h3>Qu&eacute; tipo compran</h3><div class="small muted" style="margin:-2px 0 8px">Pod&eacute;s marcar m&aacute;s de uno. Las porciones se calculan con el m&aacute;s liviano que tengan.</div>' +
     Object.keys(VARIANTES).map(function(k){
-      var cur = v[k] || VARIANTES[k][0][0];
+      var sl = varSel(k);
       return '<div class="tip-row"><div class="nm">' + VAR_LABEL[k] + '</div><div class="tri">' + VARIANTES[k].map(function(o){
-        return '<button class="' + (o[0] === cur ? 'on2' : '') + '" onclick="setVariante(\'' + k + '\',\'' + o[0] + '\')">' + o[6] + '</button>';
+        return '<button class="' + (sl.indexOf(o[0]) !== -1 ? 'on2' : '') + '" onclick="setVariante(\'' + k + '\',\'' + o[0] + '\')">' + o[6] + '</button>';
       }).join('') + '</div></div>';
     }).join('') + '</div>';
   /* algo que tienen y no esta en la lista */
@@ -1632,7 +1860,8 @@ function renderHeladera(){
       (x.m.falta.length ? 'Falta: ' + x.m.falta.join(', ') : '&#10004; Tienen todo') + '</div></div></div>';
   }).join('');
   h += '</div>';
-  if (despensa().length) h += '<button class="btn sec block" onclick="if(confirm(\'Vaciar la heladera?\')){setKV(\'despensa\',[]);renderHeladera();}">Vaciar todo</button>';
+  if (despensa().length) h += '<button class="btn block" style="margin-bottom:14px" onclick="rearmarConHeladera()">Rearmar hoy y los pr&oacute;ximos 2 d&iacute;as con lo que hay</button>' +
+    '<button class="btn sec block" onclick="if(confirm(\'Vaciar la heladera?\')){setKV(\'despensa\',[]);renderHeladera();}">Vaciar todo</button>';
   $('p-heladera').innerHTML = h;
 }
 
@@ -1711,16 +1940,17 @@ function renderProgreso(){
     chartPeso(em) + '</div>';
   h += '<div class="card"><h3>&iquest;Las calor&iacute;as est&aacute;n bien?</h3>' + sugerenciaAjuste(em) +
     '<div class="small muted">Hoy: <b>' + fN(o.kcal) + ' kcal</b> y <b>' + o.prot + ' g de prote&iacute;na</b>. ' +
-    '<a href="#" onclick="verCalculo(\'' + em + '\');return false" style="color:var(--pig-2)">C&oacute;mo se calcula</a></div></div>';
+    (em === userEmail ? '<a href="#" onclick="verCalculo(\'' + em + '\');return false" style="color:var(--pig-2)">C&oacute;mo se calcula</a>' : '') + '</div></div>';
   /* cuanto del plan se sigue */
   var ad = adherencia(em, 7);
   h += '<div class="card"><h3>Plan de los &uacute;ltimos 7 d&iacute;as</h3>' + (ad.usa && ad.plan
     ? '<div class="row"><div style="font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--pri)">' + Math.round(ad.pct * 100) + '%</div>' +
       '<div class="small muted" style="flex:1">de las comidas en casa marcadas como comidas (' + ad.ok + ' de ' + ad.plan + ').</div></div>'
     : '<div class="small muted">Tild&aacute; <b>Lo com&iacute;</b> en Hoy y ac&aacute; ves cu&aacute;nto del plan se sigue. No hace falta contar nada.</div>') + '</div>';
-  /* actividad: Diego desde Gym Bro, el resto la registra aca */
+  /* actividad: Diego desde Gym Bro, el resto la registra aca. Cada uno ve solo la suya. */
   var A = o.act;
-  if (D.gym && D.gym.email === em) h += gymHTML(A);
+  if (em !== userEmail) h += '<div class="card"><h3>Actividad</h3><div class="small muted">La actividad de ' + nombre(em) + ' la ve solo ' + nombre(em) + '.</div></div>';
+  else if (D.gym && D.gym.email === em) h += gymHTML(A);
   else {
   h += '<div class="card"><h3>Actividad</h3>';
   if (A.fuente === 'gym' || A.fuente === 'gym+app')

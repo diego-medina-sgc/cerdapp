@@ -424,6 +424,15 @@ var ALI = {
   palta:     {n:'Palta', k:160,p:2,c:9,g:15, u:['cuarto de palta',40,'cuartos de palta',1], s:'ver', h:'ver'},
   fsecos:    {n:'Frutos secos', k:610,p:18,c:14,g:54, u:['pu&ntilde;adito',20,'pu&ntilde;aditos',.5], s:'alm', h:'alm'},
   mermelada: {n:'Mermelada light', k:100,p:0,c:25,g:0, u:['cucharadita',10,'cucharaditas',1], s:'alm', h:'alm'},
+  /* basicos de alacena: van en cantidad fija (fijo), no se escalan como hidrato */
+  cafe:      {n:'Caf&eacute;', k:2,p:.1,c:0,g:0, u:['taza',150,'tazas',.5], s:'alm', h:'alm', fijo:1},
+  azucar:    {n:'Az&uacute;car', k:387,p:0,c:100,g:0, u:['cucharadita',5,'cucharaditas',1], s:'alm', h:'alm', fijo:1},
+  edulcorante:{n:'Edulcorante', k:0,p:0,c:0,g:0, u:['sobrecito',1,'sobrecitos',1], s:'alm', h:'alm', fijo:1},
+  cacao:     {n:'Cacao amargo', k:228,p:20,c:58,g:14, u:['cucharada',7,'cucharadas',1], s:'alm', h:'alm', fijo:1},
+  miel:      {n:'Miel', k:304,p:.3,c:82,g:0, u:['cucharadita',7,'cucharaditas',1], s:'alm', h:'alm', fijo:1},
+  harina:    {n:'Harina', k:364,p:10,c:76,g:1, u:['cucharada',10,'cucharadas',1], s:'alm', h:'alm', fijo:1},
+  crema:     {n:'Crema de leche', k:345,p:2,c:3,g:37, u:['cucharada',15,'cucharadas',1], s:'lac', h:'lac', fijo:1},
+  manteca:   {n:'Manteca', k:717,p:1,c:0,g:81, u:['cucharadita',5,'cucharaditas',1], s:'lac', h:'lac', fijo:1},
   mayo:      {n:'Mayonesa light', k:300,p:1,c:8,g:30, u:['cucharada',15,'cucharadas',1], s:'alm', h:'alm'},
   aceite:    {n:'Aceite', k:884,p:0,c:0,g:100, u:['cucharadita',5,'cucharaditas',1], s:'alm', h:'alm', base:1},
   tuco:      {n:'Salsa de tomate casera', k:35,p:1.5,c:7,g:.3, u:['cuchar&oacute;n',100,'cucharones',.5], s:'alm', h:'alm', ing:['tomatelata']},
@@ -872,7 +881,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v11';
+var APP_VER   = 'v12';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1613,7 +1622,38 @@ function reqDe(r){
   var vistos = {};
   return req.filter(function(q){ var id = q.k || q.n; if (vistos[id]) return false; vistos[id] = 1; return true; });
 }
-function nombreIng(k){ return ALI[k] ? ALI[k].n : (EXTRA[k] ? EXTRA[k][0] : k); }
+function nombreIng(k){
+  if (ALI[k]) return ALI[k].n;
+  if (EXTRA[k]) return EXTRA[k][0];
+  var pr = propios().filter(function(x){ return x.id === k; })[0];
+  return pr ? esc(pr.n) : k;
+}
+/* Lo propio que ya existe en la lista (por la primera palabra del nombre) pasa a ser
+   ese ingrediente: asi tiene calorias y sirve para las recetas. */
+function aliPorNombre(n){
+  function pal(t){ return quitarAcentos(t).split(/[^a-z]+/).filter(function(w){ return w && w !== 'de' && w !== 'o'; }); }
+  var p = pal(esc(n)); if (!p.length) return null;
+  /* una palabra: alcanza la primera ("Cafe"). Dos o mas: tienen que coincidir las dos
+     primeras ("Queso crema" no es "Queso rallado"). */
+  function igual(t){ var a = pal(t); return a[0] === p[0] && (p.length === 1 || a[1] === p[1]); }
+  var ks = Object.keys(ALI).filter(function(k){ var a = ALI[k]; return !a.ing && !a.alt && igual(a.n); });
+  if (ks.length) return ks[0];
+  var ex = Object.keys(EXTRA).filter(function(k){ return igual(EXTRA[k][0]); });
+  return ex[0] || null;
+}
+function migrarPropios(){
+  var ps = propios(); if (!ps.length) return;
+  var quedan = [], d = despensa().slice(), cambio = false;
+  ps.forEach(function(x){
+    var k = aliPorNombre(x.n);
+    if (!k){ quedan.push(x); return; }
+    cambio = true;
+    d = d.filter(function(y){ return y !== x.id; });
+    if (d.indexOf(k) === -1) d.push(k);
+  });
+  if (!cambio) return;
+  var h = JSON.parse(JSON.stringify(hogar())); h.propios = quedan; setKV('hogar', h); setKV('despensa', d);
+}
 function matchHeladera(r){
   var req = reqDe(r), ok = 0, falta = [];
   req.forEach(function(q){
@@ -1627,6 +1667,11 @@ function propios(){ return hogar().propios || []; }
 function agregarPropio(){
   var n = String($('np-n').value || '').trim(), g = $('np-h').value;
   if (!n){ toast('Escrib&iacute; qu&eacute; es', 'err'); return; }
+  var ya = aliPorNombre(n);
+  if (ya){
+    var d0 = despensa().slice(); if (d0.indexOf(ya) === -1){ d0.push(ya); setKV('despensa', d0); }
+    renderHeladera(); toast(nombreIng(ya) + ' ya estaba en la lista: lo marqu&eacute; como que hay', 'ok'); return;
+  }
   var h = JSON.parse(JSON.stringify(hogar())); h.propios = h.propios || [];
   var id = 'u-' + Date.now().toString(36);
   h.propios.push({id:id, n:n.slice(0, 40), h:g}); setKV('hogar', h);
@@ -2447,6 +2492,7 @@ function cargarPropias(){
 /* rol y porcion base de cada ingrediente, para no pedirle a nadie que pese nada */
 function rolDe(k){
   var a = ALI[k], kc = a.k || 1;
+  if (a.fijo) return 'F';
   if (a.ing) return 'U';
   if (a.libre || a.alt) return 'V';
   if (a.g * 9 / kc > .8) return 'G';
@@ -2489,10 +2535,11 @@ function pintarRD(){
       grupos[g].map(function(k){ return '<button class="chip" onclick="sumarIng(\'' + k + '\')">' + ALI[k].n + '</button>'; }).join('') + '</div>';
   });
   h += '<div class="small" style="font-weight:700;margin:10px 4px 6px">Sin calor&iacute;as (para la heladera)</div><div class="chips">' +
-    Object.keys(EXTRA).map(function(k){
+    Object.keys(EXTRA).concat(propios().map(function(x){ return x.id; })).map(function(k){
       var on = r.x.some(function(x){ return x[0] === k; });
-      return '<button class="chip' + (on ? ' on' : '') + '" onclick="toggleRX(\'' + k + '\')">' + EXTRA[k][0] + '</button>';
-    }).join('') + '</div></div>';
+      return '<button class="chip' + (on ? ' on' : '') + '" onclick="toggleRX(\'' + k + '\')">' + nombreIng(k) + '</button>';
+    }).join('') + '</div>' +
+    (propios().length ? '<div class="hint">Lo que agregaron ustedes a la heladera va sin calor&iacute;as. Si suma calor&iacute;as y no est&aacute; en la lista, avisame y lo agrego.</div>' : '') + '</div>';
   h += '<div class="fld"><label>Pasos (opcional)</label><textarea style="height:96px" placeholder="Un paso por l&iacute;nea" onchange="_rd.pa=this.value">' + esc(r.pa) + '</textarea></div>';
   h += '<div id="rd-prev"></div>';
   h += '<div class="row"><button class="btn sec" onclick="previewRD()">Ver cantidades</button><button class="btn" style="flex:1" onclick="guardarRD()">Guardar</button></div>';
@@ -2976,6 +3023,7 @@ function onDatos(data){
   afterData(); hideLoad();
 }
 function afterData(){
+  migrarPropios();
   if (!PAL_URL && hogar().pal && hogar().pal !== paletaActual()) aplicarPaleta(hogar().pal);
   else if (PAL_URL) aplicarPaleta(PAL_URL);
   migrarTipicos();

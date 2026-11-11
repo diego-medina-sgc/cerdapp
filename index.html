@@ -872,7 +872,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v10';
+var APP_VER   = 'v11';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1003,7 +1003,68 @@ var CARTA = [
   ['otromed','Otros','&#10133;','Otra cosa mediana',400,12,'otro otra'],
   ['otrogrande','Otros','&#10133;','Otra cosa grande',800,25,'otro otra']
 ];
+/* Comedor del colegio. Porciones escolares. [id, emoji, nombre, kcal, prot, tipo, claves]
+   tipo: e entrada, p proteina, h hidrato, v verdura, s salsa, f fruta/postre.
+   El orden importa: gana la primera clave que aparece en la linea del menu. */
+var COMEDOR = [
+  ['c-milhojas','&#127814;','Mil hojas de berenjena',350,14,'p','mil hojas'],
+  ['c-berenjenas','&#127814;','Berenjenas',200,4,'v','berenj|zucchini'],
+  ['c-tartara','&#129385;','Carne a la t&aacute;rtara',450,40,'p','tartara'],
+  ['c-vitel','&#129385;','Vitel ton&eacute;',250,20,'e','tonne|tone'],
+  ['c-huevos','&#129370;','Huevos rellenos',150,8,'e','huevos rellenos'],
+  ['c-sopa','&#127858;','Sopa crema',150,4,'e','sopa'],
+  ['c-brus','&#127838;','Bruschettas',200,6,'e','bruschett|brushett'],
+  ['c-bunuelos','&#129382;','Bu&ntilde;uelos de verdura',250,6,'e','bunuelos'],
+  ['c-canastitas','&#129383;','Canastitas',250,8,'e','canastitas'],
+  ['c-budin','&#129382;','Bud&iacute;n de verduras',200,8,'e','budin de veg|budin de verd|budin bi'],
+  ['c-souffle','&#127875;','Souffl&eacute; de calabaza',200,8,'e','souffle'],
+  ['c-torrejas','&#129382;','Torrejas',250,6,'e','torrejas'],
+  ['c-bastoncitos','&#129472;','Bastoncitos de queso',350,14,'e','bastoncitos|quesos rebozados'],
+  ['c-milasoja','&#127869;','Milanesa de soja',400,20,'p','milanesa de soja'],
+  ['c-milacalabaza','&#127869;','Milanesa de calabaza',300,5,'p','milanesa de calabaza'],
+  ['c-milapollo','&#127869;','Milanesa de pollo',450,35,'p','milanesa de pollo'],
+  ['c-mila','&#127869;','Milanesa de ternera',500,35,'p','milanesa'],
+  ['c-pastel','&#129364;','Pastel de papa',550,25,'p','pastel de papa'],
+  ['c-zapallitos','&#129362;','Zapallitos rellenos',350,18,'p','zapallitos rellenos'],
+  ['c-omelette','&#129370;','Omelette o tortilla',300,16,'p','omelette|tortilla|toritlla'],
+  ['c-empanadas','&#129375;','Empanadas (2)',450,18,'p','empanada'],
+  ['c-pizza','&#127829;','Pizza (2 porciones)',500,20,'p','pizz|fugazzeta'],
+  ['c-arrollado','&#129385;','Arrollado',400,30,'p','arrollado'],
+  ['c-tarta','&#129383;','Tarta (porci&oacute;n)',380,12,'p','tarta|pascualina|humita|jamon y queso|puerro, atun|zapallitos, puerro'],
+  ['c-tacos','&#127790;','Tacos',450,22,'p','tacos'],
+  ['c-chawfan','&#127834;','Chaw fan',500,15,'p','chaw fan|arroz salteado'],
+  ['c-chawmein','&#127836;','Chaw mein',550,20,'p','chaw mein|tallarines salteados'],
+  ['c-lentejas','&#127858;','Guiso de lentejas',450,20,'p','lentejas'],
+  ['c-guiso','&#127858;','Guiso o estofado',500,30,'p','goulash|strogonoff|cazuela|guiso'],
+  ['c-albondigas','&#129752;','Alb&oacute;ndigas de garbanzos',400,16,'p','albondigas'],
+  ['c-noquis','&#127837;','&Ntilde;oquis',600,14,'h','noquis'],
+  ['c-spaetzle','&#127837;','Spaetzle',450,12,'h','spaetzle'],
+  ['c-canelones','&#127837;','Canelones de verdura',500,22,'p','canelones'],
+  ['c-pastas','&#127837;','Pastas',650,20,'h','ravioles|sorrentinos|tortelettis|tallarines|fideos|mostacholes|fussiles|pastas'],
+  ['c-asado','&#129385;','Asado',650,40,'p','asado'],
+  ['c-bifechorizo','&#129385;','Bife de chorizo',600,50,'p','bife de chorizo'],
+  ['c-costillitas','&#129385;','Costillitas de cerdo',550,30,'p','costillitas'],
+  ['c-carne','&#129385;','Carne (bife, cerdo, cordero)',450,40,'p','bife|bifecitos|fetitas|carne|ternera|tartara|cordero|matambrito|carre|bondiola|cerdo'],
+  ['c-pollo','&#127831;','Pollo',350,40,'p','pollo|pechuga|presitas'],
+  ['c-pescadorebozado','&#128031;','Pescado rebozado',400,28,'p','a la romana|rebozado'],
+  ['c-pescado','&#128031;','Pescado',300,30,'p','pescado'],
+  ['c-pure','&#129364;','Pur&eacute;',220,4,'h','pure'],
+  ['c-fritas','&#127839;','Papas fritas o bast&oacute;n',400,5,'h','papas baston|papas fritas|chips de papa'],
+  ['c-papascrema','&#129364;','Papas a la crema',350,5,'h','papas a la crema'],
+  ['c-batata','&#127840;','Batatas',250,3,'h','batata|boniato|bonato'],
+  ['c-papas','&#129364;','Papas',220,4,'h','papa'],
+  ['c-arroz','&#127834;','Arroz',250,5,'h','arroz'],
+  ['c-ensalada','&#129367;','Ensalada',60,2,'v','ensalada'],
+  ['c-acelga','&#129388;','Acelga a la crema',200,5,'v','a la crema'],
+  ['c-verduras','&#129382;','Verduras',120,3,'v','verdura|vegetal|calabaza|zapallo|zanahoria|brocoli|wok|chop suey|juliana|legumbres'],
+  ['c-salsaroja','&#127813;','Salsa de tomate',60,2,'s','tuco|pomodoro|salsa de tomate|filetto|pomarola|salsa casera'],
+  ['c-salsa','&#129379;','Salsa',120,2,'s','salsa'],
+  ['c-fruta','&#127822;','Fruta',80,1,'f','fruta'],
+  ['c-postre','&#127856;','Postre',300,4,'f','postre|torta de cumple']
+];
+COMEDOR.forEach(function(c){ CARTA.push([c[0], 'Comedor del colegio', c[1], c[2], c[3], c[4], c[6].replace(/\|/g, ' ')]); });
 var CAR = {}; CARTA.forEach(function(c){ CAR[c[0]] = c; });
+var COM = {}; COMEDOR.forEach(function(c){ COM[c[0]] = c; });
 
 var REC = {};
 RECETAS.forEach(function(r){ REC[r.id] = r; });
@@ -1649,8 +1710,7 @@ function afueraPP(fecha, slot, em, conBoton){
     h += '<div class="small" style="margin-top:6px;font-weight:700;color:' + (R.k > m.k + 30 ? 'var(--amber)' : 'var(--green)') + '">' +
       (R.k > m.k + 30 ? fN(R.k - m.k) + ' kcal m&aacute;s que esta comida: se descuentan de lo que queda del d&iacute;a.' : 'Dentro de lo que tocaba en esta comida.') + '</div>';
   } else if (slot === 'al' && esOficina(fecha) && em === oficinista())
-    h += '<div class="small muted">Almuerza en el colegio. Anot&aacute; qu&eacute; eligi&oacute; del men&uacute; y lo compenso en el resto del d&iacute;a. ' +
-      '<a href="#" onclick="verGuia();return false" style="color:var(--pri);font-weight:700">Qu&eacute; elegir</a></div>';
+    h += '<div class="small muted">Almuerza en el colegio. Eleg&iacute; una opci&oacute;n y lo compenso en el resto del d&iacute;a.</div>' + menuColegioHTML(fecha, em);
   else h += '<div class="small muted">Come afuera. Anot&aacute; qu&eacute; comi&oacute; y lo compenso en el resto del d&iacute;a.</div>';
   if (conBoton) h += '<button class="tick" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">&iquest;Qu&eacute; comi&oacute;?</button>';
   return h + '</div>';
@@ -1658,7 +1718,9 @@ function afueraPP(fecha, slot, em, conBoton){
 /* nombre del plato afuera: el real si vino del menu/ticket, si no el de la carta */
 function nomRest(x){
   var c = CAR[x[0]];
-  return x[2] ? esc(x[2]) + ' <span class="g">(&asymp; ' + c[3] + ')</span>' : c[3];
+  if (!x[2]) return c[3];
+  var igual = quitarAcentos(esc(x[2])).indexOf(quitarAcentos(c[3]).split(' (')[0]) !== -1;
+  return esc(x[2]) + (igual ? '' : ' <span class="g">(&asymp; ' + c[3] + ')</span>');
 }
 /* Lee un menu o ticket pegado: una linea por plato. Saca cantidades, precios y
    las lineas de la factura, y busca el plato de la carta mas parecido por palabras.
@@ -1726,6 +1788,113 @@ function todoCompartido(){
   L.forEach(function(x, i){ sumarLeido(i, 'comp'); });
   toast(L.length + ' platos compartidos', 'ok');
 }
+/* ==================================================================
+   MENU DEL COMEDOR (menusgc.vercel.app)
+   El sitio trae los menus del mes de las dos sedes dentro de la pagina, en
+   <script id="sgc-datos">, y permite leerlo desde otra pagina (CORS *). Se lee
+   desde el telefono, sin servidor ni API, y se guarda 12 horas.
+   ================================================================== */
+var MENU_URL = 'https://menusgc.vercel.app/';
+var _menuSGC = null, _menuEstado = '';
+function cargarMenuSGC(){
+  if (_menuSGC || _menuEstado === 'cargando') return;
+  try {
+    var c = JSON.parse(localStorage.getItem('cerd_menusgc') || 'null');
+    if (c && Date.now() - c.t < 12 * 3600e3){ _menuSGC = c.d; return; }
+  } catch(e){}
+  _menuEstado = 'cargando';
+  fetch(MENU_URL + '?t=' + Date.now(), {cache:'no-store'})
+    .then(function(r){ return r.text(); })
+    .then(function(t){
+      var m = t.match(/<script[^>]*id="sgc-datos"[^>]*>([\s\S]*?)<\/script>/);
+      _menuSGC = m ? JSON.parse(m[1]) : [];
+      _menuEstado = 'ok';
+      try { localStorage.setItem('cerd_menusgc', JSON.stringify({t:Date.now(), d:_menuSGC})); } catch(e){}
+      render();
+    })
+    .catch(function(){ _menuEstado = 'error'; render(); });
+}
+function sedeDe(em){ return (perfil(em) || {}).sede || ''; }
+function setSede(sd){
+  var em = oficinista(), pf = JSON.parse(JSON.stringify(perfil(em) || {}));
+  pf.sede = sd; setKV('perfil:' + em, pf); render();
+}
+function menuDelDia(fecha, sede){
+  if (!_menuSGC || !sede) return null;
+  for (var i = 0; i < _menuSGC.length; i++){
+    var m = _menuSGC[i];
+    if (m.campus !== sede || m.section !== 'whole') continue;
+    for (var w = 0; w < (m.weeks || []).length; w++)
+      for (var d = 0; d < (m.weeks[w].days || []).length; d++)
+        if (m.weeks[w].days[d].date === fecha) return m.weeks[w].days[d];
+  }
+  return null;
+}
+function capFrase(t){ t = String(t || '').toLowerCase(); return t.charAt(0).toUpperCase() + t.slice(1); }
+/* cada linea del menu -> el plato del comedor mas parecido; sin repetir */
+function platosDeOpcion(items){
+  var ids = [], out = [];
+  items.forEach(function(it){
+    /* "sin carne", "sin jamon": no tienen que reconocer carne ni tarta de jamon */
+    var n = quitarAcentos(esc(it)).replace(/(sin|no lleva) (carnes?|jamon)( ni derivados)?/g, '');
+    for (var i = 0; i < COMEDOR.length; i++){
+      var c = COMEDOR[i];
+      if (c[6].split('|').some(function(k){ return n.indexOf(k) !== -1; })){
+        /* con dos salsas en la lista, se cuenta la mas liviana */
+        if (c[5] === 's' && out.some(function(x){ return COM[x.id][5] === 's'; })) break;
+        if (ids.indexOf(c[0]) === -1){ ids.push(c[0]); out.push({id:c[0], n:it}); }
+        break;
+      }
+    }
+  });
+  return out;
+}
+function opcionesDelDia(fecha, em){
+  var dd = menuDelDia(fecha, sedeDe(em)); if (!dd || !dd.categories) return null;
+  var meta = metaSlot(em, 'al');
+  var ops = dd.categories.filter(function(c){ return c.key !== 'celiaco'; }).map(function(c){
+    var pl = platosDeOpcion(c.items), k = 0, pr = 0, kh = 0, hs = [];
+    pl.forEach(function(x){ var d = COM[x.id]; k += d[3]; pr += d[4]; if (d[5] === 'h'){ kh += d[3]; hs.push(d[2].toLowerCase()); } });
+    return {key:c.key, label:c.label, items:c.items, pl:pl, k:k, p:pr, kMedia:k - kh / 2, hs:hs,
+            score:Math.abs(k - kh / 2 - meta.k) + (pr < 25 ? 150 : 0)};
+  }).filter(function(o){ return o.pl.length; });
+  var best = ops.slice().sort(function(a, b){ return a.score - b.score; })[0];
+  return {dd:dd, ops:ops, best:best ? best.key : null, meta:meta};
+}
+function menuColegioHTML(fecha, em){
+  var sede = sedeDe(em);
+  if (!sede) return '<div class="small" style="margin:8px 0 4px;font-weight:700">&iquest;En qu&eacute; sede almorz&aacute;s?</div><div class="seg">' +
+    '<button class="chip" onclick="setSede(\'norte\')">Norte</button><button class="chip" onclick="setSede(\'quilmes\')">Quilmes</button></div>';
+  cargarMenuSGC();
+  if (!_menuSGC) return '<div class="small muted" style="margin-top:6px">' + (_menuEstado === 'error' ? 'No pude leer el men&uacute; del colegio.' : 'Buscando el men&uacute; del colegio...') + '</div>';
+  var O = opcionesDelDia(fecha, em);
+  if (!O) return '<div class="small muted" style="margin-top:6px">No encontr&eacute; el men&uacute; de este d&iacute;a (' + (sede === 'norte' ? 'Norte' : 'Quilmes') + ').</div>';
+  if (O.dd.closed) return '<div class="small muted" style="margin-top:6px">Ese d&iacute;a no hay comedor: ' + esc(capFrase(O.dd.closed)) + '.</div>';
+  return '<div class="small" style="margin:8px 0 2px;font-weight:700">Men&uacute; del colegio &middot; ' + (sede === 'norte' ? 'Norte' : 'Quilmes') +
+    ' <a href="#" onclick="setSede(\'' + (sede === 'norte' ? 'quilmes' : 'norte') + '\');return false" style="color:var(--dim);font-weight:600">cambiar</a></div>' +
+    O.ops.map(function(o){
+      var mejor = o.key === O.best, conH = o.hs.length;
+      return '<div style="padding:8px 0;border-top:1px solid var(--surface2)"><div class="row"><b style="flex:1">' + capFrase(o.label) + '</b>' +
+        (mejor ? '<span class="tag g">Te conviene</span>' : '') + '<span class="small dim">~' + fN(o.k) + '</span></div>' +
+        '<div class="small">' + o.items.map(function(t){ return esc(capFrase(t)); }).join(' &middot; ') + '</div>' +
+        (mejor && conH ? '<div class="small" style="color:var(--green);font-weight:700;margin-top:3px">Ped&iacute; media porci&oacute;n de ' + o.hs.join(' y ') +
+          ' (~' + fN(o.kMedia) + ' kcal)' + (o.hs.indexOf('papas fritas o bast&oacute;n') !== -1 ? ', o cambiala por ensalada' : '') + '.</div>' : '') +
+        '<div class="row wrap" style="gap:6px;margin-top:6px"><button class="chip" style="min-height:32px;padding:4px 12px" onclick="elegirMenu(\'' + fecha + '\',\'' + em + '\',\'' + o.key + '\',1)">Eleg&iacute; esta</button>' +
+        (conH ? '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="elegirMenu(\'' + fecha + '\',\'' + em + '\',\'' + o.key + '\',.5)">Con media de ' + o.hs[0] + '</button>' : '') +
+        '</div></div>';
+    }).join('');
+}
+function elegirMenu(fecha, em, key, fh){
+  var O = opcionesDelDia(fecha, em); if (!O) return;
+  var o = O.ops.filter(function(x){ return x.key === key; })[0]; if (!o) return;
+  _carta = {f:fecha, s:'al'};
+  setRest(function(r){
+    r.lugar = 'Comedor del colegio';
+    r.it[em] = o.pl.map(function(x){ return [x.id, COM[x.id][5] === 'h' ? fh : 1, capFrase(x.n)]; });
+  });
+  render(); toast('Anotado el almuerzo del colegio (~' + fN(fh < 1 ? o.kMedia : o.k) + ' kcal)', 'ok');
+}
+
 /* ---------- la carta ---------- */
 var _carta = null;
 function quienesAfuera(fecha, slot){ return personas().filter(function(em){ return comeAfuera(em, fecha, slot); }); }

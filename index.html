@@ -796,7 +796,7 @@ var GUIA = [
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v2';
+var APP_VER   = 'v3';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1057,7 +1057,20 @@ function setSlot(fecha, slot, val){
 function hayDesayuno(){ return personas().some(function(em){ return (perfil(em) || {}).man === 'desayuno'; }); }
 function slotsDe(){ var s = ['al', 'me', 'ce']; if (hayDesayuno()) s.unshift('de'); return s; }
 function enSlot(em, slot){ return slot !== 'de' || (perfil(em) || {}).man === 'desayuno'; }
-function esOficina(fecha){ var of = hogar().oficina || []; return of.indexOf(parse(fecha).getDay()) !== -1; }
+/* La oficina no es fija: se marca dia por dia (dia.of). Ese dia el almuerzo son
+   las sobras de la cena anterior, y esa cena tiene que servir de vianda. */
+function esOficina(fecha){ return !!dia(fecha).of; }
+function setOficina(fecha, v){
+  setSlot(fecha, 'of', v ? 1 : 0);
+  var ayer = addDays(fecha, -1), ce = dia(ayer).ce;
+  if (v){
+    if (REC[ce] && REC[ce].v === 0){ var r = mejor(ayer, 'ce'); if (r){ setSlot(ayer, 'ce', r.id); ce = r.id; toast('Cambi&eacute; la cena de la noche anterior por una que sirve de vianda'); } }
+    if (REC[ce]) setSlot(fecha, 'al', 'sobras');
+  } else if (dia(fecha).al === 'sobras'){
+    var r2 = mejor(fecha, 'al'); setSlot(fecha, 'al', r2 ? r2.id : '');
+  }
+  render();
+}
 function tipoSlot(slot){ return slot === 'al' ? 'a' : slot === 'ce' ? 'c' : 'm'; }
 
 /* receta real de un slot ('sobras' apunta a la cena de ayer) */
@@ -1081,17 +1094,17 @@ function usadoCerca(fecha, dias){
 function puntaje(r, fecha, slot, excl){
   if (r.t.indexOf(tipoSlot(slot)) === -1) return -1e9;
   if (excl && excl.indexOf(r.id) !== -1) return -1e9;
-  var h = hogar(), likes = h.likes || {}, tip = h.tipicos || {};
+  var h = hogar(), likes = h.likes || {};
   if (likes[r.id] === -1) return -1e9;
-  var fr = tip[r.ti]; if (fr === undefined) fr = 1;
+  var fr = frecuencia(r.ti);
   if (fr === 0) return -1e9;
-  var s = fr === 2 ? 3 : 1;
+  var s = 1 + (fr - 1) * 2;   /* los dos "a veces" = 1, los dos "seguido" = 3 */
   if (likes[r.id] === 1) s += 2;
   /* la cena de la noche anterior a un dia de oficina tiene que servir de vianda */
   if (slot === 'ce' && esOficina(addDays(fecha, 1)) && r.v === 0) return -1e9;
   usadoCerca(fecha, 7).forEach(function(u){
     if (u.r.id === r.id) s -= 6 - u.d * .5;
-    else if (u.r.ti === r.ti && u.d <= 2) s -= 2;
+    else if (u.r.ti === r.ti && u.d <= 3) s -= 3 - u.d * .5;   /* el mismo tipico, no dia por medio */
     if (r.pr && u.r.pr === r.pr && u.d <= 1 && u.r.t !== 'm') s -= 1.2;
   });
   var hoyD = dia(fecha);
@@ -1226,7 +1239,13 @@ function comidaHTML(fecha, slot, opts){
   }).join('');
   var aviso = '';
   if (slot === 'ce' && dia(addDays(fecha, 1)).al === 'sobras')
-    aviso = '<div class="aviso a">&#127857; Cocin&aacute; de m&aacute;s: ma&ntilde;ana es d&iacute;a de oficina y el almuerzo sale de esta olla.</div>';
+    aviso = '<div class="aviso a">&#127857; Cocin&aacute; de m&aacute;s: ma&ntilde;ana hay oficina y el almuerzo sale de esta olla.</div>';
+  if (slot === 'ce' && fecha >= hoyISO()){
+    var man = addDays(fecha, 1), of = esOficina(man);
+    aviso += '<div class="row" style="margin:8px 0 2px"><span class="small" style="flex:1;font-weight:700">&iquest;Ma&ntilde;ana hay oficina?</span>' +
+      '<button class="chip' + (of ? ' on' : '') + '" onclick="setOficina(\'' + man + '\',1)">S&iacute;</button>' +
+      '<button class="chip' + (of ? '' : ' on') + '" onclick="setOficina(\'' + man + '\',0)">No</button></div>';
+  }
   var lk = (hogar().likes || {})[r.id];
   var acts = '<div class="acts">' +
     '<button class="btn small sec" onclick="verReceta(\'' + r.id + '\',\'' + fecha + '\',\'' + slot + '\')">Receta</button>' +
@@ -1283,7 +1302,9 @@ function renderSemana(){
     var d = dia(f), pasado = f < hoy;
     h += '<div class="day' + (f === hoy ? ' hoy' : '') + '" style="' + (pasado ? 'opacity:.55' : '') + '">' +
       '<div class="dn">' + cap(DIAS[parse(f).getDay()]) + ' ' + fechaCorta(f) +
-      (esOficina(f) ? ' <span class="tag b">oficina</span>' : '') + (f === hoy ? ' <span class="tag r">hoy</span>' : '') + '</div>';
+      (f === hoy ? ' <span class="tag r">hoy</span>' : '') + '<span class="sp"></span>' +
+      (pasado ? (esOficina(f) ? '<span class="tag b">oficina</span>' : '')
+              : '<button class="chip' + (esOficina(f) ? ' on' : '') + '" style="min-height:30px;padding:4px 12px;font-size:12px" onclick="setOficina(\'' + f + '\',' + (esOficina(f) ? 0 : 1) + ')">&#128188; Oficina</button>') + '</div>';
     slotsDe().forEach(function(s){
       var v = d[s], r = recDe(f, s);
       var txt = v === 'afuera' ? '<span class="muted">Comen afuera</span>' : r ? (v === 'sobras' ? '<span class="tag b">sobras</span> ' : '') + r.n : '<span class="dim">&mdash;</span>';
@@ -1724,38 +1745,34 @@ function guardarPerfiles(){
   if (DEMO) guardarDemo();
   return true;
 }
+/* Cada uno marca lo suyo y se cruza: comen juntos casi siempre, asi que si uno
+   de los dos pone "Nunca" el plato no se propone; si no, pesa el promedio. */
+function tipicosDe(em){ return (perfil(em) || {}).tipicos || {}; }
+function frecuencia(ti){
+  var vals = personas().map(function(em){ var v = tipicosDe(em)[ti]; return v === undefined ? 1 : v; });
+  if (!vals.length) return 1;
+  if (vals.indexOf(0) !== -1) return 0;
+  return vals.reduce(function(a, b){ return a + b; }, 0) / vals.length;
+}
+var FREC = ['nunca','a veces','seguido'];
 function tipicosHTML(){
-  var tip = hogar().tipicos || {};
+  var tip = tipicosDe(userEmail);
+  var otros = personas().filter(function(em){ return em !== userEmail && perfil(em).tipicos; });
   function fila(t){
     var v = tip[t[0]]; if (v === undefined) v = 1;
-    return '<div class="tip-row"><div class="nm">' + t[1] + '</div><div class="tri">' +
+    var ot = otros.map(function(em){ var x = tipicosDe(em)[t[0]]; return nombre(em) + ': ' + FREC[x === undefined ? 1 : x]; }).join(' &middot; ');
+    return '<div class="tip-row"><div class="nm">' + t[1] + (ot ? '<div class="small dim" style="font-weight:600">' + ot + '</div>' : '') + '</div><div class="tri">' +
       ['Nunca','A veces','Seguido'].map(function(n, i){ return '<button class="' + (v === i ? 'on' + i : '') + '" onclick="setTipico(\'' + t[0] + '\',' + i + ',this)">' + n + '</button>'; }).join('') +
       '</div></div>';
   }
-  return '<div class="card"><h3>Almuerzos y cenas</h3>' + TIPICOS.map(fila).join('') + '</div>' +
+  return '<div class="aviso b">Se cruza con lo que marque el otro: si uno de los dos pone <b>Nunca</b>, ese plato no se propone para las comidas juntos.</div>' +
+    '<div class="card"><h3>Almuerzos y cenas</h3>' + TIPICOS.map(fila).join('') + '</div>' +
     '<div class="card"><h3>Meriendas</h3>' + TIPICOS_M.map(fila).join('') + '</div>';
 }
 function setTipico(k, v, btn){
-  var h = JSON.parse(JSON.stringify(hogar())); h.tipicos = h.tipicos || {}; h.tipicos[k] = v; setKV('hogar', h);
+  var pf = JSON.parse(JSON.stringify(perfil(userEmail) || {})); pf.tipicos = pf.tipicos || {}; pf.tipicos[k] = v; setKV('perfil:' + userEmail, pf);
   var bs = btn.parentNode.querySelectorAll('button');
   for (var i = 0; i < bs.length; i++) bs[i].className = i === v ? 'on' + i : '';
-}
-function oficinaHTML(){
-  var of = hogar().oficina || [];
-  var quien = D.gym && D.gym.email ? nombre(D.gym.email) : 'Diego';
-  return '<div class="card"><h3>D&iacute;as de oficina de ' + quien + '</h3><div class="hint" style="margin:0 0 8px">Esos d&iacute;as el almuerzo sale de la cena de la noche anterior: se cocina de m&aacute;s y va de vianda.</div><div class="chips">' +
-    [1,2,3,4,5].map(function(d){ return '<button class="chip' + (of.indexOf(d) !== -1 ? ' on' : '') + '" onclick="toggleOficina(' + d + ',this)">' + DIASC[d] + '</button>'; }).join('') + '</div></div>';
-}
-function toggleOficina(d, btn){
-  var h = JSON.parse(JSON.stringify(hogar())); h.oficina = h.oficina || [];
-  var i = h.oficina.indexOf(d); if (i === -1) h.oficina.push(d); else h.oficina.splice(i, 1);
-  setKV('hogar', h); btn.classList.toggle('on');
-  /* lo que viene se rearma con la nueva regla */
-  var hoy = hoyISO();
-  for (var f = addDays(hoy, 1); f <= addDays(lunes(hoy), 13); f = addDays(f, 1)){
-    var k = 'plan:' + lunes(f); if (!KV[k] || !KV[k][f]) continue;
-    var p = JSON.parse(JSON.stringify(KV[k])); delete p[f].al; if (p[f].ce && REC[p[f].ce] && REC[p[f].ce].v === 0) delete p[f].ce; KV[k] = p; setKV(k, p);
-  }
 }
 /* ---------- paleta ----------
    La eleccion vive en hogar.pal (la ven los dos) y en localStorage, para que el
@@ -1789,12 +1806,11 @@ function openAjustes(){
       (ok ? '<span class="tag">' + fN(objetivo(u.email).kcal) + ' kcal</span>' : '<span class="tag a">sin perfil</span>') +
       (mio ? '<button class="btn small sec" onclick="editarPerfil(\'' + u.email + '\')">Editar</button>' : '') + '</div>';
   }).join('');
-  h += '<div class="section-t">Qu&eacute; comen</div><button class="btn sec block" onclick="editarGustos()">Platos de siempre</button>';
+  h += '<div class="section-t">Qu&eacute; comen</div><button class="btn sec block" onclick="editarGustos()">Mis platos de siempre</button>';
   var nos = Object.keys((hogar().likes || {})).filter(function(k){ return hogar().likes[k] === -1 && REC[k]; });
   if (nos.length) h += '<div class="card" style="margin-top:12px"><h3>Recetas descartadas</h3><ul class="lst">' + nos.map(function(k){
     return '<li><div style="flex:1">' + REC[k].n + '</div><button class="btn small sec" onclick="votar(\'' + k + '\',-1);openAjustes()">Volver a proponer</button></li>';
   }).join('') + '</ul></div>';
-  h += '<div class="section-t">Semana</div>' + oficinaHTML();
   h += '<div class="section-t">Estilo</div><div class="pal">' + Object.keys(PALETAS).map(function(k){
     var P = PALETAS[k];
     return '<button class="' + (paletaActual() === k ? 'on' : '') + '" onclick="elegirPaleta(\'' + k + '\')"><div class="sw">' +
@@ -1810,7 +1826,7 @@ function editarPerfil(em){
     '<button class="btn block" onclick="if(guardarPerfiles()){closeModal();render();toast(\'Perfil guardado\',\'ok\')}">Guardar</button>');
 }
 function editarGustos(){
-  openModal(mh('Platos de siempre') + '<p class="small muted" style="margin-top:0">Lo que comen en un mes normal. La semana propone sobre todo esto, en versi&oacute;n liviana.</p>' +
+  openModal(mh('Mis platos de siempre') + '<p class="small muted" style="margin-top:0">Lo que com&eacute;s en un mes normal. La semana propone sobre todo esto, en versi&oacute;n liviana.</p>' +
     tipicosHTML() + '<button class="btn block" onclick="closeModal();rearmarSilencioso();render()">Listo</button>');
 }
 function rearmarSilencioso(){
@@ -1829,41 +1845,48 @@ function rearmarSilencioso(){
    segundo termina con su perfil y ya ve la semana armada.
    ================================================================== */
 var onbPaso = 0;
-function onbPasos(){ return hogar().onb ? 1 : 3; }
 function onboarding(){
   $('onb').classList.add('on');
-  var p = onbPaso, n = onbPasos();
-  var h = n > 1 ? '<div class="steps">' + [0,1,2].map(function(i){ return '<i class="' + (i <= p ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '';
+  var p = onbPaso, armada = hogar().onb;
+  var h = '<div class="steps">' + [0,1].map(function(i){ return '<i class="' + (i <= p ? 'on' : '') + '"></i>'; }).join('') + '</div>';
   function burbuja(t){ return '<div class="bubble"><svg><use href="#cerdo"/></svg><div class="txt">' + t + '</div></div>'; }
   if (p === 0){
     var u = usuarios().filter(function(x){ return x.email === userEmail; })[0] || {email:userEmail};
     var hola = u.nombre ? ' ' + esc(u.nombre) : '';
-    h += burbuja('&iexcl;Hola' + hola + '! Soy el cerdito de la olla. Contame de vos para calcular cu&aacute;nto te toca comer.' +
-      (n === 1 ? ' La semana ya est&aacute; armada: con esto le sumo tus porciones.' : ''));
+    h += burbuja('&iexcl;Hola' + hola + '! Soy el cerdito de la olla. Contame de vos para calcular cu&aacute;nto te toca comer.');
     h += formPerfil(userEmail, perfil(userEmail));
     h += '<div class="hint" style="margin:-6px 4px 16px">Solo vos ves y cambi&aacute;s estos datos. Cada uno completa los suyos al entrar.</div>';
-    h += '<button class="btn block" onclick="if(guardarPerfiles()){' + (n === 1 ? 'finOnb()' : 'onbPaso=1;onboarding();window.scrollTo(0,0)') + '}">' +
-      (n === 1 ? '&iexcl;A cocinar!' : 'Siguiente') + '</button>';
-  } else if (p === 1){
-    h += burbuja('&iquest;Qu&eacute; comen en un mes normal? Si comen milanesas, pizza y fideos, eso propongo, en versi&oacute;n liviana. Nada de vivir de sopa.');
-    h += tipicosHTML();
-    h += '<div class="row"><button class="btn sec" onclick="onbPaso=0;onboarding()">Atr&aacute;s</button><button class="btn" style="flex:1" onclick="onbPaso=2;onboarding();window.scrollTo(0,0)">Siguiente</button></div>';
+    h += '<button class="btn block" onclick="if(guardarPerfiles()){onbPaso=1;onboarding();window.scrollTo(0,0)}">Siguiente</button>';
   } else {
-    h += burbuja('&Uacute;ltima: &iquest;qu&eacute; d&iacute;as hay oficina? Esa noche se cocina de m&aacute;s y el almuerzo va de vianda.');
-    h += oficinaHTML();
-    h += '<div class="row"><button class="btn sec" onclick="onbPaso=1;onboarding()">Atr&aacute;s</button><button class="btn green" style="flex:1" onclick="finOnb()">&iexcl;A cocinar!</button></div>';
+    h += burbuja('&iquest;Qu&eacute; com&eacute;s en un mes normal? Si es milanesa, pizza y fideos, eso propongo, en versi&oacute;n liviana. Nada de vivir de sopa.' +
+      (armada ? ' Lo cruzo con lo que ya marc&oacute; el otro.' : ''));
+    h += tipicosHTML();
+    h += '<div class="row"><button class="btn sec" onclick="onbPaso=0;onboarding()">Atr&aacute;s</button><button class="btn green" style="flex:1" onclick="finOnb()">&iexcl;A cocinar!</button></div>';
   }
   $('onb-in').innerHTML = h;
 }
 function finOnb(){
-  var h = JSON.parse(JSON.stringify(hogar())); h.onb = 1; setKV('hogar', h);
+  var pf = JSON.parse(JSON.stringify(perfil(userEmail) || {})); pf.tipicos = pf.tipicos || {}; setKV('perfil:' + userEmail, pf);
+  if (!hogar().onb){ var h = JSON.parse(JSON.stringify(hogar())); h.onb = 1; setKV('hogar', h); }
   $('onb').classList.remove('on');
+  rearmarSilencioso();
   switchTab('hoy'); toast('Listo: ya est&aacute; la semana &#128055;', 'ok');
 }
+/* falta si quien entra no tiene perfil o no marco sus platos */
 function faltaOnb(){
-  if (!hogar().onb) return true;
-  /* alguien nuevo en ACCESO sin perfil: se le pide solo el suyo */
-  return usuarios().some(function(u){ return u.email === userEmail && !(perfil(u.email) || {}).alt; });
+  var pf = perfil(userEmail) || {};
+  return usuarios().some(function(u){ return u.email === userEmail; }) && (!pf.alt || !pf.tipicos);
+}
+/* v1 y v2 guardaban los platos en hogar.tipicos (los marcaba el primero que
+   entraba). Si hay un solo perfil completo, eran suyos: se pasan a su perfil. */
+function migrarTipicos(){
+  var h0 = hogar();
+  if (!h0.tipicos && !h0.oficina) return;
+  var ps = personas();
+  if (h0.tipicos && ps.length === 1 && !perfil(ps[0]).tipicos){
+    var pf = JSON.parse(JSON.stringify(perfil(ps[0]))); pf.tipicos = h0.tipicos; setKV('perfil:' + ps[0], pf);
+  }
+  var h = JSON.parse(JSON.stringify(h0)); delete h.tipicos; delete h.oficina; setKV('hogar', h);
 }
 
 /* ==================================================================
@@ -1910,8 +1933,9 @@ function onDatos(data){
 function afterData(){
   if (!PAL_URL && hogar().pal && hogar().pal !== paletaActual()) aplicarPaleta(hogar().pal);
   else if (PAL_URL) aplicarPaleta(PAL_URL);
+  migrarTipicos();
   if (faltaOnb()){
-    if (hogar().onb) onbPaso = 0;
+    onbPaso = (perfil(userEmail) || {}).alt ? 1 : 0;
     onboarding(); return;
   }
   var y = window.scrollY;
@@ -1949,9 +1973,11 @@ function cargarDemo(){
       demo:true, lastUpdate:'demo', allowed_emails:['diego@demo','vicky@demo'],
       usuarios:[{email:'diego@demo', nombre:'Diego'}, {email:'vicky@demo', nombre:'Vicky'}],
       kv:{
-        'perfil:diego@demo':{nombre:'Diego', sexo:'h', nac:1986, alt:178, peso:84.6, meta:78, ritmo:'normal', trab:'sentado', man:'matefs'},
-        'perfil:vicky@demo':{nombre:'Vicky', sexo:'m', nac:1990, alt:163, peso:63.2, meta:59, ritmo:'normal', trab:'mixto', man:'mate', ses:2, act:'pilates_reformer'},
-        hogar:{onb:1, oficina:[2,4], tipicos:{milanesa:2, fideos:2, pizza:2, empanadas:1, asado:1, pescado:0, sopas:0, tacos:1}, likes:{}},
+        'perfil:diego@demo':{nombre:'Diego', sexo:'h', nac:1986, alt:178, peso:84.6, meta:78, ritmo:'normal', trab:'sentado', man:'matefs',
+                             tipicos:{milanesa:2, fideos:2, pizza:2, empanadas:1, asado:2, pescado:1, sopas:0, tacos:1}},
+        'perfil:vicky@demo':{nombre:'Vicky', sexo:'m', nac:1990, alt:163, peso:63.2, meta:59, ritmo:'normal', trab:'mixto', man:'mate', ses:2, act:'pilates_reformer',
+                             tipicos:{milanesa:2, fideos:1, pizza:2, empanadas:2, asado:1, pescado:0, ensaladas:2, tacos:2}},
+        hogar:{onb:1, likes:{}},
         despensa:['pollo','huevo','arroz','cebolla','papa','zapallito','muzza','tomate']
       },
       pesos:pesos, actividad:act, gym:{email:'diego@demo', ses:ses, cardio:cardio}

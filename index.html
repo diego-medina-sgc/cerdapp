@@ -38,24 +38,24 @@
    ================================================================== */
 :root, [data-pal=a]{
   --bg:#EFEAE2; --sh-d:#CFC7BA; --sh-l:#FFFFFF;
-  --text:#1E2A23; --muted:#66706A; --dim:#9AA097;
-  --pri:#1F5C46; --pri-ink:#FFFFFF; --acc:#F26A1B; --acc-ink:#FFFFFF; --hi:#D9EF4F; --hi-lt:rgba(217,239,79,.55);
-  --p0:#E05E13; --p0-lt:rgba(242,106,27,.11); --p1:#1F5C46; --p1-lt:rgba(31,92,70,.10);
+  --text:#1E2A23; --muted:#5E6862; --dim:#7A8079;
+  --pri:#1F5C46; --pri-ink:#FFFFFF; --acc:#F26A1B; --acc-ink:#1A0E05; --hi:#D9EF4F; --hi-lt:rgba(217,239,79,.55);
+  --p0:#C2410C; --p0-lt:rgba(242,106,27,.11); --p1:#0E7490; --p1-lt:rgba(14,116,144,.10);
 }
 [data-pal=b]{
   --bg:#E9E9F1; --sh-d:#C8C8D6; --sh-l:#FFFFFF;
-  --text:#121217; --muted:#5E5E70; --dim:#9696A6;
+  --text:#121217; --muted:#5E5E70; --dim:#77778A;
   --pri:#5B2EFF; --pri-ink:#FFFFFF; --acc:#7DF2C2; --acc-ink:#121217; --hi:#7DF2C2; --hi-lt:rgba(125,242,194,.5);
-  --p0:#5B2EFF; --p0-lt:rgba(91,46,255,.09); --p1:#0C9468; --p1-lt:rgba(60,214,160,.16);
+  --p0:#C2185B; --p0-lt:rgba(194,24,91,.09); --p1:#0C9468; --p1-lt:rgba(60,214,160,.16);
 }
 [data-pal=c]{
   --bg:#E3EBF4; --sh-d:#C1CCDA; --sh-l:#FFFFFF;
-  --text:#0F2340; --muted:#55667F; --dim:#8F9CB0;
+  --text:#0F2340; --muted:#55667F; --dim:#6E7D93;
   --pri:#13305E; --pri-ink:#FFFFFF; --acc:#E8436B; --acc-ink:#FFFFFF; --hi:#BFD9F2; --hi-lt:rgba(150,196,240,.55);
-  --p0:#13305E; --p0-lt:rgba(19,48,94,.09); --p1:#D83560; --p1-lt:rgba(232,67,107,.11);
+  --p0:#9A6512; --p0-lt:rgba(183,121,31,.12); --p1:#D83560; --p1-lt:rgba(232,67,107,.11);
 }
 :root{
-  --green:#278F5A; --green-lt:rgba(39,143,90,.12); --amber:#B97500; --amber-lt:rgba(245,165,36,.16);
+  --green:#1F7A4B; --green-lt:rgba(39,143,90,.12); --amber:#8F5A00; --amber-lt:rgba(245,165,36,.16);
   --red:#C93445; --red-lt:rgba(217,60,74,.11); --blue:#2A6FB8; --blue-lt:rgba(47,127,208,.11);
   /* nombres viejos que usa el JS */
   --surface:var(--bg); --surface2:rgba(0,0,0,.035); --border:var(--sh-d); --pig-2:var(--pri);
@@ -70,15 +70,15 @@
    que el fondo; si fuera blanca se veria un borde brillante, no relieve. */
 @media (prefers-color-scheme: dark){
   :root, [data-pal=a], [data-pal=b], [data-pal=c]{
-    --bg:#202126; --sh-d:#16171A; --sh-l:#2B2C33;
+    --bg:#202126; --sh-d:#131417; --sh-l:#2E3038;
     --text:#ECECEF; --muted:#A4A5AE; --dim:#6F7179;
     --surface2:rgba(255,255,255,.04);
     --green:#4CC98A; --green-lt:rgba(76,201,138,.13); --amber:#F2B442; --amber-lt:rgba(242,180,66,.14);
     --red:#FF6B7A; --red-lt:rgba(255,107,122,.13); --blue:#6AAEF0; --blue-lt:rgba(106,174,240,.13);
   }
-  :root, [data-pal=a]{ --pri:#3FAE85; --pri-ink:#0F1A15; --acc:#FF8A3D; --acc-ink:#1A0E05; --hi-lt:rgba(217,239,79,.16); --p0:#FF8A3D; --p0-lt:rgba(255,138,61,.12); --p1:#4FC79A; --p1-lt:rgba(79,199,154,.12); }
-  [data-pal=b]{ --pri:#8F70FF; --pri-ink:#FFFFFF; --acc:#7DF2C2; --acc-ink:#0D1A14; --hi-lt:rgba(125,242,194,.14); --p0:#9F86FF; --p0-lt:rgba(143,112,255,.14); --p1:#7DF2C2; --p1-lt:rgba(125,242,194,.11); }
-  [data-pal=c]{ --pri:#8DB4F0; --pri-ink:#0B1A30; --acc:#FF6B8E; --acc-ink:#24060E; --hi-lt:rgba(150,196,240,.16); --p0:#9CBDF2; --p0-lt:rgba(141,180,240,.13); --p1:#FF7A9A; --p1-lt:rgba(255,107,142,.12); }
+  :root, [data-pal=a]{ --pri:#3FAE85; --pri-ink:#0F1A15; --acc:#FF8A3D; --acc-ink:#1A0E05; --hi-lt:rgba(217,239,79,.16); --p0:#FF8A3D; --p0-lt:rgba(255,138,61,.12); --p1:#38BDD8; --p1-lt:rgba(56,189,216,.12); }
+  [data-pal=b]{ --pri:#8F70FF; --pri-ink:#FFFFFF; --acc:#7DF2C2; --acc-ink:#0D1A14; --hi-lt:rgba(125,242,194,.14); --p0:#F472B6; --p0-lt:rgba(244,114,182,.14); --p1:#7DF2C2; --p1-lt:rgba(125,242,194,.11); }
+  [data-pal=c]{ --pri:#8DB4F0; --pri-ink:#0B1A30; --acc:#FF6B8E; --acc-ink:#24060E; --hi-lt:rgba(150,196,240,.16); --p0:#E0B24A; --p0-lt:rgba(224,178,74,.13); --p1:#FF7A9A; --p1-lt:rgba(255,107,142,.12); }
 }
 
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -107,7 +107,7 @@ header .sp{flex:1}
 nav.tabs{position:fixed;left:12px;right:12px;bottom:calc(10px + var(--safe-bot));z-index:30;background:var(--bg);
   border-radius:26px;box-shadow:var(--up);display:flex;gap:4px;padding:7px;max-width:616px;margin:0 auto}
 .tab{flex:1;border:0;background:none;padding:7px 2px;border-radius:19px;display:flex;flex-direction:column;
-  align-items:center;gap:2px;font-size:11px;font-weight:700;color:var(--dim)}
+  align-items:center;gap:2px;font-size:12px;font-weight:700;color:var(--muted)}
 .tab svg{width:23px;height:23px}
 .tab.on{color:var(--pri);box-shadow:var(--in-s);background:var(--hi-lt)}
 
@@ -131,14 +131,16 @@ main{padding:6px 18px 18px;max-width:640px;margin:0 auto}
 .btn:active{box-shadow:var(--in);filter:brightness(.96)}
 .btn.sec{background:var(--bg);color:var(--text);box-shadow:var(--up-s)}
 .btn.sec:active{box-shadow:var(--in-s)}
-.btn.green{background:var(--acc);color:var(--acc-ink)}
-.btn.small{min-height:38px;padding:8px 14px;font-size:13px;border-radius:13px}
+.btn.green,.btn.acc{background:var(--acc);color:var(--acc-ink)}
+.btn.small{min-height:40px;padding:8px 14px;font-size:13px;border-radius:13px}
 .btn.block{display:block;width:100%}
 .btn:disabled{opacity:.6}
 .chip{display:inline-flex;align-items:center;gap:4px;border:0;background:var(--bg);box-shadow:var(--up-s);
   border-radius:999px;padding:7px 14px;font-weight:600;font-size:13px;min-height:36px;color:var(--muted)}
 .chip.on{box-shadow:var(--in-s);color:var(--pri);font-weight:800}
-.chip.g.on{color:var(--green)}
+.chip.on::before{content:'\2713\00a0'}
+.chip.persona.on::before,.chip.quita::before{content:none}
+.chip.g.on{color:var(--pri)}
 .tag{display:inline-block;font-size:11.5px;font-weight:700;border-radius:9px;padding:3px 9px;background:var(--surface2);color:var(--muted)}
 .tag.g{background:var(--green-lt);color:var(--green)} .tag.a{background:var(--amber-lt);color:var(--amber)}
 .tag.b{background:var(--blue-lt);color:var(--blue)} .tag.r{background:var(--p0-lt);color:var(--acc)}
@@ -162,7 +164,7 @@ main{padding:6px 18px 18px;max-width:640px;margin:0 auto}
 .meal .nombre{font-size:18px;font-weight:800;line-height:1.25;margin:0 0 6px;letter-spacing:-.3px}
 .porc{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:14px 0}
 .pp{border-radius:18px;padding:11px 12px;font-size:13.5px;box-shadow:var(--in)}
-.pp .who{font-weight:800;font-size:13px;display:flex;justify-content:space-between;margin-bottom:5px}
+.pp .who{font-weight:800;font-size:13px;display:flex;flex-wrap:wrap;gap:2px 8px;justify-content:space-between;margin-bottom:5px}
 .pp.p0 .who{color:var(--p0)} .pp.p1 .who{color:var(--p1)}
 .pp ul{margin:0;padding:0;list-style:none}
 .pp li{padding:3px 0;line-height:1.35}
@@ -173,7 +175,7 @@ main{padding:6px 18px 18px;max-width:640px;margin:0 auto}
 .tick{display:block;width:100%;margin-top:9px;border:0;background:var(--bg);box-shadow:var(--up-s);border-radius:12px;
   min-height:38px;font-weight:700;font-size:13px;color:var(--muted)}
 .tick.on{box-shadow:var(--in-s);color:var(--green)}
-.vote{border:0;background:var(--bg);box-shadow:var(--up-s);border-radius:13px;width:42px;height:38px;font-size:16px}
+.vote{border:0;background:var(--bg);box-shadow:var(--up-s);border-radius:13px;width:44px;height:44px;font-size:16px}
 .vote.on{box-shadow:var(--in-s);background:var(--green-lt)} .vote.no.on{background:var(--red-lt)}
 
 /* ---------- semana ---------- */
@@ -306,6 +308,70 @@ ol.pasos{padding-left:20px;margin:6px 0} ol.pasos li{margin:5px 0}
 @keyframes pigblink{0%,100%{transform:scaleY(0)}45%,55%{transform:scaleY(1)}}
 .pig.static *{animation:none!important}
 @media (prefers-reduced-motion: reduce){.pig *{animation:none!important}}
+
+/* ---------- v16: sistema ---------- */
+.f1{flex:1;min-width:0} .wrap{flex-wrap:wrap}
+.mt1{margin-top:6px} .mt2{margin-top:10px} .mt3{margin-top:16px} .mb2{margin-bottom:10px} .mb3{margin-bottom:16px}
+.pad0{padding:4px 16px}
+.lead{font-size:13.5px;color:var(--muted);margin:0 0 10px;line-height:1.4}
+.sub{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:16px 0 8px}
+.card-h .sp{flex:1}
+.card-h{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.card-h h3{margin:0}
+.card-h .em{font-size:17px;width:34px;height:34px;border-radius:50%;box-shadow:var(--in-s);background:var(--hi-lt);display:flex;align-items:center;justify-content:center;flex:none}
+.iconbtn.sm{width:36px;height:36px;font-size:16px}
+.chev{font-size:20px;line-height:1;color:var(--dim);flex:none;font-weight:700}
+.tag{white-space:nowrap}
+.link{display:flex;align-items:center;gap:4px;border:0;background:none;padding:10px 2px 2px;min-height:40px;font-weight:700;font-size:13.5px;color:var(--pri)}
+.link .chev{color:inherit;font-size:17px}
+.link.danger{color:var(--red)}
+.link-n{display:flex;align-items:center;gap:6px;border:0;background:none;padding:0;text-align:left;width:100%}
+.meal .link-n{font-size:18px;font-weight:800;line-height:1.25;margin:0 0 6px;letter-spacing:-.3px}
+.opt{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;text-align:left;padding:12px 2px;min-height:52px;border-top:1px solid var(--surface2)}
+.opt:first-child{border-top:0}
+.opt b{display:block;font-size:15px}
+.opt .small{display:block;margin-top:1px}
+#modal-box > .opt{padding-left:4px;padding-right:4px}
+.nota{font-size:12.5px;font-weight:600;color:var(--muted);margin:8px 0 2px;line-height:1.35}
+.nota.a{color:var(--amber)} .nota.g{color:var(--green)}
+.tick{margin-top:10px}
+.step{border:0;background:var(--bg);box-shadow:var(--up-s);border-radius:13px;width:44px;height:44px;font-size:18px;font-weight:800;flex:none}
+.step:active{box-shadow:var(--in-s)}
+.x{border:0;background:none;width:32px;height:32px;margin:-6px -8px -6px 0;font-size:12px;color:var(--muted);flex:none}
+.chip.quita{padding-right:6px}
+.ck{width:24px;height:24px;accent-color:var(--pri);flex:none}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:3px}
+.dot.p0{background:var(--p0)} .dot.p1{background:var(--p1)}
+.meta{cursor:pointer}
+.meta .ayer{margin-top:6px}
+.warn{color:var(--amber);font-weight:700}
+.ok-t{color:var(--green);font-weight:700}
+.fila{padding:8px 0;border-top:1px solid var(--surface2)}
+.fila:first-of-type{border-top:0}
+/* comida plegada: una linea */
+.meal.plegada{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:13px 16px}
+.meal.plegada .em{font-size:17px;width:34px;height:34px;border-radius:50%;box-shadow:var(--in-s);background:var(--hi-lt);display:flex;align-items:center;justify-content:center;flex:none}
+.meal.plegada .lb{display:block;font-weight:700;font-size:11.5px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted)}
+.meal.plegada .nm1{display:block;font-weight:800;font-size:15px;line-height:1.25;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.meal.plegada .small{display:block}
+/* filas tocables que ahora son botones */
+.match,.day .sl,.dxd,.day.vacio{width:100%;text-align:left;background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit}
+.match{border-top:1px solid var(--surface2)} .match:first-child{border-top:0}
+.day .sl{border-top:1px solid var(--surface2);align-items:center}
+.day .sl .k{padding-top:0}
+.dxd{display:block;border:0;border-top:1px solid var(--surface2);padding:9px 0}
+.dxd .d{width:72px;flex:none;font-size:13.5px}
+.day.vacio{display:flex;align-items:center;gap:8px;background:var(--bg);padding:12px 14px;margin-bottom:10px;box-shadow:var(--up-s);border:0}
+.day.vacio b{font-size:14px}
+.tour-ico{font-size:40px;line-height:1;margin-bottom:10px}
+/* guia plegada en la carta */
+details.guia{border-radius:16px;box-shadow:var(--in-s);padding:10px 13px;margin:0 0 14px;font-size:13.5px}
+details.guia summary{font-weight:700;cursor:pointer;color:var(--pri)}
+details.guia ul{margin:4px 0 0;padding-left:18px}
+/* oscuro: el neumorfismo se ve poco, un borde fino separa */
+@media (prefers-color-scheme: dark){
+  .card,.meta,.day,.btn.sec,.chip,.iconbtn,.step,.vote{outline:1px solid rgba(255,255,255,.05);outline-offset:-1px}
+}
 </style>
 </head>
 <body>
@@ -881,7 +947,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v15';
+var APP_VER   = 'v16';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -932,7 +998,8 @@ function setVariante(k, key){
   var l = varSel(k).slice(), i = l.indexOf(key);
   if (i === -1) l.push(key); else if (l.length > 1) l.splice(i, 1); else { toast('Tiene que quedar al menos uno'); return; }
   h.variantes[k] = l;
-  setKV('hogar', h); aplicarVariantes(); renderHeladera();
+  setKV('hogar', h); aplicarVariantes();
+  if ($('modal').classList.contains('on')) editarTipos(); else render();
 }
 
 /* Lo que alguien comio fuera del plan: [id, emoji, nombre, kcal, prot]. Porciones
@@ -978,13 +1045,14 @@ var CARTA = [
   ['milanapo','Principales','&#127869;','Milanesa napolitana (sola)',800,48,'milanesa napolitana'],
   ['pescado','Principales','&#128031;','Pescado a la plancha o al horno (trucha, merluza)',400,40,'pescado trucha merluza abadejo lenguado plancha horno'],
   ['salmon','Principales','&#128031;','Salm&oacute;n',550,40,'salmon'],
+  ['pescadorebozado','Principales','&#128031;','Pescado rebozado o a la romana',450,28,'rebozado romana milanesa pescado merluza abadejo'],
   ['pastaroja','Principales','&#127837;','Pastas con salsa de tomate',700,20,'pasta pastas fideos tallarines tomate fileto'],
   ['pastacrema','Principales','&#127837;','Pastas con crema, cuatro quesos o pesto',950,25,'pasta pastas crema cuatro quesos pesto'],
   ['rellenas','Principales','&#127837;','Ravioles o sorrentinos',800,30,'ravioles sorrentinos agnolotis'],
   ['noquis','Principales','&#127837;','&Ntilde;oquis',700,15,'noquis gnocchi'],
   ['lasana','Principales','&#127837;','Lasa&ntilde;a o canelones',800,35,'lasana canelones'],
   ['risotto','Principales','&#127834;','Risotto',650,15,'risotto'],
-  ['pizza','Principales','&#127829;','Pizza (3 porciones)',750,30,'pizza'],
+  ['pizza','Principales','&#127829;','Pizza (3 porciones)',750,30,'pizza cuatro quesos muzza napolitana fugazzeta calabresa'],
   ['hamburguesa','Principales','&#127828;','Hamburguesa completa (sin papas)',750,40,'hamburguesa burger'],
   ['lomito','Principales','&#129386;','Lomito o s&aacute;ndwich completo',800,45,'lomito sandwich'],
   ['sushi','Principales','&#127843;','Sushi (15 piezas)',650,25,'sushi rolls'],
@@ -1179,9 +1247,11 @@ function actualizarApp(){
   var espera = Object.keys(_kvSucio).length ? 1500 : 0;
   setTimeout(function(){ location.replace(location.pathname + '?v=' + Date.now()); }, espera);
 }
+var _diaVisto = '';
 document.addEventListener('visibilitychange', function(){
-  if (document.visibilityState === 'visible') buscarVersion();
+  if (document.visibilityState === 'visible'){ buscarVersion(); if (D && _diaVisto && _diaVisto !== hoyISO()) render(); }
 });
+setInterval(function(){ if (D && _diaVisto && _diaVisto !== hoyISO() && !$('modal').classList.contains('on')) render(); }, 60000);
 document.addEventListener('visibilitychange', function(){
   if (document.visibilityState !== 'visible' || DEMO || !D) return;
   if (Date.now() - _ultimaCarga < 60000 || Object.keys(_kvSucio).length) return;
@@ -1351,7 +1421,7 @@ function excesoAfuera(fecha, em){
   slotsDe().forEach(function(s){
     if (!comeAfuera(em, fecha, s)) return;
     var R = restDe(fecha, s, em); if (!R.k) return;
-    var m = metaSlot(em, s); k += Math.max(0, R.k - m.k); p += Math.max(0, R.p - m.p);
+    var m = metaSlot(em, s); k += R.k - m.k; p += R.p - m.p;
   });
   return {k:k, p:p};
 }
@@ -1367,8 +1437,8 @@ function snapDe(fecha, slot, em){ return (((dia(fecha).snap || {})[slot]) || {})
 function fijarSnap(fecha, slot, em){
   if (snapDe(fecha, slot, em)) return;
   var r = recDe(fecha, slot); if (!r) return;
-  var P = porciones(r, em, slot, fecha), q = {};
-  P.it.forEach(function(x){ q[x.f] = x.q; });
+  var P = porciones(r, em, slot, fecha), q = {_k:{}, _p:{}};
+  P.it.forEach(function(x){ q[x.f] = x.q; q._k[x.f] = x.a.k; q._p[x.f] = x.a.p; });
   var sn = JSON.parse(JSON.stringify(dia(fecha).snap || {})); sn[slot] = sn[slot] || {}; sn[slot][em] = q;
   setSlot(fecha, 'snap', sn);
 }
@@ -1378,29 +1448,36 @@ function borrarComido(fecha, slot, em){
     if (o[slot] && o[slot][em]){ delete o[slot][em]; setSlot(fecha, k, o); }
   });
 }
-function aplicarQ(P, Q){
+/* aplica cantidades (Q) y, si el snap guardo las kcal de ese dia (KP._k), usa esas */
+function aplicarQ(P, Q, KP){
   var tk = 0, tp = 0;
   P.it.forEach(function(x){
-    if (Q[x.f] !== undefined){ x.q = Q[x.f]; x.gr = x.q * x.u[1]; x.kcal = x.a.k * x.gr / 100; x.prot = x.a.p * x.gr / 100; }
+    if (Q && Q[x.f] !== undefined) x.q = Q[x.f];
+    var k100 = KP && KP._k && KP._k[x.f] != null ? KP._k[x.f] : x.a.k;
+    var p100 = KP && KP._p && KP._p[x.f] != null ? KP._p[x.f] : x.a.p;
+    x.gr = x.q * x.u[1]; x.kcal = k100 * x.gr / 100; x.prot = p100 * x.gr / 100;
     tk += x.kcal; tp += x.prot;
   });
   P.kcal = tk; P.prot = tp;
 }
 function platoComido(r, em, slot, fecha){
   var P = porciones(r, em, slot, fecha), S = snapDe(fecha, slot, em), R = realDe(fecha, slot, em);
-  if (S) aplicarQ(P, S);
+  if (S) aplicarQ(P, S, S);
   P.kProp = P.kcal; P.pProp = P.prot; P.real = !!R;
-  if (R) aplicarQ(P, R);
+  if (R) aplicarQ(P, R, S);
   return P;
 }
-function excesoReal(fecha, em){
+/* Lo ya tildado contra lo que tocaba en esa comida. Antes solo contaba "otra cantidad"
+   y un snack se descontaba dos veces: lo que la comida tildada ya habia absorbido no
+   se acreditaba. Ahora cada comida tildada aporta (lo comido - su meta), y asi lo
+   pendiente es exactamente lo que falta repartir. */
+function excesoTildados(fecha, em){
   var k = 0, p = 0;
   slotsDe().forEach(function(s){
-    if (!realDe(fecha, s, em) || !comido(fecha, s, em)) return;
+    if (!comido(fecha, s, em) || comeAfuera(em, fecha, s)) return;
     var r = recDe(fecha, s); if (!r) return;
-    var P = platoComido(r, em, s, fecha);
-    k += P.kcal - P.kProp;
-    p += P.prot - P.pProp;
+    var P = platoComido(r, em, s, fecha), m = metaSlot(em, s);
+    k += P.kcal - m.k; p += P.prot - m.p;
   });
   return {k:k, p:p};
 }
@@ -1431,7 +1508,7 @@ function setManana(em, v){
   render();
 }
 function abrirDesayuno(em){
-  var h = mh('&iquest;Qu&eacute; desayun&oacute; ' + nombre(em) + '?');
+  var h = mh(em === userEmail ? '&iquest;Qu&eacute; desayunaste?' : '&iquest;Qu&eacute; desayun&oacute; ' + nombre(em) + '?');
   h += '<p class="small muted" style="margin-top:0">Toc&aacute; lo que se parezca. Si fueron dos, tocalo dos veces.</p><div class="chips">' +
     DESAYUNO.concat(EXTRAS_COMIDA).map(function(e){
       return '<button class="chip" onclick="sumarDesayuno(\'' + em + '\',\'' + e[0] + '\')">' + e[1] + ' ' + e[2] + ' <span class="dim" style="font-weight:600">~' + e[3] + '</span></button>';
@@ -1448,32 +1525,9 @@ function quitarDesayuno(em, i){
   var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).desa || {}));
   (o[em] || []).splice(i, 1); setSlot(f, 'desa', o); render();
 }
-function mananaHTML(f){
-  var ps = personas().filter(function(em){ return (perfil(em) || {}).man !== 'desayuno'; });
-  if (!ps.length) return '';
-  var h = '<div class="card"><div class="row"><span style="font-size:20px">&#129481;</span><b style="flex:1">Ma&ntilde;ana</b></div>' +
-    '<div class="small muted" style="margin:2px 0 4px">&iquest;Qu&eacute; hiciste hoy a la ma&ntilde;ana? Si cambia lo de siempre, se ajusta el resto del d&iacute;a.</div>';
-  ps.forEach(function(em){
-    var m = manDe(f, em), d = desaDe(f, em), dif = excesoManana(f, em).k;
-    h += '<div style="padding:8px 0;border-top:1px solid var(--surface2)"><b>' + nombre(em) + '</b>' +
-      '<div class="row wrap" style="gap:6px;margin-top:6px">' + [['mate','Solo mate'],['matefs','Mate y frutos secos'],['desayuno','Desayun&eacute;']].map(function(o){
-        return '<button class="chip' + (m === o[0] ? ' on' : '') + '" style="min-height:32px;padding:4px 12px" onclick="setManana(\'' + em + '\',\'' + o[0] + '\')">' + o[1] + '</button>';
-      }).join('') + '</div>';
-    if (m === 'desayuno'){
-      h += '<div class="chips" style="margin-top:8px">' + d.l.map(function(x){
-        return '<span class="chip" style="cursor:default">' + x.e[1] + ' ' + x.e[2] +
-          ' <button class="vote" style="width:26px;height:26px;margin-left:4px;font-size:12px" onclick="quitarDesayuno(\'' + em + '\',' + x.i + ')" aria-label="Quitar">&#10005;</button></span>';
-      }).join('') + '<button class="chip" onclick="abrirDesayuno(\'' + em + '\')">+ Agregar</button></div>';
-    }
-    if (Math.abs(dif) >= 20) h += '<div class="small" style="margin-top:4px;font-weight:700;color:' + (dif > 0 ? 'var(--amber)' : 'var(--green)') + '">' +
-      (dif > 0 ? '+' + fN(dif) + ' kcal sobre lo de siempre: se descuentan de lo que queda.' : fN(-dif) + ' kcal menos que lo de siempre: te quedan para el resto del d&iacute;a.') + '</div>';
-    h += '</div>';
-  });
-  return h + '</div>';
-}
 function extraTotal(fecha, em){
-  var a = extrasDe(fecha, em), b = excesoAfuera(fecha, em), c = excesoReal(fecha, em), d = excesoManana(fecha, em);
-  return {k:a.k + b.k + c.k + d.k, p:a.p + b.p + c.p + d.p};
+  var a = extrasDe(fecha, em), b = excesoAfuera(fecha, em), c = excesoTildados(fecha, em), d = excesoManana(fecha, em);
+  return {k:a.k + b.k + c.k + d.k, p:a.p + b.p + c.p + d.p, partes:{snack:a.k, afuera:b.k, comidas:c.k, manana:d.k}};
 }
 function descuento(em, fecha, slot){
   if (!fecha) return {k:0, p:0};
@@ -1550,12 +1604,26 @@ function nombreCorto(x){
    ================================================================== */
 function planSem(fecha){ return KV['plan:' + lunes(fecha)] || {}; }
 function dia(fecha){ return planSem(fecha)[fecha] || {}; }
+var SLOT_COMIDA = ['de', 'al', 'me', 'ce'];
 function setSlot(fecha, slot, val){
   var k = 'plan:' + lunes(fecha);
   var p = JSON.parse(JSON.stringify(KV[k] || {}));
   p[fecha] = p[fecha] || {};
+  /* si cambia el plato, lo tildado de esa comida ya no corresponde */
+  if (SLOT_COMIDA.indexOf(slot) !== -1 && p[fecha][slot] !== val)
+    ['ok', 'snap', 'real'].forEach(function(c){ if (p[fecha][c] && p[fecha][c][slot]) delete p[fecha][c][slot]; });
   p[fecha][slot] = val;
   setKV(k, p);
+}
+function tildadoPorAlguien(fecha, slot){ return Object.keys(((dia(fecha).ok || {})[slot]) || {}).length > 0; }
+/* antes de cambiar un plato ya tildado, avisar */
+function okCambiar(fecha, slot){
+  return !tildadoPorAlguien(fecha, slot) || confirm('Esta comida ya esta marcada como comida. Si la cambias, se desmarca. Seguir?');
+}
+function desmarcar(fecha, slot, em){
+  var o = JSON.parse(JSON.stringify(dia(fecha).ok || {}));
+  if (o[slot] && o[slot][em]){ delete o[slot][em]; setSlot(fecha, 'ok', o); }
+  borrarComido(fecha, slot, em);
 }
 function hayDesayuno(){ return personas().some(function(em){ return (perfil(em) || {}).man === 'desayuno'; }); }
 function slotsDe(){ var s = ['al', 'me', 'ce']; if (hayDesayuno()) s.unshift('de'); return s; }
@@ -1570,6 +1638,8 @@ function fueraDe(fecha, slot){ return ((dia(fecha).fuera || {})[slot]) || []; }
 function presente(em, fecha, slot){ return enSlot(em, slot) && (!fecha || fueraDe(fecha, slot).indexOf(em) === -1); }
 function setFuera(fecha, slot, quien){
   var f = JSON.parse(JSON.stringify(dia(fecha).fuera || {}));
+  var salen = quien === 'todos' ? personas() : (quien === 'casa' ? [] : ((f[slot] || []).indexOf(quien) === -1 ? [quien] : []));
+  salen.forEach(function(em){ desmarcar(fecha, slot, em); });
   if (quien === 'todos'){ delete f[slot]; setSlot(fecha, 'fuera', f); setSlot(fecha, slot, 'afuera'); }
   else if (quien === 'casa'){ delete f[slot]; setSlot(fecha, 'fuera', f); if (dia(fecha)[slot] === 'afuera') volverPlan(fecha, slot); }
   else {
@@ -1577,10 +1647,11 @@ function setFuera(fecha, slot, quien){
     if (i === -1) l.push(quien); else l.splice(i, 1);
     f[slot] = l;
     var quedan = personas().filter(function(em){ return enSlot(em, slot) && l.indexOf(em) === -1; });
-    if (!quedan.length){ delete f[slot]; setSlot(fecha, 'fuera', f); setSlot(fecha, slot, 'afuera'); }
+    if (!quedan.length && personas().length > 1){ delete f[slot]; setSlot(fecha, 'fuera', f); setSlot(fecha, slot, 'afuera'); }
     else { setSlot(fecha, 'fuera', f); if (dia(fecha)[slot] === 'afuera') volverPlan(fecha, slot); }
   }
   closeModal(); render();
+  if (salen.length) abrirCarta(fecha, slot);
 }
 function elegirAfuera(fecha, slot){
   var fu = fueraDe(fecha, slot), todos = dia(fecha)[slot] === 'afuera';
@@ -1621,23 +1692,24 @@ function editarComido(fecha, slot, em){
   pintarEd();
 }
 function pintarEd(){
-  var r = recDe(_ed.f, _ed.s), P = porciones(r, _ed.em, _ed.s, _ed.f), tot = 0;
+  var r = recDe(_ed.f, _ed.s), P = porciones(r, _ed.em, _ed.s, _ed.f), S = snapDe(_ed.f, _ed.s, _ed.em), tot = 0;
+  if (S) aplicarQ(P, S, S);
   var filas = P.it.map(function(x){
-    var q = _ed.q[x.f], st = x.u[3] || .5, k = x.a.k * q * x.u[1] / 100; tot += k;
+    var q = _ed.q[x.f], st = x.u[3] || .5, k100 = S && S._k && S._k[x.f] != null ? S._k[x.f] : x.a.k, k = k100 * q * x.u[1] / 100; tot += k;
     var cambio = Math.abs(q - x.q) > 1e-9;
     return '<li><div style="flex:1"><b>' + fq(q) + ' ' + (q <= 1 ? x.u[0] : x.u[2]) + '</b> ' + nombreCorto(x) +
       '<div class="small ' + (cambio ? '' : 'muted') + '" style="' + (cambio ? 'color:var(--amber);font-weight:700' : '') + '">' +
       (cambio ? 'Propuesto: ' + fq(x.q) + ' ' + (x.q <= 1 ? x.u[0] : x.u[2]) + ' &middot; ' : '') + '~' + fN(k) + ' kcal</div></div>' +
-      '<button class="vote" onclick="pasoEd(\'' + x.f + '\',-' + st + ')" aria-label="Menos">&minus;</button>' +
-      '<button class="vote" onclick="pasoEd(\'' + x.f + '\',' + st + ')" aria-label="M&aacute;s">+</button></li>';
+      '<button class="step" onclick="pasoEd(\'' + x.f + '\',-' + st + ')" aria-label="Menos">&minus;</button>' +
+      '<button class="step" onclick="pasoEd(\'' + x.f + '\',' + st + ')" aria-label="M&aacute;s">+</button></li>';
   }).join('');
   var dif = tot - _ed.prop;
-  var h = mh('&iquest;Cu&aacute;nto comi&oacute; ' + nombre(_ed.em) + '?');
+  var h = mh(_ed.em === userEmail ? '&iquest;Cu&aacute;nto comiste?' : '&iquest;Cu&aacute;nto comi&oacute; ' + nombre(_ed.em) + '?');
   h += '<p class="small muted" style="margin-top:0">' + r.n + '. Sub&iacute; o baj&aacute; lo que haga falta.</p>';
   h += '<div class="card" style="padding:4px 14px"><ul class="lst">' + filas + '</ul></div>';
   h += '<div class="aviso ' + (dif > 15 ? 'a' : 'g') + '">Total ~<b>' + fN(tot) + ' kcal</b> (propuesta ~' + fN(_ed.prop) + ').' +
     (Math.abs(dif) > 15 ? ' La diferencia (' + (dif > 0 ? '+' : '') + fN(dif) + ') se ajusta en lo que queda del d&iacute;a.' : '') + '</div>';
-  h += '<button class="btn block" onclick="guardarEd()">Guardar: lo comi&oacute; as&iacute;</button>';
+  h += '<button class="btn block" onclick="guardarEd()">Guardar</button>';
   h += '<button class="btn sec block" style="margin-top:12px" onclick="volverPropuesta()">Fue lo propuesto</button>';
   openModal(h);
 }
@@ -1684,16 +1756,19 @@ function oficinista(){
 function aplicarOficina(fecha, v){
   var em = oficinista(), f = JSON.parse(JSON.stringify(dia(fecha).fuera || {})), l = f.al || [], i = l.indexOf(em);
   setSlot(fecha, 'of', v ? 1 : 0);
-  if (v && i === -1) l.push(em);
-  if (!v && i !== -1) l.splice(i, 1);
-  f.al = l; setSlot(fecha, 'fuera', f);
-  if (v){
-    var r = JSON.parse(JSON.stringify(dia(fecha).rest || {}));
-    r.al = r.al || {it:{}}; if (!r.al.lugar) r.al.lugar = 'Comedor del colegio';
-    setSlot(fecha, 'rest', r);
+  /* si ya salian los dos, se queda asi: Diego igual come afuera */
+  if (dia(fecha).al !== 'afuera'){
+    if (v && i === -1){ l.push(em); desmarcar(fecha, 'al', em); }
+    if (!v && i !== -1) l.splice(i, 1);
+    f.al = l; setSlot(fecha, 'fuera', f);
   }
-  var al = dia(fecha).al;
-  if (al === 'sobras' || (al === 'afuera' && v)){ var r2 = mejor(fecha, 'al'); setSlot(fecha, 'al', r2 ? r2.id : ''); }
+  var r = JSON.parse(JSON.stringify(dia(fecha).rest || {}));
+  if (v){ r.al = r.al || {it:{}}; if (!r.al.lugar) r.al.lugar = 'Comedor del colegio'; setSlot(fecha, 'rest', r); }
+  else {
+    if (r.al && r.al.lugar === 'Comedor del colegio' && !Object.keys(r.al.it || {}).some(function(e){ return (r.al.it[e] || []).length; })){ delete r.al; setSlot(fecha, 'rest', r); }
+    if (dia(fecha).sede) setSlot(fecha, 'sede', '');
+  }
+  if (dia(fecha).al === 'sobras'){ var r2 = mejor(fecha, 'al'); setSlot(fecha, 'al', r2 ? r2.id : ''); }
 }
 function setOficina(fecha, v){ aplicarOficina(fecha, v); render(); }
 /* la oficina se marca con la sede: cada dia puede ser Norte o Quilmes. La ultima
@@ -1701,21 +1776,18 @@ function setOficina(fecha, v){ aplicarOficina(fecha, v); render(); }
 function oficinaEn(fecha, sede){
   aplicarOficina(fecha, 1);
   setSlot(fecha, 'sede', sede);
-  var em = oficinista(), pf = JSON.parse(JSON.stringify(perfil(em) || {}));
-  if (pf.sede !== sede){ pf.sede = sede; setKV('perfil:' + em, pf); }
+  /* la sede de siempre la cambia solo el que va al colegio (no pisar su perfil desde el otro celular) */
+  var em = oficinista();
+  if (em === userEmail){ var pf = JSON.parse(JSON.stringify(perfil(em) || {})); if (pf.sede !== sede){ pf.sede = sede; setKV('perfil:' + em, pf); } }
   closeModal(); render();
-}
-function elegirOficina(fecha){
-  var h = mh('Oficina del ' + DIAS[parse(fecha).getDay()] + ' ' + fechaCorta(fecha));
-  h += '<p class="small muted" style="margin-top:0">' + nombre(oficinista()) + ' almuerza en el comedor. &iquest;En qu&eacute; sede?</p>' +
-    '<div class="seg"><button class="btn sec" style="flex:1" onclick="oficinaEn(\'' + fecha + '\',\'norte\')">Norte</button>' +
-    '<button class="btn sec" style="flex:1" onclick="oficinaEn(\'' + fecha + '\',\'quilmes\')">Quilmes</button></div>';
-  openModal(h);
 }
 function nombreSede(sd){ return sd === 'quilmes' ? 'Quilmes' : 'Norte'; }
 /* Hasta v9 la oficina era vianda (almuerzo 'sobras'). Los dias ya marcados se pasan
    al esquema nuevo una sola vez: no tocan nada si ya estan bien. */
 function migrarOficina(){
+  /* una sola vez: despues, si Diego elige comer en casa un dia de colegio, se respeta */
+  if (hogar().migOf) return;
+  var h0 = JSON.parse(JSON.stringify(hogar())); h0.migOf = 1; setKV('hogar', h0);
   var hoy = hoyISO(), em = oficinista(); if (!em) return;
   for (var i = 0; i <= 13; i++){
     var f = addDays(hoy, i), d = dia(f);
@@ -1832,9 +1904,10 @@ function mejor(fecha, slot, excl){
 /* Completa lo que falte desde hoy hasta el domingo de la semana que se mira.
    No pisa nada que ya este elegido. */
 function completar(desde, hasta){
-  var cambios = {};
+  var cambios = {}, antes = {};
   for (var f = desde; f <= hasta; f = addDays(f, 1)){
     var k = 'plan:' + lunes(f);
+    if (!(k in antes)) antes[k] = JSON.stringify(KV[k] || {});
     var p = cambios[k] || JSON.parse(JSON.stringify(KV[k] || {}));
     var d = p[f] = p[f] || {};
     KV[k] = p;   /* en memoria ya, para que el puntaje vea lo elegido en esta vuelta */
@@ -1845,7 +1918,29 @@ function completar(desde, hasta){
     });
     cambios[k] = p;
   }
-  Object.keys(cambios).forEach(function(k){ setKV(k, cambios[k]); });
+  Object.keys(cambios).forEach(function(k){ if (JSON.stringify(cambios[k]) !== antes[k]) setKV(k, cambios[k]); else KV[k] = cambios[k]; });
+}
+/* Rehacer propuestas sin perder nada: solo se vacian las comidas que nadie tildo, que
+   no son afuera ni sobras y en las que nadie sale. El resto del dia (snacks, manana,
+   colegio, meta) no se toca. Lo usan "Rehacer la semana", "Rehacer con lo que hay" y
+   el cambio de platos de siempre. */
+function limpiarPropuestas(desde, hasta){
+  var n = 0;
+  for (var f = desde; f <= hasta; f = addDays(f, 1)){
+    var k = 'plan:' + lunes(f), p = JSON.parse(JSON.stringify(KV[k] || {})), d = p[f] = p[f] || {};
+    SLOT_COMIDA.forEach(function(s){
+      var v = d[s];
+      if (!v || v === 'afuera' || v === 'sobras') return;
+      if (d.ok && d.ok[s] && Object.keys(d.ok[s]).length) return;
+      if (d.fuera && d.fuera[s] && d.fuera[s].length) return;
+      delete d[s]; n++;
+    });
+    KV[k] = p;
+  }
+  completar(desde, hasta);
+  /* lo vaciado y rellenado se guarda */
+  for (var g = lunes(desde); g <= hasta; g = addDays(g, 7)) setKV('plan:' + g, KV['plan:' + g]);
+  return n;
 }
 function otra(fecha, slot){
   var key = fecha + slot, cur = dia(fecha)[slot];
@@ -1939,19 +2034,8 @@ function borrarPropio(id){
 /* Vuelve a proponer hoy y los 2 dias siguientes priorizando lo que hay. No toca lo
    que ya se tildo como comido, ni las sobras de vianda, ni lo que se come afuera. */
 function rearmarConHeladera(){
-  var hoy = hoyISO(), n = 0;
-  for (var i = 0; i < 3; i++){
-    var f = addDays(hoy, i), k = 'plan:' + lunes(f), p = JSON.parse(JSON.stringify(KV[k] || {})), d = p[f] = p[f] || {};
-    ['de','al','me','ce'].forEach(function(s){
-      var v = d[s];
-      if (!v || v === 'afuera' || v === 'sobras') return;
-      if (d.ok && d.ok[s] && Object.keys(d.ok[s]).length) return;
-      delete d[s]; n++;
-    });
-    KV[k] = p; setKV(k, p);
-  }
-  completar(hoy, addDays(hoy, 2));
-  renderHeladera(); toast('Listo: ' + n + ' comidas rearmadas con lo que hay', 'ok');
+  var hoy = hoyISO(), n = limpiarPropuestas(hoy, addDays(hoy, 2));
+  render(); toast('Listo: ' + n + ' comidas rehechas con lo que hay', 'ok');
 }
 function toggleDespensa(k){
   var d = despensa().slice(), i = d.indexOf(k);
@@ -1965,6 +2049,7 @@ function toggleDespensa(k){
    ================================================================== */
 function render(){
   if (!D) return;
+  _diaVisto = hoyISO();
   aplicarVariantes();
   cargarPropias();
   if (activeTab === 'hoy') renderHoy();
@@ -2013,7 +2098,8 @@ function resumenDia(fecha, em){
       if (R.k) tot += R.k; else sin++;
       prop += mk; return;
     }
-    var r = recDe(fecha, s); if (!r) return;
+    var r = recDe(fecha, s);
+    if (!r){ lin.push({s:s, lb:SLOTS[s][0], n:'Sin plan', k:null, p:mk, est:'sin', vacio:1}); sin++; prop += mk; return; }
     var P = platoComido(r, em, s, fecha);
     if (comido(fecha, s, em)){ lin.push({s:s, lb:SLOTS[s][0], n:r.n, k:P.kcal, p:P.kProp, est:P.real ? 'real' : 'comido'}); tot += P.kcal; }
     else { lin.push({s:s, lb:SLOTS[s][0], n:r.n, k:null, p:P.kProp, est:'sin'}); sin++; }
@@ -2028,19 +2114,6 @@ function barra(v, max, col){
   var pct = clamp(max ? v / max * 100 : 0, 0, 100), pasa = v > max;
   return '<div style="height:8px;border-radius:5px;box-shadow:var(--in-s);overflow:hidden;margin:5px 0 3px">' +
     '<div style="height:100%;width:' + pct + '%;background:' + (pasa ? 'var(--amber)' : col) + ';border-radius:5px"></div></div>';
-}
-function metasHTML(){
-  var hoy = hoyISO(), ayer = addDays(hoy, -1);
-  return '<div class="metas">' + personas().map(function(em){
-    var o = objetivo(em), Rh = resumenDia(hoy, em), Ra = resumenDia(ayer, em), col = idx(em) ? 'var(--p1)' : 'var(--p0)';
-    return '<div class="meta p' + idx(em) + '"><div class="nm">' + nombre(em) + '</div>' +
-      '<div class="kc">' + fN(o.kcal) + ' <span style="font-size:13px">kcal</span></div>' +
-      '<div class="pr">' + o.prot + ' g de prote&iacute;na</div>' +
-      barra(Rh.tot, Rh.meta, col) +
-      '<div class="pr" style="cursor:pointer" onclick="verDia(\'' + hoy + '\',\'' + em + '\')">Hoy ~<b>' + fN(Rh.tot) + '</b> de ' + fN(Rh.meta) + ' &rsaquo;</div>' +
-      '<div class="pr" style="cursor:pointer;margin-top:2px" onclick="verDia(\'' + ayer + '\',\'' + em + '\')">Ayer ~' + fN(Ra.tot) + ' de ' + fN(Ra.meta) +
-        (Ra.sin ? ' <span style="color:var(--amber)">(' + Ra.sin + ' sin marcar)</span>' : '') + ' &rsaquo;</div></div>';
-  }).join('') + '</div>';
 }
 /* el detalle de un dia, con la cuenta y lo que falta tildar */
 var _vd = null;
@@ -2077,52 +2150,7 @@ function tildarDesdeDia(slot){
   var o = JSON.parse(JSON.stringify(dia(_vd.f).ok || {})); o[slot] = o[slot] || {}; o[slot][_vd.em] = 1;
   setSlot(_vd.f, 'ok', o); render(); verDia(_vd.f, _vd.em);
 }
-function diaPorDiaHTML(em){
-  var hoy = hoyISO(), filas = '', semTot = 0, semMeta = 0, semTdee = 0, dias = 0, sinAlgo = 0;
-  for (var i = 6; i >= 0; i--){
-    var f = addDays(hoy, -i), R = resumenDia(f, em), col = idx(em) ? 'var(--p1)' : 'var(--p0)';
-    var conDatos = R.lin.some(function(l){ return l.s && l.est !== 'sin'; });
-    if (i > 0 && R.sin === 0 && conDatos){ semTot += R.tot; semMeta += R.meta; semTdee += R.tdee; dias++; }
-    if (i > 0 && R.sin) sinAlgo++;
-    filas += '<div style="padding:8px 0;border-top:1px solid var(--surface2);cursor:pointer" onclick="verDia(\'' + f + '\',\'' + em + '\')">' +
-      '<div class="row"><b style="width:76px">' + (i === 0 ? 'Hoy' : i === 1 ? 'Ayer' : DIASC[parse(f).getDay()] + ' ' + fechaCorta(f)) + '</b>' +
-      '<span class="small" style="flex:1">~' + fN(R.tot) + ' de ' + fN(R.meta) + '</span>' +
-      (R.sin ? '<span class="tag a">' + R.sin + ' sin marcar</span>' : (!conDatos ? '<span class="tag">sin datos</span>' :
-        (i > 0 ? (R.tot > R.meta + 50 ? '<span class="tag a">+' + fN(R.tot - R.meta) + '</span>' : '<span class="tag g">&#10004;</span>') : ''))) +
-      '</div>' + barra(R.tot, R.meta, col) + '</div>';
-  }
-  var h = '<div class="card"><h3>D&iacute;a por d&iacute;a</h3><div class="small muted" style="margin:-2px 0 4px">Lo comido contra el objetivo de cada d&iacute;a. Toc&aacute; un d&iacute;a para ver el detalle.</div>' + filas;
-  if (dias){
-    var def = semTdee - semTot;
-    h += '<div class="aviso ' + (semTot <= semMeta + 50 * dias ? 'g' : 'a') + '" style="margin-top:12px">En ' + dias + (dias === 1 ? ' d&iacute;a completo' : ' d&iacute;as completos') +
-      ': comiste ~<b>' + fN(semTot) + '</b> kcal contra ~' + fN(semMeta) + ' de objetivo. D&eacute;ficit real ~<b>' + fN(def) + ' kcal</b>' +
-      (def > 0 ? ' (&asymp; ' + (def < 770 ? fN(def / 7.7) + ' g' : fKg(def / 7700) + ' kg') + ' de grasa).' : '.') + '</div>';
-  } else h += '<div class="small muted" style="margin-top:8px">Cuando un d&iacute;a quede con todo tildado, ac&aacute; aparece el balance de la semana.</div>';
-  if (sinAlgo) h += '<div class="small muted">Los d&iacute;as con comidas sin marcar no entran al balance.</div>';
-  return h + '</div>';
-}
-
-
-function avisoDescuento(r, em, slot, P){
-  if (P.dsc.k < 10) return '';
-  var ach = porciones(r, em, slot).kcal - P.kcal;
-  if (ach >= 15) return '<div class="small" style="color:var(--amber);font-weight:700;margin-top:6px">Achicado ' + fN(ach) + ' kcal por lo que comi&oacute; fuera del plan</div>';
-  return '<div class="small muted" style="margin-top:6px">Lo de m&aacute;s (' + fN(P.dsc.k) + ' kcal) es menos que media porci&oacute;n de este plato: no lo cambia. Se compensa en la semana.</div>';
-}
 /* lo que comio una persona afuera, dentro de la tarjeta de la comida */
-function afueraPP(fecha, slot, em, conBoton){
-  var R = restDe(fecha, slot, em), m = metaSlot(em, slot);
-  var h = '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + (R.k ? '~' + fN(R.k) + ' kcal' : 'afuera') + '</span></div>';
-  if (R.l.length){
-    h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + c[2] + ' ' + nomRest(x) + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
-    h += '<div class="small" style="margin-top:6px;font-weight:700;color:' + (R.k > m.k + 30 ? 'var(--amber)' : 'var(--green)') + '">' +
-      (R.k > m.k + 30 ? fN(R.k - m.k) + ' kcal m&aacute;s que esta comida: se descuentan de lo que queda del d&iacute;a.' : 'Dentro de lo que tocaba en esta comida.') + '</div>';
-  } else if (slot === 'al' && esOficina(fecha) && em === oficinista())
-    h += '<div class="small muted">Almuerza en el colegio. Eleg&iacute; una opci&oacute;n y lo compenso en el resto del d&iacute;a.</div>' + menuColegioHTML(fecha, em);
-  else h += '<div class="small muted">Come afuera. Anot&aacute; qu&eacute; comi&oacute; y lo compenso en el resto del d&iacute;a.</div>';
-  if (conBoton) h += '<button class="tick" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">&iquest;Qu&eacute; comi&oacute;?</button>';
-  return h + '</div>';
-}
 /* nombre del plato afuera: el real si vino del menu/ticket, si no el de la carta */
 function nomRest(x){
   var c = CAR[x[0]];
@@ -2141,8 +2169,14 @@ function leerTexto(){
   var lineas = txt.split(/\n+/), out = [];
   lineas.forEach(function(l){
     var bruto = l.trim(); if (!bruto) return;
-    var qty = 1, m = bruto.match(/^(\d{1,2})\s*[xX]?\s+(.*)$/);
-    if (m){ qty = +m[1]; bruto = m[2]; }
+    var qty = 1, m = bruto.match(/^(\d{1,2})\/(\d{1,2})\s+([a-zA-Z].*)$/);
+    if (m){ qty = (+m[1]) / (+m[2] || 1); bruto = m[3]; }
+    else {
+      m = bruto.match(/^(\d{1,2})\s*[xX]?\s+([a-zA-Z].*)$/);
+      if (m && !/^(quesos?|estaciones)\b/i.test(m[2])){ qty = +m[1]; bruto = m[2]; }
+    }
+    var mx = bruto.match(/^(.*?)\s+[xX]\s*(\d{1,2})\b(.*)$/);
+    if (mx){ qty = qty * (+mx[2]); bruto = mx[1] + mx[3]; }
     var limpio = bruto.replace(/\$?\s*\d[\d.,]*\s*$/g, '').replace(/\$?\s*\d[\d.,]*\s*$/g, '').replace(/[\.\-:_]+$/, '').trim();
     var norm = quitarAcentos(esc(limpio));
     if (norm.replace(/[^a-z]/g, '').length < 3) return;
@@ -2158,7 +2192,7 @@ function matchCarta(norm){
   var ws = norm.split(/[^a-z]+/).filter(function(w){ return w.length >= 4; }), best = null, bs = 0;
   CARTA.forEach(function(c){
     var qs = (c[6] + ' ' + quitarAcentos(c[3])).split(/[^a-z]+/), sc = 0;
-    ws.forEach(function(w){ if (qs.some(function(q){ return q.length >= 4 && (q.indexOf(w.slice(0, 5)) === 0 || w.indexOf(q.slice(0, 5)) === 0); })) sc++; });
+    ws.forEach(function(w, i){ if (qs.some(function(q){ return q.length >= 4 && (q.indexOf(w.slice(0, 5)) === 0 || w.indexOf(q.slice(0, 5)) === 0); })) sc += i === 0 ? 1.5 : 1; });
     if (sc > bs){ bs = sc; best = c[0]; }
   });
   return best;
@@ -2172,8 +2206,8 @@ function pintarLeido(){
       return '<div style="padding:8px 0;border-top:1px solid var(--surface2)"><div style="font-weight:700">' + (x.q > 1 ? x.q + ' &times; ' : '') + esc(x.n) + '</div>' +
         '<div class="small muted">' + (x.id ? '&asymp; ' + c[3] : 'No lo reconozco: lo cuento como algo mediano') + ' &middot; ~' + c[4] + ' kcal</div>' +
         '<div class="row wrap" style="gap:6px;margin-top:6px">' + qs.map(function(em){
-          return '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarLeido(' + i + ',\'' + em + '\')">+ ' + nombre(em) + '</button>';
-        }).join('') + (qs.length > 1 ? '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarLeido(' + i + ',\'comp\')">Compartido</button>' : '') +
+          return '<button class="chip" onclick="sumarLeido(' + i + ',\'' + em + '\')">+ ' + nombre(em) + '</button>';
+        }).join('') + (qs.length > 1 ? '<button class="chip" onclick="sumarLeido(' + i + ',\'comp\')">Compartido</button>' : '') +
         '</div></div>';
     }).join('');
 }
@@ -2263,7 +2297,7 @@ function platosDeOpcion(items){
 function opcionesDelDia(fecha, em){
   var dd = menuDelDia(fecha, sedeDe(em, fecha)); if (!dd || !dd.categories) return null;
   var meta = metaSlot(em, 'al');
-  var ops = dd.categories.filter(function(c){ return c.key !== 'celiaco'; }).map(function(c){
+  var ops = dd.categories.filter(function(c){ return c.key !== 'celiaco' && c.key !== 'cena' && !/cena/i.test(c.label || ''); }).map(function(c){
     var pl = platosDeOpcion(c.items), k = 0, pr = 0, kh = 0, hs = [];
     pl.forEach(function(x){ var d = COM[x.id]; k += d[3]; pr += d[4]; if (d[5] === 'h'){ kh += d[3]; hs.push(d[2].toLowerCase()); } });
     return {key:c.key, label:c.label, items:c.items, pl:pl, k:k, p:pr, kMedia:k - kh / 2, hs:hs,
@@ -2290,8 +2324,8 @@ function menuColegioHTML(fecha, em){
         '<div class="small">' + o.items.map(function(t){ return esc(capFrase(t)); }).join(' &middot; ') + '</div>' +
         (mejor && conH ? '<div class="small" style="color:var(--green);font-weight:700;margin-top:3px">Ped&iacute; media porci&oacute;n de ' + o.hs.join(' y ') +
           ' (~' + fN(o.kMedia) + ' kcal)' + (o.hs.indexOf('papas fritas o bast&oacute;n') !== -1 ? ', o cambiala por ensalada' : '') + '.</div>' : '') +
-        '<div class="row wrap" style="gap:6px;margin-top:6px"><button class="chip" style="min-height:32px;padding:4px 12px" onclick="elegirMenu(\'' + fecha + '\',\'' + em + '\',\'' + o.key + '\',1)">Eleg&iacute; esta</button>' +
-        (conH ? '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="elegirMenu(\'' + fecha + '\',\'' + em + '\',\'' + o.key + '\',.5)">Con media de ' + o.hs[0] + '</button>' : '') +
+        '<div class="row wrap" style="gap:6px;margin-top:6px"><button class="chip" onclick="elegirMenu(\'' + fecha + '\',\'' + em + '\',\'' + o.key + '\',1)">Eleg&iacute; esta</button>' +
+        (conH ? '<button class="chip" onclick="elegirMenu(\'' + fecha + '\',\'' + em + '\',\'' + o.key + '\',.5)">Con media de ' + o.hs[0] + '</button>' : '') +
         '</div></div>';
     }).join('');
 }
@@ -2312,7 +2346,10 @@ function quienesAfuera(fecha, slot){ return personas().filter(function(em){ retu
 function abrirCarta(fecha, slot){
   _carta = {f:fecha, s:slot};
   var R = (dia(fecha).rest || {})[slot] || {}, qs = quienesAfuera(fecha, slot);
-  var h = mh('&iquest;Qu&eacute; comieron?');
+  var h = mh('&iquest;Qu&eacute; ' + (qs.length === 1 && qs[0] === userEmail ? 'comiste' : qs.length === 1 ? 'comi&oacute; ' + nombre(qs[0]) : 'comieron') + '?');
+  h += '<details class="guia"><summary>Antes de pedir: qu&eacute; conviene</summary>' + GUIA.map(function(g){
+    return '<div class="sub">' + g[0] + '</div><ul>' + g[1].map(function(x){ return '<li>' + x + '</li>'; }).join('') + '</ul>';
+  }).join('') + '</details>';
   h += '<div class="row"><div class="fld" style="flex:1;margin:0"><input id="ca-lugar" type="text" placeholder="Restaurante (opcional)" value="' + esc(R.lugar || '') + '" onchange="setLugar(this.value)"></div>' +
     '<button class="btn small sec" onclick="verMenuGoogle()">Ver el men&uacute;</button></div>' +
     '<div class="hint" style="margin-bottom:12px">Eleg&iacute; lo que m&aacute;s se parezca a cada plato. Si lo compartieron, toc&aacute; <b>Compartido</b>: le suma la mitad a cada uno.</div>';
@@ -2332,8 +2369,8 @@ function abrirCarta(fecha, slot){
     return t + '<div class="ca-row" data-q="' + c[6] + ' ' + quitarAcentos(c[3]) + '" data-cat="' + c[1] + '" style="padding:8px 0;border-top:1px solid var(--surface2)">' +
       '<div class="row"><div style="flex:1;font-weight:700">' + c[2] + ' ' + c[3] + '</div><span class="small dim">~' + c[4] + '</span></div>' +
       '<div class="row wrap" style="gap:6px;margin-top:6px">' + qs.map(function(em){
-        return '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarCarta(\'' + c[0] + '\',\'' + em + '\')">+ ' + nombre(em) + '</button>';
-      }).join('') + (qs.length > 1 ? '<button class="chip" style="min-height:32px;padding:4px 12px" onclick="sumarCarta(\'' + c[0] + '\',\'comp\')">Compartido</button>' : '') +
+        return '<button class="chip" onclick="sumarCarta(\'' + c[0] + '\',\'' + em + '\')">+ ' + nombre(em) + '</button>';
+      }).join('') + (qs.length > 1 ? '<button class="chip" onclick="sumarCarta(\'' + c[0] + '\',\'comp\')">Compartido</button>' : '') +
       '</div></div>';
   }).join('') + '</div>';
   openModal(h);
@@ -2388,218 +2425,27 @@ function pintarCarta(){
       '<div class="small muted" style="margin-top:4px">Esta comida ten&iacute;a ~' + fN(m.k) + ' kcal.</div></div>';
   }).join('') + '</div>';
 }
-function comidaHTML(fecha, slot, opts){
-  opts = opts || {};
-  var v = dia(fecha)[slot], S = SLOTS[slot];
-  var head = '<div class="slot"><span class="em">' + S[1] + '</span><span class="lb">' + S[0] + '</span><span class="sp"></span>';
-  if (v === 'afuera'){
-    var lug = ((dia(fecha).rest || {})[slot] || {}).lugar;
-    return '<div class="card meal">' + head + '<span class="tag b">Afuera</span></div>' +
-      '<div class="nombre">Comen afuera' + (lug ? ' &middot; ' + esc(lug) : '') + '</div>' +
-      '<div class="porc">' + personas().filter(function(em){ return enSlot(em, slot); }).map(function(em){ return afueraPP(fecha, slot, em); }).join('') + '</div>' +
-      '<div class="acts"><button class="btn small" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">&iquest;Qu&eacute; comieron?</button>' +
-      '<button class="btn small sec" onclick="verGuia()">Qu&eacute; elegir</button>' +
-      '<button class="btn small sec" onclick="volverPlan(\'' + fecha + '\',\'' + slot + '\')">Volver a la propuesta</button></div></div>';
-  }
-  var r = recDe(fecha, slot);
-  if (!r) return '<div class="card meal">' + head + '</div><div class="muted">Sin propuesta.</div>' +
-    '<div class="acts"><button class="btn small" onclick="otra(\'' + fecha + '\',\'' + slot + '\')">Proponer</button></div></div>';
-  var sobras = v === 'sobras';
-  var tags = '';
-  if (sobras) tags += '<span class="tag b">Vianda: sobras de anoche</span> ';
-  if (r.min) tags += '<span class="tag">' + r.min + ' min</span> ';
-  if (despensa().length && fecha >= hoyISO()){
-    var mh0 = matchHeladera(r);
-    tags += mh0.falta.length ? '<span class="tag a">Falta: ' + mh0.falta.join(', ') + '</span> ' : '<span class="tag g">&#10004; Est&aacute; todo</span> ';
-  }
-  var pp = personas().filter(function(em){ return enSlot(em, slot); }).map(function(em){
-    if (!presente(em, fecha, slot)) return afueraPP(fecha, slot, em, true);
-    var P = platoComido(r, em, slot, fecha), ok = comido(fecha, slot, em);
-    return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div><ul>' +
-      P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul>' +
-      avisoDescuento(r, em, slot, P) +
-      (fecha > hoyISO() ? '' : '<button class="tick' + (ok ? ' on' : '') + '" onclick="toggleComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' +
-        (ok ? '&#10004; Comido' : 'Lo com&iacute;') + '</button>' +
-        (P.real && ok ? '<div class="small" style="margin-top:6px;font-weight:700;color:' + (P.kcal > P.kProp + 15 ? 'var(--amber)' : 'var(--green)') + '">Comi&oacute; ~' + fN(P.kcal) +
-          ' kcal (propuesta ~' + fN(P.kProp) + ')' + (Math.abs(P.kcal - P.kProp) > 15 ? ': la diferencia se ajusta en lo que queda del d&iacute;a.' : '.') + '</div>' : '') +
-        '<button class="tick" style="min-height:32px;font-size:12.5px;margin-top:6px" onclick="editarComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' +
-        (P.real ? 'Cambiar cantidades' : 'Com&iacute; otra cantidad') + '</button>') + '</div>';
-  }).join('');
-  var aviso = '';
-  if (slot === 'ce' && dia(addDays(fecha, 1)).al === 'sobras')
-    aviso = '<div class="aviso a">&#127857; Cocin&aacute; de m&aacute;s: el almuerzo de ma&ntilde;ana son las sobras de esta olla.</div>';
-  if (slot === 'ce' && fecha >= hoyISO()){
-    var man = addDays(fecha, 1), of = esOficina(man);
-    aviso += '<div class="row" style="margin:8px 0 2px"><span class="small" style="flex:1;font-weight:700">&iquest;Ma&ntilde;ana hay oficina?' +
-      '<span class="dim" style="display:block;font-weight:600;font-size:12px">' + nombre(oficinista()) + ' almuerza en el colegio</span></span>' +
-      ['norte','quilmes'].map(function(sd){
-        var on = of && sedeDe(oficinista(), man) === sd;
-        return '<button class="chip' + (on ? ' on' : '') + '" style="padding:6px 10px" onclick="oficinaEn(\'' + man + '\',\'' + sd + '\')">' + nombreSede(sd) + '</button>';
-      }).join('') +
-      '<button class="chip' + (of ? '' : ' on') + '" style="padding:6px 10px" onclick="setOficina(\'' + man + '\',0)">No</button></div>';
-  }
-  var lk = (hogar().likes || {})[r.id];
-  var acts = '<div class="acts">' +
-    '<button class="btn small sec" onclick="verReceta(\'' + r.id + '\',\'' + fecha + '\',\'' + slot + '\')">Receta</button>' +
-    (sobras ? '' : '<button class="btn small sec" onclick="otra(\'' + fecha + '\',\'' + slot + '\')">Otra</button>') +
-    '<button class="btn small sec" onclick="elegirSlot(\'' + fecha + '\',\'' + slot + '\')">Elegir</button>' +
-    '<button class="btn small sec" onclick="elegirAfuera(\'' + fecha + '\',\'' + slot + '\')">Afuera</button>' +
-    (sobras ? '' : '<button class="btn small sec" onclick="sumarAlSlot(\'' + fecha + '\',\'' + slot + '\')">+ Sumar</button>') +
-    '<span class="sp"></span>' +
-    '<button class="vote' + (lk === 1 ? ' on' : '') + '" onclick="votar(\'' + r.id + '\',1)" aria-label="Nos gusta">&#128077;</button>' +
-    '<button class="vote no' + (lk === -1 ? ' on' : '') + '" onclick="votar(\'' + r.id + '\',-1,\'' + fecha + '\',\'' + slot + '\')" aria-label="No la propongas">&#128078;</button>' +
-    '</div>';
-  return '<div class="card meal">' + head + tags + '</div><div class="nombre">' + r.n + '</div>' + aviso +
-    '<div class="porc">' + pp + '</div>' + acts + '</div>';
-}
-
-function renderHoy(){
-  var f = hoyISO();
-  completar(f, addDays(lunes(f), 6));
-  var h = '<div class="title-day">' + cap(fechaLarga(f)) + '</div>';
-  fijarMetas(f);
-  h += metasHTML();
-  /* manana: mate, mate y frutos secos o desayuno, editable cada dia */
-  h += mananaHTML(f);
-  h += fueraPlanHTML(f);
-  slotsDe().forEach(function(s){ h += comidaHTML(f, s); });
-  /* actividad de hoy, para quien no tiene Gym Bro */
-  /* cada uno ve solo su propia actividad */
-  var sinGym = personas().filter(function(em){ return em === userEmail && !(D.gym && D.gym.email === em); });
-  if (sinGym.length){
-    h += '<div class="card"><h3>&#129496; &iquest;Entrenaste hoy?</h3>' +
-      sinGym.map(function(em){
-        var hoyA = actsDe(em).filter(function(a){ return a.date === f; });
-        return '<div class="row" style="margin:6px 0"><b style="flex:1">' + nombre(em) + '</b>' +
-          (hoyA.length ? '<span class="tag g">' + hoyA.map(function(a){ return (ACTIVIDADES[a.tipo] || ACTIVIDADES.otro).n + ' ' + a.min + "'"; }).join(', ') + '</span>' : '') +
-          '<button class="btn small sec" onclick="abrirActividad(\'' + em + '\')">Registrar</button></div>';
-      }).join('') + '</div>';
-  }
-  h += '<button class="btn sec block" onclick="verGuia()">&#127829; Gu&iacute;a para comer afuera</button>';
-  $('p-hoy').innerHTML = h;
-}
-
-function fueraPlanHTML(f){
-  var h = '<div class="card"><h3>&#127871; Snacks y algo de m&aacute;s</h3>' +
-    '<div class="small muted" style="margin:-2px 0 6px">Un snack, un picoteo o cualquier cosa fuera de las comidas. Se descuenta de lo que queda del d&iacute;a.</div>' +
-    (personas().length > 1 ? '<button class="btn small block" style="margin:8px 0 4px" onclick="abrirExtra(\'ambos\')">+ Snack de los dos</button>' : '');
-  personas().forEach(function(em){
-    var ex = extrasDe(f, em), tot = extraTotal(f, em).k;
-    var aplicado = slotsRestantes(em, f).reduce(function(a, s){ return a + descuento(em, f, s).k; }, 0);
-    h += '<div class="row wrap" style="padding:8px 0;border-top:1px solid var(--surface2)"><b style="flex:1;min-width:90px">' + nombre(em) + '</b>' +
-      '<button class="btn small sec" onclick="abrirExtra(\'' + em + '\')">+ Snack</button></div>';
-    if (ex.l.length){
-      /* agrupado: "Huevo duro x2"; la cruz saca uno */
-      var grp = {}, orden = [];
-      ex.l.forEach(function(x){ var id = x.e[0]; if (!grp[id]){ grp[id] = {e:x.e, n:0, i:0}; orden.push(id); } grp[id].n++; grp[id].i = x.i; });
-      h += '<div class="chips" style="margin:0 0 6px">' + orden.map(function(id){
-        var g = grp[id];
-        return '<span class="chip" style="cursor:default">' + g.e[1] + ' ' + g.e[2] + (g.n > 1 ? ' <b>&times;' + g.n + '</b>' : '') +
-          ' <button class="vote" style="width:26px;height:26px;margin-left:4px;font-size:12px" onclick="quitarExtra(\'' + em + '\',' + g.i + ')" aria-label="Quitar uno">&#10005;</button></span>';
-      }).join('') + '</div><div class="small muted">~' + fN(ex.k) + ' kcal. ' +
-        (tot - aplicado > 30 ? 'Ya no entra todo en lo que queda del d&iacute;a: no pasa nada, el d&eacute;ficit se mira por semana.'
-                              : 'Ya est&aacute; descontado de las comidas que faltan.') + '</div>';
-    }
-  });
-  return h + '</div>';
-}
-function abrirExtra(em){
-  var h = mh(em === 'ambos' ? '&iquest;Qu&eacute; comieron los dos?' : '&iquest;Qu&eacute; comi&oacute; ' + nombre(em) + '?');
-  h += '<p class="small muted" style="margin-top:0">Toc&aacute; lo que se parezca. Si fueron dos, tocalo dos veces.</p><div class="chips">' +
+function abrirExtra(em, fecha){
+  fecha = fecha || hoyISO();
+  var h = mh(em === 'ambos' ? 'Algo suelto de los dos' : 'Algo suelto ' + (em === userEmail ? '(vos)' : 'de ' + nombre(em)));
+  h += '<p class="lead">Un snack o picoteo fuera de las comidas' + (fecha !== hoyISO() ? ', el ' + fechaCorta(fecha) : '') + '. Toc&aacute; lo que se parezca; si fueron dos, tocalo dos veces.</p><div class="chips">' +
     EXTRAS_COMIDA.map(function(e){
-      return '<button class="chip" onclick="sumarExtra(\'' + em + '\',\'' + e[0] + '\')">' + e[1] + ' ' + e[2] + ' <span class="dim" style="font-weight:600">~' + e[3] + '</span></button>';
+      return '<button class="chip" onclick="sumarExtra(\'' + em + '\',\'' + e[0] + '\',\'' + fecha + '\')">' + e[1] + ' ' + e[2] + ' <span class="muted" style="font-weight:600">~' + e[3] + '</span></button>';
     }).join('') + '</div>';
   openModal(h);
 }
-function sumarExtra(em, id){
-  var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
+function sumarExtra(em, id, fecha){
+  var f = fecha || hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
   var quienes = em === 'ambos' ? personas() : [em];
   quienes.forEach(function(e){ o[e] = o[e] || []; o[e].push(id); });
   setSlot(f, 'extra', o); render();
   var n = o[quienes[0]].filter(function(x){ return x === id; }).length;
   toast('Anotado: ' + EXC[id][2] + (n > 1 ? ' (x' + n + ')' : '') + (em === 'ambos' ? ' para los dos' : '') + '. Se descuenta de lo que queda del d&iacute;a.', 'ok');
 }
-function quitarExtra(em, i){
-  var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
+function quitarExtra(em, i, fecha){
+  var f = fecha || hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
   (o[em] || []).splice(i, 1);
   setSlot(f, 'extra', o); render();
-}
-
-function renderSemana(){
-  var hoy = hoyISO(), l = addDays(lunes(hoy), semOffset * 7), fin = addDays(l, 6);
-  if (fin >= hoy) completar(l < hoy ? hoy : l, fin);
-  var h = '<div class="week-nav"><button class="iconbtn" onclick="semOffset--;renderSemana()" aria-label="Semana anterior">&lsaquo;</button>' +
-    '<div class="t">' + (semOffset === 0 ? 'Esta semana' : semOffset === 1 ? 'La que viene' : 'Semana del ' + fechaCorta(l)) + '</div>' +
-    '<button class="iconbtn" onclick="semOffset++;renderSemana()" aria-label="Semana siguiente">&rsaquo;</button></div>';
-  h += '<div class="row" style="margin-bottom:12px"><button class="btn green" style="flex:1" onclick="verCompras()">&#128722; Lista de compras</button>' +
-    '<button class="btn sec" onclick="rearmar()">Rearmar</button></div>';
-  for (var f = l; f <= fin; f = addDays(f, 1)){
-    var d = dia(f), pasado = f < hoy;
-    h += '<div class="day' + (f === hoy ? ' hoy' : '') + '" style="' + (pasado ? 'opacity:.55' : '') + '">' +
-      '<div class="dn">' + cap(DIAS[parse(f).getDay()]) + ' ' + fechaCorta(f) +
-      (f === hoy ? ' <span class="tag r">hoy</span>' : '') + '<span class="sp"></span>' +
-      (pasado ? (esOficina(f) ? '<span class="tag b">oficina</span>' : '')
-              : '<button class="chip' + (esOficina(f) ? ' on' : '') + '" style="min-height:30px;padding:4px 12px;font-size:12px" onclick="' + (esOficina(f) ? 'setOficina(\'' + f + '\',0)' : 'elegirOficina(\'' + f + '\')') + '">&#128188; ' + (esOficina(f) ? nombreSede(sedeDe(oficinista(), f)) : 'Oficina') + '</button>') + '</div>';
-    slotsDe().forEach(function(s){
-      var v = d[s], r = recDe(f, s);
-      var txt = v === 'afuera' ? '<span class="muted">Comen afuera</span>' : r ? (v === 'sobras' ? '<span class="tag b">sobras</span> ' : '') + r.n : '<span class="dim">&mdash;</span>';
-      if (r && v !== 'afuera' && fueraDe(f, s).length) txt += ' <span class="tag b">' + fueraDe(f, s).map(function(em){
-        return nombre(em) + (s === 'al' && esOficina(f) && em === oficinista() ? ' en el colegio' : ' afuera'); }).join(', ') + '</span>';
-      if (r && !pasado && v !== 'afuera' && despensa().length){ var fm = matchHeladera(r).falta.length; txt += fm ? ' <span class="tag a">falta ' + fm + '</span>' : ' <span class="tag g">&#10004;</span>'; }
-      h += '<div class="sl" onclick="abrirSlot(\'' + f + '\',\'' + s + '\')"><div class="k">' + SLOTS[s][0] + '</div><div class="v">' + txt + '</div></div>';
-    });
-    h += '</div>';
-  }
-  $('p-semana').innerHTML = h;
-}
-
-function renderHeladera(){
-  var h = '<div class="title-day">&iquest;Qu&eacute; hay en casa?</div>' +
-    '<p class="muted small" style="margin-top:0">Toc&aacute; lo que tengan. Abajo aparece qu&eacute; pueden cocinar, y la semana prioriza esas recetas.</p>';
-  var grupos = {prot:[], lac:[], ver:[], alm:[]};
-  Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (a.base || a.alt || a.ing) return; grupos[a.h].push([k, a.n]); });
-  Object.keys(EXTRA).forEach(function(k){ var e = EXTRA[k]; grupos[e[1] === 'lac' ? 'lac' : e[1] === 'ver' ? 'ver' : 'alm'].push([k, e[0]]); });
-  propios().forEach(function(x){ (grupos[x.h] || grupos.alm).push([x.id, esc(x.n), 1]); });
-  ['prot','lac','ver','alm'].forEach(function(g){
-    h += '<div class="card"><h3>' + GRUPO_H[g] + '</h3><div class="chips">' +
-      grupos[g].map(function(x){
-        return '<button class="chip g' + (tengo(x[0]) ? ' on' : '') + '" onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</button>' +
-          (x[2] ? '<button class="vote" style="width:30px;height:30px;font-size:12px;margin-left:-6px" onclick="borrarPropio(\'' + x[0] + '\')" aria-label="Borrar">&#10005;</button>' : '');
-      }).join('') + '</div></div>';
-  });
-  /* el tipo de cada producto: cambia las calorias de las porciones */
-  var v = hogar().variantes || {};
-  h += '<div class="card"><h3>Qu&eacute; tipo compran</h3><div class="small muted" style="margin:-2px 0 8px">Pod&eacute;s marcar m&aacute;s de uno. Las porciones se calculan con el m&aacute;s liviano que tengan.</div>' +
-    Object.keys(VARIANTES).map(function(k){
-      var sl = varSel(k);
-      return '<div class="tip-row"><div class="nm">' + VAR_LABEL[k] + '</div><div class="tri">' + VARIANTES[k].map(function(o){
-        return '<button class="' + (sl.indexOf(o[0]) !== -1 ? 'on2' : '') + '" onclick="setVariante(\'' + k + '\',\'' + o[0] + '\')">' + o[6] + '</button>';
-      }).join('') + '</div></div>';
-    }).join('') + '</div>';
-  /* algo que tienen y no esta en la lista */
-  h += '<div class="card"><h3>&iquest;Algo que no est&aacute;?</h3>' +
-    '<div class="row"><div class="fld" style="flex:1;margin:0"><input id="np-n" type="text" placeholder="Ej: hummus, tofu, kale"></div></div>' +
-    '<div class="row" style="margin-top:10px"><div class="fld" style="flex:1;margin:0"><select id="np-h">' +
-    ['prot','lac','ver','alm'].map(function(g){ return '<option value="' + g + '"' + (g === 'alm' ? ' selected' : '') + '>' + GRUPO_H[g].split(':')[0] + '</option>'; }).join('') +
-    '</select></div><button class="btn" onclick="agregarPropio()">Agregar</button></div>' +
-    '<div class="hint">Queda en la heladera de los dos. Las recetas usan los ingredientes de la lista.</div></div>';
-  var lista = RECETAS.map(function(r){ return {r:r, m:matchHeladera(r)}; })
-    .filter(function(x){ return (hogar().likes || {})[x.r.id] !== -1; })
-    .sort(function(a, b){ return b.m.pct - a.m.pct; }).slice(0, 12);
-  h += '<div class="section-t">Con esto pueden hacer</div><div class="card">';
-  if (!despensa().length) h += '<div class="muted">Marc&aacute; algo arriba y te digo qu&eacute; sale.</div>';
-  else h += lista.map(function(x){
-    var p = Math.round(x.m.pct * 100);
-    var col = p === 100 ? 'var(--green)' : p >= 60 ? 'var(--amber)' : 'var(--dim)';
-    var bg = p === 100 ? 'var(--green-lt)' : p >= 60 ? 'var(--amber-lt)' : 'var(--surface2)';
-    return '<div class="match" onclick="verReceta(\'' + x.r.id + '\')"><div class="pct" style="background:' + bg + ';color:' + col + '">' + p + '%</div>' +
-      '<div style="flex:1"><div class="nm">' + x.r.n + '</div><div class="small muted">' +
-      (x.m.falta.length ? 'Falta: ' + x.m.falta.join(', ') : '&#10004; Tienen todo') + '</div></div></div>';
-  }).join('');
-  h += '</div>';
-  if (despensa().length) h += '<button class="btn block" style="margin-bottom:14px" onclick="rearmarConHeladera()">Rearmar hoy y los pr&oacute;ximos 2 d&iacute;as con lo que hay</button>' +
-    '<button class="btn sec block" onclick="if(confirm(\'Vaciar la heladera?\')){setKV(\'despensa\',[]);renderHeladera();}">Vaciar todo</button>';
-  $('p-heladera').innerHTML = h;
 }
 
 /* ---------- progreso ---------- */
@@ -2626,23 +2472,6 @@ function chartPeso(em){
   s += '<text x="' + pl + '" y="' + (H - 4) + '" font-size="10" fill="var(--dim)" font-weight="700">' + fechaCorta(d0) + '</text>' +
     '<text x="' + (W - pr) + '" y="' + (H - 4) + '" text-anchor="end" font-size="10" fill="var(--dim)" font-weight="700">' + fechaCorta(t[t.length - 1].date) + '</text></svg>';
   return '<div class="chart">' + s + '</div><div class="small muted" style="margin-top:4px">La l&iacute;nea es la tendencia: los puntos sueltos son cada pesada. Lo que decide es la l&iacute;nea.</div>';
-}
-function sugerenciaAjuste(em){
-  var o = objetivo(em), r = ritmoReal(em), pf = perfil(em);
-  if (r === null) return '<div class="aviso b">En 2 semanas con 4 pesadas o m&aacute;s te digo si el n&uacute;mero de calor&iacute;as est&aacute; bien o hay que moverlo. La f&oacute;rmula es una estimaci&oacute;n: el peso real es el que manda.</div>';
-  var baja = -r, meta = o.kgSem;
-  if (pf.ajf && diasEntre(pf.ajf, hoyISO()) < 14) return '<div class="aviso b">Ajustaste las calor&iacute;as el ' + fechaCorta(pf.ajf) + '. Esper&aacute; dos semanas para ver el efecto.</div>';
-  var ad = adherencia(em, 14);
-  if (baja < meta * .5 && ad.usa && ad.plan >= 10 && ad.pct < .7)
-    return '<div class="aviso a">Est&aacute;s bajando <b>' + fKg(Math.max(0, baja)) + ' kg por semana</b> (objetivo ' + fKg(meta) + '), pero el plan se sigui&oacute; en <b>' +
-      Math.round(ad.pct * 100) + '%</b> de las comidas. Antes de bajar calor&iacute;as conviene seguirlo m&aacute;s: el n&uacute;mero puede estar bien.</div>';
-  if (baja < meta * .5 && o.kcal - 150 >= o.piso)
-    return '<div class="aviso a">Est&aacute;s bajando <b>' + fKg(Math.max(0, baja)) + ' kg por semana</b> y el objetivo es ' + fKg(meta) + '. Sugerencia: <b>150 kcal menos por d&iacute;a</b>.' +
-      '<div class="acts"><button class="btn small" onclick="ajustar(\'' + em + '\',-150)">Aplicar</button></div></div>';
-  if (baja > meta * 1.6 && baja > .7)
-    return '<div class="aviso a">Est&aacute;s bajando <b>' + fKg(baja) + ' kg por semana</b>, m&aacute;s r&aacute;pido de lo planeado: se pierde m&uacute;sculo y cuesta sostenerlo. Sugerencia: <b>150 kcal m&aacute;s por d&iacute;a</b>.' +
-      '<div class="acts"><button class="btn small" onclick="ajustar(\'' + em + '\',150)">Aplicar</button></div></div>';
-  return '<div class="aviso g">&#10004; Vas a <b>' + fKg(Math.max(0, baja)) + ' kg por semana</b>, en l&iacute;nea con el objetivo (' + fKg(meta) + '). No hay que tocar nada.</div>';
 }
 function gymHTML(A){
   var g = D.gym || {}, hoy = hoyISO(), ev = [];
@@ -2671,57 +2500,6 @@ function gymHTML(A){
       ' Se carga en Gym Bro: ac&aacute; no hay que registrar nada.</div>' +
     (g.error ? '<div class="aviso a">No pude leer Gym Bro: ' + esc(g.error) + '</div>' : '') + '</div>';
 }
-function renderProgreso(){
-  var ps = personas(); if (!ps.length){ $('p-progreso').innerHTML = ''; return; }
-  if (ps.indexOf(progEm) === -1) progEm = ps.indexOf(userEmail) !== -1 ? userEmail : ps[0];
-  var em = progEm, pf = perfil(em), o = objetivo(em), t = tendencia(em);
-  var h = '<div class="seg" style="margin:6px 0 12px">' + ps.map(function(e){
-    return '<button class="chip' + (e === em ? ' on' : '') + '" onclick="progEm=\'' + e + '\';renderProgreso()">' + nombre(e) + '</button>';
-  }).join('') + '</div>';
-  var ultimo = t.length ? t[t.length - 1] : null, primero = t.length ? t[0] : null;
-  h += '<div class="card"><h3>Peso</h3><div class="row"><div class="fld" style="flex:1;margin:0"><input id="pp-peso" type="number" inputmode="decimal" step="0.1" placeholder="Peso de hoy (kg)"></div>' +
-    '<button class="btn" id="btn-peso" onclick="guardarPeso(\'' + em + '\')">Guardar</button></div>' +
-    '<div class="hint">' + (D.gym && D.gym.email === em ? 'Se guarda tambi&eacute;n en Gym Bro: es la misma planilla de peso.' : 'Una o dos veces por semana alcanza, en ayunas.') + '</div>' +
-    '<div class="stats"><div class="stat"><div class="v">' + (ultimo ? fKg(ultimo.t) : '&mdash;') + '</div><div class="l">tendencia (kg)</div></div>' +
-    '<div class="stat"><div class="v">' + (primero && ultimo ? (ultimo.t - primero.t > 0 ? '+' : '') + fKg(ultimo.t - primero.t) : '&mdash;') + '</div><div class="l">desde el ' + (primero ? fechaCorta(primero.date) : 'inicio') + '</div></div>' +
-    '<div class="stat"><div class="v">' + (pf.meta ? fKg(+pf.meta) : '&mdash;') + '</div><div class="l">meta</div></div></div>' +
-    chartPeso(em) + '</div>';
-  h += '<div class="card"><h3>&iquest;Las calor&iacute;as est&aacute;n bien?</h3>' + sugerenciaAjuste(em) +
-    '<div class="small muted">Hoy: <b>' + fN(o.kcal) + ' kcal</b> y <b>' + o.prot + ' g de prote&iacute;na</b>. ' +
-    (em === userEmail ? '<a href="#" onclick="verCalculo(\'' + em + '\');return false" style="color:var(--pig-2)">C&oacute;mo se calcula</a>' : '') + '</div></div>';
-  h += diaPorDiaHTML(em);
-  /* cuanto del plan se sigue */
-  var ad = adherencia(em, 7);
-  h += '<div class="card"><h3>Plan de los &uacute;ltimos 7 d&iacute;as</h3>' + (ad.usa && ad.plan
-    ? '<div class="row"><div style="font-size:30px;font-weight:800;letter-spacing:-1px;color:var(--pri)">' + Math.round(ad.pct * 100) + '%</div>' +
-      '<div class="small muted" style="flex:1">de las comidas en casa marcadas como comidas (' + ad.ok + ' de ' + ad.plan + ').</div></div>'
-    : '<div class="small muted">Tild&aacute; <b>Lo com&iacute;</b> en Hoy y ac&aacute; ves cu&aacute;nto del plan se sigue. No hace falta contar nada.</div>') + '</div>';
-  /* actividad: Diego desde Gym Bro, el resto la registra aca. Cada uno ve solo la suya. */
-  var A = o.act;
-  if (em !== userEmail) h += '<div class="card"><h3>Actividad</h3><div class="small muted">La actividad de ' + nombre(em) + ' la ve solo ' + nombre(em) + '.</div></div>';
-  else if (D.gym && D.gym.email === em) h += gymHTML(A);
-  else {
-  h += '<div class="card"><h3>Actividad</h3>';
-  if (A.fuente === 'gym' || A.fuente === 'gym+app')
-    h += '<div class="small">Desde <b>Gym Bro</b>, promedio de las &uacute;ltimas 4 semanas: <b>' + fKg(A.ses).replace(',0','') + ' entrenamientos</b> y <b>' + fKg(A.km) + ' km</b> de cardio por semana.</div>';
-  var regs = actsDe(em).slice(0, 8);
-  if (regs.length) h += '<ul class="lst" style="margin-top:6px">' + regs.map(function(a){
-    var Z = (a.zonas || []).map(function(z){ var x = ZONAS.filter(function(q){ return q[0] === z; })[0]; return x ? x[1] : z; }).join(', ');
-    return '<li><div style="flex:1"><b>' + (ACTIVIDADES[a.tipo] || ACTIVIDADES.otro).n + '</b> &middot; ' + a.min + ' min &middot; ' + INTENSIDAD[+a.int || 0] +
-      '<div class="small muted">' + fechaCorta(a.date) + (Z ? ' &middot; ' + Z : '') + '</div></div><span class="tag a">~' + fN(a.kcal || 0) + ' kcal</span>' +
-      '<button class="vote" onclick="borrarActividad(\'' + a.id + '\')" aria-label="Borrar">&#10005;</button></li>';
-  }).join('') + '</ul>';
-  else if (A.fuente === 'perfil') h += '<div class="small muted">Sin registros todav&iacute;a: se usan las ' + (+pf.ses || 0) + ' sesiones por semana del perfil.</div>';
-  h += '<div class="small muted" style="margin:8px 0">Suma unas <b>' + fN(A.kcalDia) + ' kcal por d&iacute;a</b> al gasto.</div>' +
-    '<button class="btn sec block" onclick="abrirActividad(\'' + em + '\')">+ Registrar actividad</button></div>';
-  }
-  h += '<div class="card"><h3>Para tener en cuenta</h3><div class="small">' +
-    '&bull; La panza no se baja sola: la grasa abdominal se va con el d&eacute;ficit sostenido, la prote&iacute;na, la fuerza y el sue&ntilde;o. Suele ser lo &uacute;ltimo en irse.<br>' +
-    '&bull; El peso de un d&iacute;a se mueve un kilo por agua y sal. Por eso se mira la l&iacute;nea.<br>' +
-    '&bull; La grasa se pierde con constancia, no con hambre.</div></div>';
-  $('p-progreso').innerHTML = h;
-}
-
 /* ==================================================================
    MODALES
    ================================================================== */
@@ -2743,7 +2521,7 @@ function ollaTotal(r, fecha, slot){
       });
     });
   });
-  return {tot:tot, vianda:comidas.length > 1};
+  return {tot:tot, vianda:comidas.length > 1};   /* vianda = sobras para el almuerzo de manana */
 }
 function crudoTxt(f, t){
   var a = ALI[f];
@@ -2754,71 +2532,7 @@ function crudoTxt(f, t){
   }
   return '';
 }
-function verReceta(id, fecha, slot){
-  var r = REC[id], h = mh(r.n);
-  h += '<div class="row wrap" style="margin-bottom:8px">' + (r.min ? '<span class="tag">' + r.min + ' min</span>' : '') +
-    (r.v === 0 ? '<span class="tag">no va de vianda</span>' : '<span class="tag b">sirve de vianda</span>') + '</div>';
-  var s = slot || (r.t.indexOf('c') !== -1 ? 'ce' : r.t.indexOf('a') !== -1 ? 'al' : 'me');
-  h += '<div class="porc">' + personas().filter(function(em){ return presente(em, fecha, s); }).map(function(em){
-    var P = porciones(r, em, s, fecha);
-    return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal &middot; ' + Math.round(P.prot) + ' g prot</span></div><ul>' +
-      P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul></div>';
-  }).join('') + '</div>';
-  var O = ollaTotal(r, fecha, s);
-  h += '<div class="card"><h3>&#127858; Para la olla' + (O.vianda ? ' (con la vianda de ma&ntilde;ana)' : '') + '</h3><ul class="lst">' +
-    Object.keys(O.tot).map(function(f){
-      var t = O.tot[f], a = ALI[f];
-      var q = Math.round(t.g / t.u[1] / (t.u[3] || .5)) * (t.u[3] || .5);
-      var cr = crudoTxt(f, t);
-      return '<li><div style="flex:1"><b>' + fq(q) + ' ' + (q <= 1 ? t.u[0] : t.u[2]) + '</b> ' + nombreCorto({a:a, u:t.u}) +
-        (cr ? '<div class="small muted">comprar/cocinar ' + cr + '</div>' : '') + '</div></li>';
-    }).join('') +
-    (r.x && r.x.length ? '<li><div class="small muted">Adem&aacute;s: ' + r.x.map(function(x){ return nombreIng(x[0]).toLowerCase(); }).join(', ') + '</div></li>' : '') +
-    '</ul></div>';
-  h += '<div class="card"><h3>Pasos</h3><ol class="pasos">' + r.pa.map(function(p){ return '<li>' + p + '</li>'; }).join('') + '</ol></div>';
-  if (r.tr) h += '<div class="aviso g">&#128161; ' + r.tr + '</div>';
-  var m = matchHeladera(r);
-  if (m.falta.length) h += '<div class="small muted" style="margin:8px 0">Seg&uacute;n la heladera falta: ' + m.falta.join(', ') + '</div>';
-  if (!fecha){
-    var hoy = hoyISO(), tipos = [];
-    if (r.t.indexOf('a') !== -1) tipos.push(['al','almuerzo']);
-    if (r.t.indexOf('c') !== -1) tipos.push(['ce','cena']);
-    if (r.t.indexOf('m') !== -1) tipos.push(['me','merienda']);
-    h += '<div class="acts">' + tipos.map(function(t){
-      return '<button class="btn small" onclick="setSlot(\'' + hoy + '\',\'' + t[0] + '\',\'' + r.id + '\');closeModal();switchTab(\'hoy\');toast(\'Listo: va para hoy\',\'ok\')">Hoy de ' + t[1] + '</button>';
-    }).join('') + '</div>';
-  }
-  openModal(h);
-}
-function abrirSlot(fecha, slot){
-  var v = dia(fecha)[slot];
-  if (v === 'afuera' || !recDe(fecha, slot)){ elegirSlot(fecha, slot); return; }
-  verRecetaSlot(fecha, slot);
-}
-function verRecetaSlot(fecha, slot){
-  var r = recDe(fecha, slot); verReceta(r.id, fecha, slot);
-  $('modal-box').insertAdjacentHTML('beforeend', '<div class="acts" style="margin-top:12px">' +
-    '<button class="btn small sec" onclick="otra(\'' + fecha + '\',\'' + slot + '\');verRecetaSlot(\'' + fecha + '\',\'' + slot + '\')">Otra</button>' +
-    '<button class="btn small sec" onclick="elegirSlot(\'' + fecha + '\',\'' + slot + '\')">Elegir de la lista</button>' +
-    '<button class="btn small sec" onclick="setSlot(\'' + fecha + '\',\'' + slot + '\',\'afuera\');closeModal();render()">Comen afuera</button></div>');
-}
 /* lista de recetas para ese momento del dia, la mejor arriba */
-function elegirSlot(fecha, slot){
-  var lst = RECETAS.map(function(r){ return {r:r, s:puntaje(r, fecha, slot)}; })
-    .filter(function(x){ return x.s > -1e8; }).sort(function(a, b){ return b.s - a.s; });
-  var h = mh(SLOTS[slot][0] + ' del ' + DIAS[parse(fecha).getDay()] + ' ' + fechaCorta(fecha));
-  if (slot === 'al' && dia(addDays(fecha, -1)).ce)
-    h += '<button class="btn sec block" style="margin-bottom:8px" onclick="setSlot(\'' + fecha + '\',\'al\',\'sobras\');closeModal();render()">Sobras de la cena de ayer</button>';
-  h += '<button class="btn sec block" style="margin-bottom:12px" onclick="setSlot(\'' + fecha + '\',\'' + slot + '\',\'afuera\');closeModal();render()">Comen afuera</button>';
-  h += '<button class="btn sec block" style="margin-bottom:12px" onclick="nuevaReceta()">+ Cargar una receta nuestra</button>';
-  h += '<div class="card">' + lst.map(function(x){
-    var m = matchHeladera(x.r);
-    return '<div class="match" onclick="setSlot(\'' + fecha + '\',\'' + slot + '\',\'' + x.r.id + '\');closeModal();render()">' +
-      '<div style="flex:1"><div class="nm">' + x.r.n + '</div><div class="small muted">' + (x.r.min ? x.r.min + ' min' : '') +
-      (m.pct === 1 ? ' &middot; <span style="color:var(--green)">tienen todo</span>' : '') + '</div></div></div>';
-  }).join('') + '</div>';
-  openModal(h);
-}
 function volverPlan(fecha, slot){ var r = mejor(fecha, slot); setSlot(fecha, slot, r ? r.id : ''); render(); }
 function votar(id, v, fecha, slot){
   var h = JSON.parse(JSON.stringify(hogar())); h.likes = h.likes || {};
@@ -2831,14 +2545,11 @@ function votar(id, v, fecha, slot){
   render();
 }
 function rearmar(){
-  if (!confirm('Rearmar la semana desde hoy? Se cambian las propuestas, no lo que ya paso.')) return;
   var hoy = hoyISO(), l = addDays(lunes(hoy), semOffset * 7), fin = addDays(l, 6);
-  for (var f = (l < hoy ? hoy : l); f <= fin; f = addDays(f, 1)){
-    var k = 'plan:' + lunes(f), p = JSON.parse(JSON.stringify(KV[k] || {}));
-    p[f] = {}; KV[k] = p;
-  }
-  completar(l < hoy ? hoy : l, fin);
-  renderSemana(); toast('Semana rearmada', 'ok');
+  if (fin < hoy){ toast('Esa semana ya pas&oacute;'); return; }
+  if (!confirm('Rehacer las propuestas de la semana? Lo que ya marcaron como comido, lo de afuera y el colegio no se tocan.')) return;
+  var n = limpiarPropuestas(l < hoy ? hoy : l, fin);
+  render(); toast(n + ' comidas rehechas', 'ok');
 }
 
 /* ==================================================================
@@ -2898,13 +2609,14 @@ function pintarRD(){
   }).join('') + (r.x.length ? '<li><div class="small muted">Adem&aacute;s: ' + r.x.map(function(x){ return nombreIng(x[0]).toLowerCase(); }).join(', ') + '</div></li>' : '') +
     '</ul></div>' : '<div class="small muted" style="margin-bottom:8px">Toc&aacute; lo que lleva. Las cantidades las pongo yo para cada uno.</div>');
   var grupos = {prot:[], lac:[], ver:[], alm:[]}, usados = r.c.map(function(c){ return c[0]; });
-  Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (usados.indexOf(k) === -1) grupos[a.h].push(k); });
-  ['prot','lac','ver','alm'].forEach(function(g){
-    h += '<div class="small" style="font-weight:700;margin:10px 4px 6px">' + GRUPO_H[g].split(':')[0] + '</div><div class="chips">' +
+  grupos.arm = [];
+  Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (usados.indexOf(k) === -1) (a.ing ? grupos.arm : grupos[a.h]).push(k); });
+  ['prot','lac','ver','alm','arm'].forEach(function(g){
+    h += '<div class="sub">' + (g === 'arm' ? 'Platos ya armados' : GRUPO_H[g].split(':')[0]) + '</div><div class="chips">' +
       grupos[g].map(function(k){ return '<button class="chip" onclick="sumarIng(\'' + k + '\')">' + ALI[k].n + '</button>'; }).join('') + '</div>';
   });
-  h += '<div class="small" style="font-weight:700;margin:10px 4px 6px">Sin calor&iacute;as (para la heladera)</div><div class="chips">' +
-    Object.keys(EXTRA).concat(propios().map(function(x){ return x.id; })).map(function(k){
+  h += '<div class="small" style="font-weight:700;margin:10px 4px 6px">No se calculan (solo para la heladera)</div><div class="chips">' +
+    Object.keys(EXTRA).filter(function(k){ return EXTRA_CALORICO.indexOf(k) === -1; }).concat(propios().map(function(x){ return x.id; })).map(function(k){
       var on = r.x.some(function(x){ return x[0] === k; });
       return '<button class="chip' + (on ? ' on' : '') + '" onclick="toggleRX(\'' + k + '\')">' + nombreIng(k) + '</button>';
     }).join('') + '</div>' +
@@ -2947,8 +2659,17 @@ function guardarRD(){
 }
 function borrarRD(){
   if (!confirm('Borrar esta receta?')) return;
-  var h = JSON.parse(JSON.stringify(hogar())); h.recetas = (h.recetas || []).filter(function(x){ return x.id !== _rd.id; });
-  setKV('hogar', h); cargarPropias(); closeModal(); render();
+  var h = JSON.parse(JSON.stringify(hogar())), id = _rd.id; h.recetas = (h.recetas || []).filter(function(x){ return x.id !== id; });
+  setKV('hogar', h); cargarPropias();
+  Object.keys(KV).filter(function(k){ return k.indexOf('plan:') === 0; }).forEach(function(k){
+    var p = JSON.parse(JSON.stringify(KV[k])), cambio = false;
+    Object.keys(p).forEach(function(f){ SLOT_COMIDA.forEach(function(sl){
+      var v = p[f][sl];
+      if (v === id || (v && v.indexOf('combo:') === 0 && v.slice(6).split('+').indexOf(id) !== -1)){ delete p[f][sl]; cambio = true; }
+    }); });
+    if (cambio) setKV(k, p);
+  });
+  closeModal(); render();
 }
 
 /* ---------- compras ---------- */
@@ -2988,13 +2709,13 @@ function verCompras(){
     var e = EXTRA[k]; if (!e) return;
     (secs[e[1]] = secs[e[1]] || []).push({k:k, n:e[0], txt:ext[k] > 1 ? 'x' + ext[k] : ''});
   });
-  var h = mh('&#128722; Lista de compras');
+  var h = mh('Lista de compras');
   h += '<p class="small muted" style="margin-top:0">Del ' + fechaCorta(desde) + ' al ' + fechaCorta(fin) + ', para los dos. Lo que ya est&aacute; en la heladera aparece tachado.</p>';
   ['car','ver','lac','alm','pan'].forEach(function(s){
     if (!secs[s]) return;
     h += '<div class="card"><h3>' + SECCION[s] + '</h3><ul class="lst">' + secs[s].map(function(x){
       var ya = tengo(x.k), on = chk[x.k];
-      return '<li style="' + (ya ? 'opacity:.45' : '') + '"><input type="checkbox" style="width:22px;height:22px" ' + (on ? 'checked' : '') +
+      return '<li style="' + (ya ? 'opacity:.45' : '') + '"><input type="checkbox" class="ck" ' + (on ? 'checked' : '') +
         ' onchange="tildarCompra(\'' + l + '\',\'' + x.k + '\',this.checked)"><div style="flex:1;' + (ya ? 'text-decoration:line-through' : '') + '"><b>' + x.n + '</b>' +
         (x.txt ? ' <span class="small muted">' + x.txt + '</span>' : '') + '</div></li>';
     }).join('') + '</ul></div>';
@@ -3011,12 +2732,12 @@ function comprado(l){
     keys.forEach(function(x){ if (d.indexOf(x) === -1){ d.push(x); n++; } });
   });
   setKV('despensa', d); setKV('compras:' + l, {});
-  closeModal(); toast(n + ' cosas a la heladera', 'ok');
+  closeModal(); render(); toast(n + ' cosas a la heladera', 'ok');
 }
 
 /* ---------- guia ---------- */
 function verGuia(){
-  var h = mh('&#127829; Comer afuera');
+  var h = mh('Comer afuera');
   h += '<p class="small muted" style="margin-top:0">Sin contar nada: reglas simples para elegir.</p>';
   GUIA.forEach(function(g){ h += '<div class="card"><h3>' + g[0] + '</h3><ul style="margin:0;padding-left:18px">' + g[1].map(function(x){ return '<li style="margin:3px 0">' + x + '</li>'; }).join('') + '</ul></div>'; });
   openModal(h);
@@ -3030,7 +2751,7 @@ function abrirActividad(em){
 }
 function pintarActividad(){
   var a = actDraft, peso = pesoActual(a.email) || 60;
-  var h = mh('&#129496; Actividad de ' + nombre(a.email));
+  var h = mh('Actividad de ' + nombre(a.email));
   h += '<div class="fld"><label>Qu&eacute; hiciste</label><div class="chips">' + Object.keys(ACTIVIDADES).map(function(k){
     return '<button class="chip' + (a.tipo === k ? ' on' : '') + '" onclick="actDraft.tipo=\'' + k + '\';pintarActividad()">' + ACTIVIDADES[k].n + '</button>';
   }).join('') + '</div></div>';
@@ -3081,7 +2802,7 @@ function guardarPeso(em){
 function ajustar(em, n){
   var pf = JSON.parse(JSON.stringify(perfil(em)));
   pf.aj = (+pf.aj || 0) + n; pf.ajf = hoyISO();
-  setKV('perfil:' + em, pf); render(); toast('Listo: ' + (n > 0 ? '+' : '') + n + ' kcal por d&iacute;a', 'ok');
+  setKV('perfil:' + em, pf); actualizarMetaHoy(em); render(); toast('Listo: ' + (n > 0 ? '+' : '') + n + ' kcal por d&iacute;a', 'ok');
 }
 function verCalculo(em){
   var o = objetivo(em), pf = perfil(em);
@@ -3138,12 +2859,18 @@ function leerPerfiles(){
   }
   return ok ? out : null;
 }
+/* si cambian las calorias en el dia, el objetivo de hoy se actualiza (el de ayer no) */
+function actualizarMetaHoy(em){
+  var f = hoyISO(), m = JSON.parse(JSON.stringify(dia(f).meta || {})), o = objetivo(em);
+  if (o && m[em] !== o.kcal){ m[em] = o.kcal; setSlot(f, 'meta', m); }
+}
 function guardarPerfiles(){
   var out = leerPerfiles();
   if (!out){ toast('Faltan sexo, altura, peso o a&ntilde;o', 'err'); return false; }
   out.forEach(function(x){
     var em = x[0], pf = x[1], prev = perfil(em) || {};
     setKV('perfil:' + em, pf);
+    if (dia(hoyISO()).meta) actualizarMetaHoy(em);
     /* el peso del perfil se guarda como primera pesada si no hay ninguna */
     if (!pesosDe(em).length || +prev.peso !== +pf.peso){
       if (!pesosDe(em).length){
@@ -3207,38 +2934,6 @@ function elegirPaleta(k){
   var h = JSON.parse(JSON.stringify(hogar())); h.pal = k; setKV('hogar', h);
   openAjustes(); render();
 }
-function openAjustes(){
-  var h = mh('Ajustes');
-  /* cada uno edita solo lo suyo; del otro se ve si ya completo */
-  h += '<div class="section-t">Perfiles</div>' + usuarios().map(function(u){
-    var mio = u.email === userEmail, ok = perfil(u.email) && perfil(u.email).alt;
-    return '<div class="card row"><div style="flex:1"><b>' + nombre(u.email) + '</b><div class="small muted">' +
-      (mio ? 'Tu perfil' : (ok ? 'Lo completa ' + nombre(u.email) : 'Todav&iacute;a no entr&oacute;')) + '</div></div>' +
-      (ok ? '<span class="tag">' + fN(objetivo(u.email).kcal) + ' kcal</span>' : '<span class="tag a">sin perfil</span>') +
-      (mio ? '<button class="btn small sec" onclick="editarPerfil(\'' + u.email + '\')">Editar</button>' : '') + '</div>';
-  }).join('');
-  h += '<div class="section-t">Qu&eacute; comen</div><button class="btn sec block" onclick="editarGustos()">Mis platos de siempre</button>' +
-    '<button class="btn sec block" style="margin-top:12px" onclick="tourI=0;verTour()">C&oacute;mo se usa</button>';
-  var mias = hogar().recetas || [];
-  h += '<div class="section-t">Recetas propias</div><div class="card">' +
-    (mias.length ? '<ul class="lst">' + mias.map(function(r){
-      return '<li><div style="flex:1;font-weight:700">' + r.n + '</div><button class="btn small sec" onclick="editarReceta(\'' + r.id + '\')">Editar</button></li>';
-    }).join('') + '</ul>' : '<div class="small muted">Carguen las que hacen siempre: eligen los ingredientes y yo calculo cu&aacute;nto le toca a cada uno.</div>') +
-    '<button class="btn block" style="margin-top:12px" onclick="nuevaReceta()">+ Receta nueva</button></div>';
-  var nos = Object.keys((hogar().likes || {})).filter(function(k){ return hogar().likes[k] === -1 && REC[k]; });
-  if (nos.length) h += '<div class="card" style="margin-top:12px"><h3>Recetas descartadas</h3><ul class="lst">' + nos.map(function(k){
-    return '<li><div style="flex:1">' + REC[k].n + '</div><button class="btn small sec" onclick="votar(\'' + k + '\',-1);openAjustes()">Volver a proponer</button></li>';
-  }).join('') + '</ul></div>';
-  h += '<div class="section-t">Estilo</div><div class="pal">' + Object.keys(PALETAS).map(function(k){
-    var P = PALETAS[k];
-    return '<button class="' + (paletaActual() === k ? 'on' : '') + '" onclick="elegirPaleta(\'' + k + '\')"><div class="sw">' +
-      P.c.map(function(c){ return '<i style="background:' + c + '"></i>'; }).join('') + '</div>' + P.n + '</button>';
-  }).join('') + '</div>';
-  h += '<div class="section-t">App</div><div class="row"><button class="btn sec" style="flex:1" onclick="actualizarApp()">Actualizar</button>' +
-    '<button class="btn sec" style="flex:1" onclick="salir()">Salir</button></div>' +
-    '<p class="small dim" style="text-align:center;margin-top:14px">Cerdapp ' + APP_VER + (DEMO ? ' &middot; demo' : '') + ' &middot; ' + esc(userEmail) + '</p>';
-  openModal(h);
-}
 function editarPerfil(em){
   openModal(mh('Perfil') + formPerfil(em, perfil(em)) +
     '<button class="btn block" onclick="if(guardarPerfiles()){closeModal();render();toast(\'Perfil guardado\',\'ok\')}">Guardar</button>');
@@ -3248,11 +2943,8 @@ function editarGustos(){
     tipicosHTML() + '<button class="btn block" onclick="closeModal();rearmarSilencioso();render()">Listo</button>');
 }
 function rearmarSilencioso(){
-  var hoy = hoyISO();
-  for (var f = addDays(hoy, 1); f <= addDays(lunes(hoy), 6); f = addDays(f, 1)){
-    var k = 'plan:' + lunes(f), p = JSON.parse(JSON.stringify(KV[k] || {})); p[f] = {}; KV[k] = p;
-  }
-  completar(addDays(hoy, 1), addDays(lunes(hoy), 6));
+  var hoy = hoyISO(), fin = addDays(lunes(hoy), 6);
+  if (addDays(hoy, 1) <= fin) limpiarPropuestas(addDays(hoy, 1), fin);
 }
 
 /* ==================================================================
@@ -3288,33 +2980,6 @@ function onboarding(){
 }
 /* Guia: pantallas cortas con el cerdito. Al final de la bienvenida y en Ajustes. */
 var tourI = 0, _tourModal = false;
-function tourSlides(){
-  var gym = D.gym && D.gym.email === userEmail;
-  return [
-    ['&#127869;', 'Hoy', 'Cada comida trae la receta y lo que le toca a cada uno en medidas caseras: palmas, tazas, cucharadas. Es una sola olla: lo que cambia es el plato de cada uno.'],
-    ['&#10004;', 'Tild&aacute; lo que comen', 'Cuando terminan, toc&aacute; <b>Lo com&iacute;</b> en el plato de cada uno. No hay que contar nada: con eso s&eacute; cu&aacute;nto del plan se sigue, y si el peso no baja te digo si es por las calor&iacute;as o por el plan.'],
-    ['&#128260;', 'Si no tienen ganas', '<b>Otra</b> propone otra receta, <b>Elegir</b> las muestra todas y <b>Afuera</b> es para cuando comen afuera, los dos o uno solo. Con &#128077; la propongo m&aacute;s; con &#128078; no la propongo m&aacute;s.'],
-    ['&#128188;', 'Oficina', 'La noche antes, contest&aacute; <b>S&iacute;</b> en &iquest;Ma&ntilde;ana hay oficina? (est&aacute; en la cena). Ese d&iacute;a Diego almuerza en el colegio: despu&eacute;s anot&aacute;s qu&eacute; eligi&oacute; del men&uacute; y se compensa en la cena.'],
-    ['&#128197;', 'Semana y compras', 'La semana se arma sola y es la misma para los dos. La lista de compras suma lo de los dos; tild&aacute; lo que compraste y pasalo a la heladera.'],
-    ['&#129482;', 'Heladera', 'Marc&aacute; lo que hay en casa (lo ven los dos) y te digo qu&eacute; se puede cocinar con eso. La semana prioriza esas recetas.'],
-    ['&#128200;', 'Progreso', gym
-      ? 'Tu peso y tus entrenamientos salen de Gym Bro: ac&aacute; no carg&aacute;s nada nuevo. A las dos semanas te digo si hay que mover las calor&iacute;as.'
-      : 'Pesate una o dos veces por semana y registr&aacute; tu actividad (pilates, caminatas) en Progreso o desde Hoy. A las dos semanas te digo si hay que mover las calor&iacute;as.']
-  ];
-}
-function tourHTML(fin){
-  var S = tourSlides(), i = clamp(tourI, 0, S.length - 1), t = S[i];
-  return '<div class="bubble">' + pigSVG() + '<div class="txt">C&oacute;mo se usa: ' + (i + 1) + ' de ' + S.length + '</div></div>' +
-    '<div class="card" style="text-align:center;padding:26px 18px">' +
-    '<div style="font-size:38px;width:78px;height:78px;margin:0 auto 14px;border-radius:50%;box-shadow:var(--in);background:var(--hi-lt);display:flex;align-items:center;justify-content:center">' + t[0] + '</div>' +
-    '<h2>' + t[1] + '</h2><div class="muted" style="font-size:15px;line-height:1.5">' + t[2] + '</div>' +
-    '<div class="row" style="justify-content:center;gap:7px;margin-top:18px">' + S.map(function(x, j){
-      return '<i style="display:block;width:8px;height:8px;border-radius:50%;background:' + (j === i ? 'var(--pri)' : 'var(--sh-d)') + '"></i>';
-    }).join('') + '</div></div>' +
-    '<div class="row"><button class="btn sec" onclick="tourIr(-1)">Atr&aacute;s</button>' +
-    (i < S.length - 1 ? '<button class="btn" style="flex:1" onclick="tourIr(1)">Siguiente</button>'
-                      : '<button class="btn green" style="flex:1" onclick="' + fin + '">&iexcl;A cocinar!</button>') + '</div>';
-}
 function tourIr(d){
   var j = tourI + d;
   if (j < 0){ if (!_tourModal){ onbPaso = 1; onboarding(); } return; }
@@ -3322,12 +2987,8 @@ function tourIr(d){
   if (_tourModal) verTour(); else { onboarding(); window.scrollTo(0, 0); }
 }
 function verTour(){ _tourModal = true; openModal(mh('C&oacute;mo se usa') + tourHTML('closeModal()')); }
-function marcarTour(){
-  var pf = perfil(userEmail); if (!pf || pf.tour) return;
-  var p2 = JSON.parse(JSON.stringify(pf)); p2.tour = 1; setKV('perfil:' + userEmail, p2);
-}
 function finOnb(){
-  var pf = JSON.parse(JSON.stringify(perfil(userEmail) || {})); pf.tipicos = pf.tipicos || {}; pf.tour = 1; setKV('perfil:' + userEmail, pf);
+  var pf = JSON.parse(JSON.stringify(perfil(userEmail) || {})); pf.tipicos = pf.tipicos || {}; pf.tour = 2; setKV('perfil:' + userEmail, pf);
   if (!hogar().onb){ var h = JSON.parse(JSON.stringify(hogar())); h.onb = 1; setKV('hogar', h); }
   $('onb').classList.remove('on');
   rearmarSilencioso();
@@ -3404,7 +3065,7 @@ function afterData(){
   var y = window.scrollY;
   switchTab(activeTab);
   window.scrollTo(0, y);
-  if (!DEMO && perfil(userEmail) && !perfil(userEmail).tour){ marcarTour(); tourI = 0; verTour(); }
+  if (!DEMO && perfil(userEmail) && (perfil(userEmail).tour || 0) < 2){ marcarTour(); tourI = 0; verTour(); }
 }
 function tryCache(){
   try {
@@ -3455,6 +3116,584 @@ function cargarDemo(){
 function guardarDemo(){ try { D.kv = KV; localStorage.setItem('cerd_demo', JSON.stringify(D)); } catch(e){} }
 
 /* ==================================================================
+   v16: REVISION DE COHERENCIA
+   Hoy se ordena por lo que hay que hacer: arriba cuanto te queda, despues la
+   proxima comida abierta (las otras plegadas en una linea) y al final "lo demas
+   del dia" (la manana, algo suelto, el entrenamiento). Una sola puerta por
+   accion: "Lo comi" / "Otra cosa" por persona, y "Cambiar" por comida.
+   Vocabulario: colegio (no oficina), algo suelto (no snacks/fuera del plan),
+   "a la manana" (no "Manana", que se confundia con el dia siguiente).
+   ================================================================== */
+var EXTRA_CALORICO = ['ricota', 'porotos', 'pan rallado', 'tapaempa', 'tapatarta', 'prepizza', 'panqueques'];
+var _abierta = {};
+var ICO_CHEV = '<span class="chev" aria-hidden="true">&rsaquo;</span>';
+
+function vos(em, conVos, conOtro){ return em === userEmail ? conVos : conOtro.replace('{n}', nombre(em)); }
+
+/* ---------- arriba: cuanto te queda ---------- */
+function metasHTML(){
+  var hoy = hoyISO(), ayer = addDays(hoy, -1);
+  return '<div class="metas">' + personas().map(function(em){
+    var o = objetivo(em), Rh = resumenDia(hoy, em), Ra = resumenDia(ayer, em), col = idx(em) ? 'var(--p1)' : 'var(--p0)';
+    var queda = Rh.meta - Rh.tot, ayerDatos = Ra.lin.some(function(l){ return l.s && l.est !== 'sin'; });
+    var ayerTxt = '';
+    if (Ra.sin && ayerDatos) ayerTxt = '<span class="warn">Ayer: ' + Ra.sin + ' sin marcar</span>';
+    else if (ayerDatos) ayerTxt = 'Ayer ~' + fN(Ra.tot) + ' de ' + fN(Ra.meta);
+    return '<div class="meta p' + idx(em) + '" role="button" tabindex="0" onclick="verDia(\'' + hoy + '\',\'' + em + '\')">' +
+      '<div class="nm">' + nombre(em) + '</div>' +
+      '<div class="kc">' + fN(Math.abs(queda)) + ' <span>kcal</span></div>' +
+      '<div class="pr">' + (queda >= 0 ? vos(em, 'te quedan', 'le quedan') : vos(em, 'te pasaste', 'se pas&oacute;')) + ' de ' + fN(Rh.meta) + '</div>' +
+      barra(Rh.tot, Rh.meta, col) +
+      '<div class="pr">' + o.prot + ' g de prote&iacute;na</div>' +
+      (ayerTxt ? '<div class="pr ayer" onclick="event.stopPropagation();verDia(\'' + ayer + '\',\'' + em + '\')">' + ayerTxt + ' &rsaquo;</div>' : '') +
+      '</div>';
+  }).join('') + '</div>';
+}
+
+/* ---------- por que cambio un plato ---------- */
+function causasAjuste(fecha, em){
+  var p = (extraTotal(fecha, em).partes) || {}, c = [];
+  if (Math.abs(p.manana || 0) >= 20) c.push(p.manana > 0 ? 'el desayuno' : 'la ma&ntilde;ana liviana');
+  if (Math.abs(p.snack || 0) >= 20) c.push('lo suelto');
+  if (Math.abs(p.afuera || 0) >= 20) c.push('lo de afuera');
+  if (Math.abs(p.comidas || 0) >= 20) c.push(p.comidas > 0 ? 'lo de m&aacute;s en otra comida' : 'lo de menos en otra comida');
+  return c;
+}
+function avisoDescuento(r, em, slot, P, fecha){
+  if (Math.abs(P.dsc.k) < 10) return '';
+  var dif = porciones(r, em, slot).kcal - P.kcal, c = causasAjuste(fecha, em), por = c.length ? ' por ' + c.join(' y ') : '';
+  if (dif >= 15) return '<div class="nota a">Ajustado &minus;' + fN(dif) + ' kcal' + por + '.</div>';
+  if (dif <= -15) return '<div class="nota g">Ajustado +' + fN(-dif) + ' kcal' + por + '.</div>';
+  return '<div class="nota">' + cap((P.dsc.k > 0 ? 'lo de m&aacute;s' : 'lo que sobra') + por) + ' no alcanza para cambiar este plato.</div>';
+}
+
+/* ---------- una persona que come afuera o en el colegio ---------- */
+function afueraPP(fecha, slot, em){
+  var R = restDe(fecha, slot, em), m = metaSlot(em, slot), cole = slot === 'al' && esOficina(fecha) && em === oficinista();
+  var lugar = cole ? 'En el colegio &middot; ' + nombreSede(sedeDe(em, fecha)) : 'Afuera';
+  var h = '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + (R.k ? '~' + fN(R.k) + ' kcal' : lugar) + '</span></div>';
+  if (R.l.length){
+    if (R.k) h += '<div class="small muted">' + lugar + '</div>';
+    h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + c[2] + ' ' + nomRest(x) + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
+    var d = R.k - m.k;
+    h += d > 30 ? '<div class="nota a">' + fN(d) + ' kcal m&aacute;s que esta comida: ajusto lo que queda.</div>'
+       : d < -30 ? '<div class="nota g">' + fN(-d) + ' kcal menos: quedan para despu&eacute;s.</div>'
+       : '<div class="nota g">Dentro de lo que tocaba.</div>';
+    h += '<button class="link" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">Cambiar lo anotado ' + ICO_CHEV + '</button>';
+  } else if (cole){
+    h += menuColegioHTML(fecha, em) +
+      '<button class="link" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">Otra cosa ' + ICO_CHEV + '</button>';
+  } else {
+    h += '<div class="small muted">' + vos(em, 'Anot&aacute; qu&eacute; comiste', 'Anot&aacute; qu&eacute; comi&oacute;') + ' y ajusto el resto del d&iacute;a.</div>' +
+      '<button class="btn sec block mt2" onclick="abrirCarta(\'' + fecha + '\',\'' + slot + '\')">Anotar</button>';
+  }
+  if (fecha <= hoyISO() && dia(fecha)[slot] !== 'afuera')
+    h += '<button class="link" onclick="setFuera(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' + vos(em, 'Com&iacute; en casa', 'Comi&oacute; en casa') + ' ' + ICO_CHEV + '</button>';
+  return h + '</div>';
+}
+
+/* ---------- el plato de una persona en casa ---------- */
+function ppCasa(r, em, slot, fecha){
+  var P = platoComido(r, em, slot, fecha), ok = comido(fecha, slot, em);
+  var h = '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div><ul>' +
+    P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul>' + avisoDescuento(r, em, slot, P, fecha);
+  if (P.real && ok) h += '<div class="nota ' + (P.kcal > P.kProp + 15 ? 'a' : 'g') + '">' + vos(em, 'Comiste', 'Comi&oacute;') + ' ~' + fN(P.kcal) + ' (propuesta ~' + fN(P.kProp) + ').</div>';
+  if (fecha <= hoyISO())
+    h += '<button class="btn sec block tick' + (ok ? ' on' : '') + '" onclick="toggleComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' + (ok ? '&#10003; Comido' : 'Lo com&iacute;') + '</button>' +
+      '<button class="link" onclick="abrirOtraCosa(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">Otra cosa ' + ICO_CHEV + '</button>';
+  return h + '</div>';
+}
+
+/* ---------- una comida, abierta ---------- */
+function comidaHTML(fecha, slot){
+  var v = dia(fecha)[slot], S = SLOTS[slot], pres = personas().filter(function(em){ return enSlot(em, slot); });
+  var prox = proximaComida(fecha) === slot;
+  var head = '<div class="card-h"><span class="em">' + S[1] + '</span><h3>' + S[0] + '</h3><span class="sp"></span>';
+  var plegar = prox ? '' : '<button class="iconbtn sm" onclick="plegarComida(\'' + fecha + '\',\'' + slot + '\')" aria-label="Plegar">&#8963;</button>';
+  var cambiar = '<button class="btn sec block" onclick="abrirCambiar(\'' + fecha + '\',\'' + slot + '\')">Cambiar</button>';
+  if (v === 'afuera'){
+    var lug = ((dia(fecha).rest || {})[slot] || {}).lugar;
+    return '<div class="card meal">' + head + '<span class="tag b">Afuera</span>' + plegar + '</div>' +
+      '<div class="nombre">' + (lug ? esc(lug) : 'Comen afuera') + '</div>' +
+      '<div class="porc">' + pres.map(function(em){ return afueraPP(fecha, slot, em); }).join('') + '</div>' + cambiar + '</div>';
+  }
+  var r = recDe(fecha, slot);
+  if (!r) return '<div class="card meal">' + head + plegar + '</div><div class="muted">Sin propuesta.</div>' +
+    '<button class="btn block mt2" onclick="otra(\'' + fecha + '\',\'' + slot + '\')">Proponer</button></div>';
+  var tags = '';
+  if (v === 'sobras') tags += '<span class="tag b">Sobras de anoche</span>';
+  if (r.min) tags += '<span class="tag">' + r.min + ' min</span>';
+  if (despensa().length && fecha >= hoyISO()){
+    var fa = matchHeladera(r).falta;
+    tags += fa.length ? '<span class="tag a" title="' + esc(fa.join(', ').replace(/&[a-z]+;/g, '')) + '">Falta ' + fa.length + '</span>' : '<span class="tag g">&#10003; Est&aacute; todo</span>';
+  }
+  return '<div class="card meal">' + head + tags + plegar + '</div>' +
+    '<button class="nombre link-n" onclick="verReceta(\'' + r.id + '\',\'' + fecha + '\',\'' + slot + '\')">' + r.n + ' ' + ICO_CHEV + '</button>' +
+    '<div class="porc">' + pres.map(function(em){ return presente(em, fecha, slot) ? ppCasa(r, em, slot, fecha) : afueraPP(fecha, slot, em); }).join('') + '</div>' +
+    cambiar + '</div>';
+}
+
+/* ---------- una comida, plegada en una linea ---------- */
+function estadoPersona(fecha, slot, em){
+  if (comeAfuera(em, fecha, slot)){
+    var R = restDe(fecha, slot, em);
+    return nombre(em) + (R.k ? ' ~' + fN(R.k) : (slot === 'al' && esOficina(fecha) && em === oficinista() ? ' en el colegio' : ' afuera'));
+  }
+  var r = recDe(fecha, slot); if (!r) return nombre(em);
+  if (comido(fecha, slot, em)) return '&#10003; ' + nombre(em) + ' ' + fN(platoComido(r, em, slot, fecha).kcal);
+  return nombre(em) + ' ' + fN(porciones(r, em, slot, fecha).kcal);
+}
+function comidaPlegada(fecha, slot){
+  var v = dia(fecha)[slot], S = SLOTS[slot], r = recDe(fecha, slot);
+  var lug = ((dia(fecha).rest || {})[slot] || {}).lugar;
+  var nm = v === 'afuera' ? (lug ? esc(lug) : 'Comen afuera') : r ? r.n : 'Sin propuesta';
+  var pres = personas().filter(function(em){ return enSlot(em, slot); });
+  var listo = pres.every(function(em){ return comeAfuera(em, fecha, slot) ? restDe(fecha, slot, em).k > 0 : comido(fecha, slot, em); });
+  return '<button class="card meal plegada" onclick="abrirComida(\'' + fecha + '\',\'' + slot + '\')">' +
+    '<span class="em">' + S[1] + '</span><span class="f1"><span class="lb">' + S[0] + (listo ? ' <span class="tag g">&#10003; listo</span>' : '') + '</span>' +
+    '<span class="nm1">' + nm + '</span><span class="small muted">' + pres.map(function(em){ return estadoPersona(fecha, slot, em); }).join(' &middot; ') + '</span></span>' +
+    ICO_CHEV + '</button>';
+}
+/* la proxima comida: la primera que a alguien le falta marcar */
+function proximaComida(fecha){
+  var sl = slotsDe();
+  for (var i = 0; i < sl.length; i++){
+    var s = sl[i], pres = personas().filter(function(em){ return enSlot(em, s); });
+    var falta = pres.some(function(em){ return comeAfuera(em, fecha, s) ? !(restDe(fecha, s, em).k > 0) : !comido(fecha, s, em); });
+    if (falta) return s;
+  }
+  return null;
+}
+function abrirComida(fecha, slot){ _abierta[fecha + slot] = 1; renderHoy(); }
+function plegarComida(fecha, slot){ _abierta[fecha + slot] = 0; renderHoy(); }
+
+/* ---------- HOY ---------- */
+function renderHoy(){
+  var f = hoyISO();
+  completar(f, addDays(lunes(f), 6));
+  fijarMetas(f);
+  var h = '<div class="title-day">' + cap(fechaLarga(f)) + '</div>' + metasHTML();
+  var prox = proximaComida(f);
+  slotsDe().forEach(function(s){ h += (s === prox || _abierta[f + s]) ? comidaHTML(f, s) : comidaPlegada(f, s); });
+  h += colegioMananaHTML(f);
+  h += loDemasHTML(f);
+  $('p-hoy').innerHTML = h;
+}
+
+/* ---------- "Otra cosa": lo que paso de verdad con una comida ---------- */
+function abrirOtraCosa(fecha, slot, em){
+  var cole = slot === 'al' && esOficina(fecha) && em === oficinista(), comida = SLOTS[slot][0].toLowerCase();
+  var h = mh(vos(em, '&iquest;Qu&eacute; pas&oacute; con tu ' + comida + '?', '&iquest;Qu&eacute; pas&oacute; con la ' + comida + ' de {n}?'));
+  h += opt(vos(em, 'Com&iacute; otra cantidad', 'Comi&oacute; otra cantidad'), 'Sub&iacute; o baj&aacute; lo del plato', 'closeModal();editarComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')') +
+    opt(cole ? vos(em, 'Com&iacute; en el colegio', 'Comi&oacute; en el colegio') : vos(em, 'Com&iacute; afuera', 'Comi&oacute; afuera'), 'Anot&aacute; lo que pidi&oacute; y ajusto el resto', 'closeModal();setFuera(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')') +
+    opt(vos(em, 'No com&iacute;', 'No comi&oacute;'), 'Se saltea: lo que no comi&oacute; queda para despu&eacute;s', 'noComi(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')');
+  openModal(h);
+}
+function opt(t, sub, js){
+  return '<button class="opt" onclick="' + js + '"><span class="f1"><b>' + t + '</b>' + (sub ? '<span class="small muted">' + sub + '</span>' : '') + '</span>' + ICO_CHEV + '</button>';
+}
+function noComi(fecha, slot, em){
+  var r = recDe(fecha, slot); if (!r) return;
+  fijarSnap(fecha, slot, em);
+  var q = {}; porciones(r, em, slot, fecha).it.forEach(function(x){ q[x.f] = 0; });
+  var rl = JSON.parse(JSON.stringify(dia(fecha).real || {})); rl[slot] = rl[slot] || {}; rl[slot][em] = q; setSlot(fecha, 'real', rl);
+  var o = JSON.parse(JSON.stringify(dia(fecha).ok || {})); o[slot] = o[slot] || {}; o[slot][em] = 1; setSlot(fecha, 'ok', o);
+  closeModal(); render(); toast('Anotado: ' + SLOTS[slot][0].toLowerCase() + ' salteado', 'ok');
+}
+
+/* ---------- "Cambiar": todo lo que cambia la propuesta de una comida ---------- */
+function abrirCambiar(fecha, slot){
+  var v = dia(fecha)[slot], r = recDe(fecha, slot), ayerCe = REC[dia(addDays(fecha, -1)).ce];
+  var h = mh('Cambiar la ' + SLOTS[slot][0].toLowerCase());
+  if (tildadoPorAlguien(fecha, slot)) h += '<div class="aviso b">Ya est&aacute; marcada como comida: si la cambi&aacute;s, se desmarca.</div>';
+  if (v === 'afuera') h += opt('Comen los dos en casa', 'Vuelve la propuesta', 'setFuera(\'' + fecha + '\',\'' + slot + '\',\'casa\')');
+  h += opt('Otra idea', 'Te propongo otra receta', 'closeModal();otra(\'' + fecha + '\',\'' + slot + '\')') +
+    opt('Elegir de la lista', 'Todas las recetas, las que mejor van primero', 'elegirSlot(\'' + fecha + '\',\'' + slot + '\')');
+  if (r && v !== 'afuera' && v !== 'sobras') h += opt('Sumar otra receta', 'Ej: caf&eacute; fr&iacute;o + tostado, repartido en esta comida', 'sumarAlSlot(\'' + fecha + '\',\'' + slot + '\')');
+  if (v !== 'afuera') h += opt('Comen afuera', 'Los dos o uno solo', 'elegirAfuera(\'' + fecha + '\',\'' + slot + '\')');
+  if (slot !== 'me' && ayerCe && v !== 'sobras') h += opt('Sobras de anoche', ayerCe.n, 'setSlot(\'' + fecha + '\',\'' + slot + '\',\'sobras\');closeModal();render()');
+  if (r && !r.combo){
+    var lk = (hogar().likes || {})[r.id];
+    h += '<div class="sub mt3">' + r.n + '</div>' +
+      opt(lk === 1 ? '&#10003; Les gusta' : 'Nos gusta', lk === 1 ? 'Tocar para sacar' : 'La propongo m&aacute;s seguido', 'votar(\'' + r.id + '\',1);abrirCambiar(\'' + fecha + '\',\'' + slot + '\')') +
+      opt('No la propongas m&aacute;s', 'Se puede volver a activar en Ajustes', 'closeModal();votar(\'' + r.id + '\',-1,\'' + fecha + '\',\'' + slot + '\')');
+  }
+  openModal(h);
+}
+
+/* ---------- manana: colegio ---------- */
+function colegioMananaHTML(f){
+  var man = addDays(f, 1), dw = parse(man).getDay();
+  if (dw === 0 || dw === 6) return '';
+  var em = oficinista(), of = esOficina(man), sd = sedeDe(em, man);
+  return '<div class="card"><div class="card-h"><span class="em">&#127979;</span><h3>Ma&ntilde;ana</h3></div>' +
+    '<div class="lead">' + vos(em, '&iquest;Ma&ntilde;ana vas al colegio?', '&iquest;Ma&ntilde;ana {n} va al colegio?') + ' Ese d&iacute;a el almuerzo es en el comedor.</div>' +
+    '<div class="seg">' + ['norte', 'quilmes'].map(function(x){
+      return '<button class="chip' + (of && sd === x ? ' on' : '') + '" onclick="oficinaEn(\'' + man + '\',\'' + x + '\')">' + nombreSede(x) + '</button>';
+    }).join('') + '<button class="chip' + (of ? '' : ' on') + '" onclick="setOficina(\'' + man + '\',0)">No va</button></div></div>';
+}
+function elegirOficina(fecha){
+  var of = esOficina(fecha), sd = sedeDe(oficinista(), fecha);
+  var h = mh('Colegio: ' + DIAS[parse(fecha).getDay()] + ' ' + fechaCorta(fecha));
+  h += '<p class="lead">' + vos(oficinista(), 'Ese d&iacute;a almorz&aacute;s en el comedor.', '{n} almuerza en el comedor.') + ' &iquest;En qu&eacute; sede?</p>' +
+    '<div class="seg"><button class="chip' + (of && sd === 'norte' ? ' on' : '') + '" onclick="oficinaEn(\'' + fecha + '\',\'norte\')">Norte</button>' +
+    '<button class="chip' + (of && sd === 'quilmes' ? ' on' : '') + '" onclick="oficinaEn(\'' + fecha + '\',\'quilmes\')">Quilmes</button>' +
+    '<button class="chip' + (of ? '' : ' on') + '" onclick="setOficina(\'' + fecha + '\',0);closeModal()">No va</button></div>';
+  openModal(h);
+}
+
+/* ---------- lo demas del dia: la manana, algo suelto, entrenamiento ---------- */
+function loDemasHTML(f){
+  var ps = personas(), h = '<div class="card"><div class="card-h"><span class="em">&#9749;</span><h3>Lo dem&aacute;s del d&iacute;a</h3></div>';
+  var pm = ps.filter(function(em){ return (perfil(em) || {}).man !== 'desayuno'; });
+  if (pm.length){
+    h += '<div class="sub">A la ma&ntilde;ana</div>';
+    pm.forEach(function(em){
+      var m = manDe(f, em), d = desaDe(f, em), dif = excesoManana(f, em).k;
+      h += '<div class="fila"><b>' + nombre(em) + '</b><div class="chips mt1">' + [['mate','Solo mate'],['matefs','Mate y frutos secos'],['desayuno','Desayuno']].map(function(o){
+        return '<button class="chip' + (m === o[0] ? ' on' : '') + '" onclick="setManana(\'' + em + '\',\'' + o[0] + '\')">' + o[1] + '</button>';
+      }).join('') + '</div>';
+      if (m === 'desayuno') h += '<div class="chips mt1">' + d.l.map(function(x){
+          return '<span class="chip quita">' + x.e[1] + ' ' + x.e[2] + '<button class="x" onclick="quitarDesayuno(\'' + em + '\',' + x.i + ')" aria-label="Quitar">&#10005;</button></span>';
+        }).join('') + '<button class="chip" onclick="abrirDesayuno(\'' + em + '\')">+ Agregar</button></div>';
+      if (Math.abs(dif) >= 20) h += '<div class="nota ' + (dif > 0 ? 'a' : 'g') + '">' + (dif > 0 ? '+' + fN(dif) + ' kcal sobre lo de siempre: ajusto lo que queda.' : fN(-dif) + ' kcal menos que lo de siempre: quedan para despu&eacute;s.') + '</div>';
+      h += '</div>';
+    });
+  }
+  h += '<div class="sub">Algo suelto</div><div class="lead">Un snack o picoteo fuera de las comidas: ajusto lo que queda.</div>';
+  ps.forEach(function(em){
+    var ex = extrasDe(f, em), grp = {}, orden = [];
+    ex.l.forEach(function(x){ var id = x.e[0]; if (!grp[id]){ grp[id] = {e:x.e, n:0, i:0}; orden.push(id); } grp[id].n++; grp[id].i = x.i; });
+    h += '<div class="fila"><div class="row"><b class="f1">' + nombre(em) + (ex.k ? ' <span class="small muted">~' + fN(ex.k) + ' kcal</span>' : '') + '</b>' +
+      '<button class="btn small sec" onclick="abrirExtra(\'' + em + '\')">+ Agregar</button></div>';
+    if (orden.length) h += '<div class="chips mt1">' + orden.map(function(id){
+      var g = grp[id];
+      return '<span class="chip quita">' + g.e[1] + ' ' + g.e[2] + (g.n > 1 ? ' <b>&times;' + g.n + '</b>' : '') + '<button class="x" onclick="quitarExtra(\'' + em + '\',' + g.i + ')" aria-label="Quitar uno">&#10005;</button></span>';
+    }).join('') + '</div>';
+    h += '</div>';
+  });
+  if (ps.length > 1) h += '<button class="link" onclick="abrirExtra(\'ambos\')">Lo mismo para los dos ' + ICO_CHEV + '</button>';
+  var yo = personas().filter(function(em){ return em === userEmail && !(D.gym && D.gym.email === em); })[0];
+  if (yo){
+    var hoyA = actsDe(yo).filter(function(a){ return a.date === f; });
+    h += '<div class="sub">Entrenamiento</div><div class="row"><span class="f1 small">' +
+      (hoyA.length ? hoyA.map(function(a){ return (ACTIVIDADES[a.tipo] || ACTIVIDADES.otro).n + ' &middot; ' + a.min + ' min'; }).join('<br>') : '<span class="muted">Nada anotado hoy</span>') + '</span>' +
+      '<button class="btn small sec" onclick="abrirActividad(\'' + yo + '\')">+ Anotar</button></div>';
+  }
+  return h + '</div>';
+}
+
+/* ---------- SEMANA ---------- */
+function renderSemana(){
+  var hoy = hoyISO(), l = addDays(lunes(hoy), semOffset * 7), fin = addDays(l, 6);
+  if (fin >= hoy) completar(l < hoy ? hoy : l, fin);
+  var h = '<div class="week-nav"><button class="iconbtn" onclick="semOffset--;renderSemana()" aria-label="Semana anterior">&lsaquo;</button>' +
+    '<div class="t">' + (semOffset === 0 ? 'Esta semana' : semOffset === 1 ? 'La que viene' : semOffset === -1 ? 'La anterior' : 'Semana del ' + fechaCorta(l)) + '</div>' +
+    '<button class="iconbtn" onclick="semOffset++;renderSemana()" aria-label="Semana siguiente">&rsaquo;</button></div>';
+  if (fin >= hoy) h += '<div class="row mb3"><button class="btn acc f1" onclick="verCompras()">Lista de compras</button>' +
+    '<button class="btn sec" onclick="rearmar()">Rehacer</button></div>';
+  for (var f = l; f <= fin; f = addDays(f, 1)){
+    var d = dia(f), pasado = f < hoy, dw = parse(f).getDay(), habil = dw !== 0 && dw !== 6;
+    var titulo = cap(DIAS[dw]) + ' ' + fechaCorta(f);
+    if (pasado){
+      var R = resumenDia(f, userEmail), datos = R.lin.some(function(x){ return x.s && x.est !== 'sin'; });
+      h += '<button class="day vacio" onclick="verDia(\'' + f + '\',\'' + userEmail + '\')"><b>' + titulo + '</b>' +
+        (esOficina(f) ? '<span class="tag b">colegio</span>' : '') + '<span class="f1 small muted">' +
+        (!datos ? 'sin registro' : R.sin ? R.sin + ' sin marcar' : '~' + fN(R.tot) + ' de ' + fN(R.meta)) + '</span>' + ICO_CHEV + '</button>';
+      continue;
+    }
+    h += '<div class="day' + (f === hoy ? ' hoy' : '') + '"><div class="dn">' + titulo +
+      (f === hoy ? ' <span class="tag r">hoy</span>' : '') + '<span class="sp"></span>' +
+      (habil ? '<button class="chip' + (esOficina(f) ? ' on' : '') + '" onclick="elegirOficina(\'' + f + '\')">&#127979; ' + (esOficina(f) ? nombreSede(sedeDe(oficinista(), f)) : 'Colegio') + '</button>' : '') + '</div>';
+    slotsDe().forEach(function(s){
+      var v = d[s], r = recDe(f, s);
+      var txt = v === 'afuera' ? '<span class="muted">Comen afuera</span>' : r ? (v === 'sobras' ? '<span class="tag b">sobras</span> ' : '') + r.n : '<span class="muted">&mdash;</span>';
+      if (r && v !== 'afuera' && fueraDe(f, s).length) txt += ' <span class="tag b">' + fueraDe(f, s).map(function(em){
+        return nombre(em) + (s === 'al' && esOficina(f) && em === oficinista() ? ' en el colegio' : ' afuera'); }).join(', ') + '</span>';
+      if (r && v !== 'afuera' && despensa().length){ var fm = matchHeladera(r).falta.length; txt += fm ? ' <span class="tag a">falta ' + fm + '</span>' : ' <span class="tag g">&#10003;</span>'; }
+      h += '<button class="sl" onclick="abrirSlot(\'' + f + '\',\'' + s + '\')"><span class="k">' + SLOTS[s][0] + '</span><span class="v">' + txt + '</span>' + ICO_CHEV + '</button>';
+    });
+    h += '</div>';
+  }
+  $('p-semana').innerHTML = h;
+}
+function abrirSlot(fecha, slot){
+  var v = dia(fecha)[slot], r = recDe(fecha, slot);
+  if (v === 'afuera' || !r){ abrirCambiar(fecha, slot); return; }
+  verReceta(r.id, fecha, slot);
+  $('modal-box').insertAdjacentHTML('beforeend', '<button class="btn sec block mt3" onclick="abrirCambiar(\'' + fecha + '\',\'' + slot + '\')">Cambiar</button>');
+}
+/* lista de recetas para ese momento del dia, la mejor arriba */
+function elegirSlot(fecha, slot){
+  var actual = (recDe(fecha, slot) || {}).id;
+  var lst = RECETAS.map(function(r){ return {r:r, s:puntaje(r, fecha, slot)}; })
+    .filter(function(x){ return x.s > -1e8; }).sort(function(a, b){ return b.s - a.s; });
+  var h = mh(SLOTS[slot][0] + ' del ' + DIAS[parse(fecha).getDay()] + ' ' + fechaCorta(fecha));
+  h += '<div class="card">' + lst.map(function(x){
+    var m = matchHeladera(x.r);
+    return '<button class="match" onclick="setSlot(\'' + fecha + '\',\'' + slot + '\',\'' + x.r.id + '\');closeModal();render()">' +
+      '<span class="f1"><span class="nm">' + x.r.n + (x.r.id === actual ? ' <span class="tag">actual</span>' : '') + '</span><span class="small muted">' + (x.r.min ? x.r.min + ' min' : '') +
+      (m.pct === 1 ? ' &middot; <span class="ok-t">tienen todo</span>' : '') + (x.r.propia ? ' &middot; de ustedes' : '') + '</span></span>' + ICO_CHEV + '</button>';
+  }).join('') + '</div>';
+  h += '<button class="btn sec block" onclick="nuevaReceta()">+ Cargar una receta nuestra</button>';
+  openModal(h);
+}
+
+/* ---------- HELADERA: primero lo que pueden cocinar ---------- */
+var _verMas = false;
+function renderHeladera(){
+  var h = '<div class="title-day">&iquest;Qu&eacute; hay en casa?</div><p class="lead">Marc&aacute; lo que tengan (lo ven los dos) y propongo con eso.</p>';
+  var lista = RECETAS.map(function(r){ return {r:r, m:matchHeladera(r)}; })
+    .filter(function(x){ return (hogar().likes || {})[x.r.id] !== -1; })
+    .sort(function(a, b){ return b.m.pct - a.m.pct; });
+  h += '<div class="card"><div class="card-h"><span class="em">&#127859;</span><h3>Con esto pueden hacer</h3></div>';
+  if (!despensa().length) h += '<div class="muted">Marc&aacute; abajo lo que tengan y te digo qu&eacute; sale.</div>';
+  else {
+    h += lista.slice(0, _verMas ? 12 : 4).map(function(x){
+      var p = Math.round(x.m.pct * 100), cls = p === 100 ? 'g' : p >= 60 ? 'a' : '';
+      return '<button class="match" onclick="verReceta(\'' + x.r.id + '\')"><span class="pct ' + cls + '">' + p + '%</span>' +
+        '<span class="f1"><span class="nm">' + x.r.n + '</span><span class="small muted">' +
+        (x.m.falta.length ? 'Falta: ' + x.m.falta.join(', ') : '&#10003; Tienen todo') + '</span></span>' + ICO_CHEV + '</button>';
+    }).join('');
+    h += '<button class="link" onclick="_verMas=!_verMas;renderHeladera()">' + (_verMas ? 'Ver menos' : 'Ver m&aacute;s') + ' ' + ICO_CHEV + '</button>' +
+      '<button class="btn block mt2" onclick="rearmarConHeladera()">Rehacer con lo que hay</button>' +
+      '<div class="hint">Rehace hoy y los pr&oacute;ximos 2 d&iacute;as. Lo ya comido, lo de afuera y el colegio no se tocan.</div>';
+  }
+  h += '</div>';
+  var grupos = {prot:[], lac:[], ver:[], alm:[]};
+  Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (a.base || a.alt || a.ing) return; grupos[a.h].push([k, a.n]); });
+  Object.keys(EXTRA).forEach(function(k){ var e = EXTRA[k]; grupos[e[1] === 'lac' ? 'lac' : e[1] === 'ver' ? 'ver' : 'alm'].push([k, e[0]]); });
+  propios().forEach(function(x){ (grupos[x.h] || grupos.alm).push([x.id, esc(x.n), 1]); });
+  ['prot','lac','ver','alm'].forEach(function(g){
+    h += '<div class="card"><h3>' + GRUPO_H[g] + '</h3><div class="chips">' +
+      grupos[g].map(function(x){
+        if (x[2]) return '<span class="chip quita' + (tengo(x[0]) ? ' on' : '') + '"><span onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</span>' +
+          '<button class="x" onclick="borrarPropio(\'' + x[0] + '\')" aria-label="Borrar">&#10005;</button></span>';
+        return '<button class="chip' + (tengo(x[0]) ? ' on' : '') + '" onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</button>';
+      }).join('') + '</div></div>';
+  });
+  h += '<div class="card"><h3>&iquest;Algo que no est&aacute;?</h3>' +
+    '<div class="fld"><input id="np-n" type="text" placeholder="Ej: hummus, tofu, kale"></div>' +
+    '<div class="row"><div class="fld f1" style="margin:0"><select id="np-h">' +
+    ['prot','lac','ver','alm'].map(function(g){ return '<option value="' + g + '"' + (g === 'alm' ? ' selected' : '') + '>' + GRUPO_H[g].split(':')[0] + '</option>'; }).join('') +
+    '</select></div><button class="btn" onclick="agregarPropio()">Agregar</button></div>' +
+    '<div class="hint">Queda en la heladera de los dos. Las recetas usan los ingredientes de la lista.</div></div>';
+  if (despensa().length) h += '<button class="link danger" onclick="if(confirm(\'Vaciar la heladera?\')){setKV(\'despensa\',[]);renderHeladera();}">Vaciar la heladera</button>';
+  $('p-heladera').innerHTML = h;
+}
+function editarTipos(){
+  var h = mh('Tipos de producto');
+  h += '<p class="lead">Lo que compran. Pod&eacute;s marcar m&aacute;s de uno: calculo con el m&aacute;s liviano que haya.</p><div class="card">' +
+    Object.keys(VARIANTES).map(function(k){
+      var sl = varSel(k);
+      return '<div class="tip-row"><div class="nm">' + VAR_LABEL[k] + '</div><div class="tri">' + VARIANTES[k].map(function(o){
+        return '<button class="' + (sl.indexOf(o[0]) !== -1 ? 'on2' : '') + '" onclick="setVariante(\'' + k + '\',\'' + o[0] + '\')">' + o[6] + '</button>';
+      }).join('') + '</div></div>';
+    }).join('') + '</div>';
+  openModal(h);
+}
+
+/* ---------- PROGRESO ---------- */
+function sugerenciaAjuste(em){
+  var o = objetivo(em), r = ritmoReal(em), pf = perfil(em), mio = em === userEmail;
+  if (r === null) return '<div class="aviso b">Con 4 pesadas en 2 semanas te digo si las calor&iacute;as est&aacute;n bien o hay que moverlas. La f&oacute;rmula estima: el peso real manda.</div>';
+  var baja = -r, meta = o.kgSem;
+  if (pf.ajf && diasEntre(pf.ajf, hoyISO()) < 14) return '<div class="aviso b">Las calor&iacute;as se ajustaron el ' + fechaCorta(pf.ajf) + '. Hay que esperar dos semanas para ver el efecto.</div>';
+  var ad = adherencia(em, 14);
+  if (baja < meta * .5 && ad.usa && ad.plan >= 10 && ad.pct < .7)
+    return '<div class="aviso a">Baja <b>' + fKg(Math.max(0, baja)) + ' kg por semana</b> (ritmo planeado ' + fKg(meta) + '), pero el plan se sigui&oacute; en <b>' +
+      Math.round(ad.pct * 100) + '%</b> de las comidas. Antes de bajar calor&iacute;as conviene seguirlo m&aacute;s.</div>';
+  if (baja < meta * .5 && o.kcal - 150 >= o.piso)
+    return '<div class="aviso a">Baja <b>' + fKg(Math.max(0, baja)) + ' kg por semana</b> y el ritmo planeado es ' + fKg(meta) + '. Sugerencia: <b>150 kcal menos por d&iacute;a</b>.' +
+      (mio ? '<button class="btn small mt2" onclick="ajustar(\'' + em + '\',-150)">Aplicar</button>' : '') + '</div>';
+  if (baja > meta * 1.6 && baja > .7)
+    return '<div class="aviso a">Baja <b>' + fKg(baja) + ' kg por semana</b>, m&aacute;s r&aacute;pido de lo planeado: se pierde m&uacute;sculo. Sugerencia: <b>150 kcal m&aacute;s por d&iacute;a</b>.' +
+      (mio ? '<button class="btn small mt2" onclick="ajustar(\'' + em + '\',150)">Aplicar</button>' : '') + '</div>';
+  return '<div class="aviso g">&#10003; Baja <b>' + fKg(Math.max(0, baja)) + ' kg por semana</b>, en l&iacute;nea con el ritmo planeado (' + fKg(meta) + ').</div>';
+}
+function diaPorDiaHTML(em){
+  var hoy = hoyISO(), filas = '', semTot = 0, semMeta = 0, semTdee = 0, dias = 0, sinAlgo = 0, ad = adherencia(em, 7);
+  for (var i = 6; i >= 0; i--){
+    var f = addDays(hoy, -i), R = resumenDia(f, em), col = idx(em) ? 'var(--p1)' : 'var(--p0)';
+    var conDatos = R.lin.some(function(l){ return l.s && l.est !== 'sin'; });
+    if (i > 0 && R.sin === 0 && conDatos){ semTot += R.tot; semMeta += R.meta; semTdee += R.tdee; dias++; }
+    if (i > 0 && R.sin && conDatos) sinAlgo++;
+    filas += '<button class="dxd" onclick="verDia(\'' + f + '\',\'' + em + '\')"><span class="row"><b class="d">' + (i === 0 ? 'Hoy' : i === 1 ? 'Ayer' : DIASC[parse(f).getDay()] + ' ' + fechaCorta(f)) + '</b>' +
+      (conDatos ? '<span class="small f1">~' + fN(R.tot) + ' de ' + fN(R.meta) + '</span>' : '<span class="small f1 muted">&mdash;</span>') +
+      (!conDatos ? '' : R.sin ? '<span class="tag a">' + R.sin + ' sin marcar</span>' : (i > 0 ? (R.tot > R.meta + 50 ? '<span class="tag a">+' + fN(R.tot - R.meta) + '</span>' : '<span class="tag g">&#10003;</span>') : '')) +
+      ICO_CHEV + '</span>' + (conDatos ? barra(R.tot, R.meta, col) : '') + '</button>';
+  }
+  var h = '<div class="card"><h3>&Uacute;ltimos 7 d&iacute;as</h3><div class="lead">Lo comido contra el objetivo de cada d&iacute;a' +
+    (ad.usa && ad.plan ? ' &middot; ' + Math.round(ad.pct * 100) + '% de las comidas marcadas' : '') + '.</div>' + filas;
+  if (dias){
+    var def = semTdee - semTot;
+    h += '<div class="aviso ' + (semTot <= semMeta + 50 * dias ? 'g' : 'a') + ' mt2">En ' + dias + (dias === 1 ? ' d&iacute;a completo' : ' d&iacute;as completos') +
+      ': ~<b>' + fN(semTot) + '</b> kcal contra ~' + fN(semMeta) + ' de objetivo. D&eacute;ficit real ~<b>' + fN(def) + ' kcal</b>' +
+      (def > 0 ? ' (&asymp; ' + (def < 770 ? fN(def / 7.7) + ' g' : fKg(def / 7700) + ' kg') + ' de grasa).' : '.') + '</div>';
+  } else h += '<div class="hint">Cuando un d&iacute;a quede con todo marcado, ac&aacute; aparece el balance de la semana.</div>';
+  if (sinAlgo) h += '<div class="hint">Los d&iacute;as con comidas sin marcar no entran al balance.</div>';
+  return h + '</div>';
+}
+function renderProgreso(){
+  var ps = personas(); if (!ps.length){ $('p-progreso').innerHTML = ''; return; }
+  if (ps.indexOf(progEm) === -1) progEm = ps.indexOf(userEmail) !== -1 ? userEmail : ps[0];
+  var em = progEm, pf = perfil(em), o = objetivo(em), t = tendencia(em), mio = em === userEmail;
+  var h = '<div class="seg mb3">' + ps.map(function(e){
+    return '<button class="chip persona' + (e === em ? ' on' : '') + '" onclick="progEm=\'' + e + '\';renderProgreso()"><i class="dot p' + idx(e) + '"></i>' + nombre(e) + '</button>';
+  }).join('') + '</div>';
+  var ultimo = t.length ? t[t.length - 1] : null, primero = t.length ? t[0] : null;
+  h += '<div class="card"><h3>Peso</h3>' +
+    (mio ? '<div class="row"><div class="fld f1" style="margin:0"><input id="pp-peso" type="number" inputmode="decimal" step="0.1" placeholder="Peso de hoy (kg)"></div>' +
+      '<button class="btn" id="btn-peso" onclick="guardarPeso(\'' + em + '\')">Guardar</button></div>' +
+      '<div class="hint">' + (D.gym && D.gym.email === em ? 'Se guarda tambi&eacute;n en Gym Bro.' : 'Una o dos veces por semana, en ayunas.') + '</div>' : '') +
+    '<div class="stats"><div class="stat"><div class="v">' + (ultimo ? fKg(ultimo.t) : '&mdash;') + '</div><div class="l">tendencia (kg)</div></div>' +
+    '<div class="stat"><div class="v">' + (primero && ultimo ? (ultimo.t - primero.t > 0 ? '+' : '') + fKg(ultimo.t - primero.t) : '&mdash;') + '</div><div class="l">desde el ' + (primero ? fechaCorta(primero.date) : 'inicio') + '</div></div>' +
+    '<div class="stat"><div class="v">' + (pf.meta ? fKg(+pf.meta) : '&mdash;') + '</div><div class="l">peso meta</div></div></div>' +
+    chartPeso(em) + '</div>';
+  h += diaPorDiaHTML(em);
+  h += '<div class="card"><h3>&iquest;Las calor&iacute;as est&aacute;n bien?</h3>' + sugerenciaAjuste(em) +
+    '<div class="small muted">Objetivo de hoy: <b>' + fN(metaDelDia(hoyISO(), em)) + ' kcal</b> y <b>' + o.prot + ' g de prote&iacute;na</b>.</div>' +
+    (mio ? '<button class="link" onclick="verCalculo(\'' + em + '\')">C&oacute;mo se calcula ' + ICO_CHEV + '</button>' : '') + '</div>';
+  var A = o.act;
+  if (!mio) h += '<div class="card"><h3>Actividad</h3><div class="small muted">La actividad de ' + nombre(em) + ' la ve solo ' + nombre(em) + '.</div></div>';
+  else if (D.gym && D.gym.email === em) h += gymHTML(A);
+  else {
+    h += '<div class="card"><h3>Actividad</h3>';
+    var regs = actsDe(em).slice(0, 8);
+    if (regs.length) h += '<ul class="lst">' + regs.map(function(a){
+      var Z = (a.zonas || []).map(function(z){ var x = ZONAS.filter(function(q){ return q[0] === z; })[0]; return x ? x[1] : z; }).join(', ');
+      return '<li><div class="f1"><b>' + (ACTIVIDADES[a.tipo] || ACTIVIDADES.otro).n + '</b> &middot; ' + a.min + ' min &middot; ' + INTENSIDAD[+a.int || 0] +
+        '<div class="small muted">' + fechaCorta(a.date) + (Z ? ' &middot; ' + Z : '') + '</div></div><span class="tag">~' + fN(a.kcal || 0) + ' kcal</span>' +
+        '<button class="x" onclick="borrarActividad(\'' + a.id + '\')" aria-label="Borrar">&#10005;</button></li>';
+    }).join('') + '</ul>';
+    else if (A.fuente === 'perfil') h += '<div class="small muted">Sin registros: se usan las ' + (+pf.ses || 0) + ' sesiones por semana del perfil.</div>';
+    h += '<div class="hint">Suma unas <b>' + fN(A.kcalDia) + ' kcal por d&iacute;a</b> al gasto.</div>' +
+      '<button class="btn sec block mt2" onclick="abrirActividad(\'' + em + '\')">+ Anotar actividad</button></div>';
+  }
+  h += '<div class="card"><h3>Para tener en cuenta</h3><ul class="tips">' +
+    '<li>La panza no se baja sola: la grasa abdominal se va con el d&eacute;ficit sostenido, la prote&iacute;na, la fuerza y el sue&ntilde;o. Suele ser lo &uacute;ltimo en irse.</li>' +
+    '<li>El peso de un d&iacute;a se mueve un kilo por agua y sal. Por eso se mira la l&iacute;nea.</li>' +
+    '<li>La grasa se pierde con constancia, no con hambre.</li></ul></div>';
+  $('p-progreso').innerHTML = h;
+}
+
+/* ---------- RECETA ---------- */
+function verReceta(id, fecha, slot){
+  var r = REC[id], h = mh(r.n);
+  var s = slot || (r.t.indexOf('c') !== -1 ? 'ce' : r.t.indexOf('a') !== -1 ? 'al' : 'me');
+  if (r.min) h += '<div class="chips mb2"><span class="tag">' + r.min + ' min</span></div>';
+  h += '<div class="porc">' + personas().filter(function(em){ return presente(em, fecha, s); }).map(function(em){
+    var P = porciones(r, em, s, fecha);
+    return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div>' +
+      '<div class="small muted">' + Math.round(P.prot) + ' g de prote&iacute;na</div><ul>' +
+      P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul></div>';
+  }).join('') + '</div>';
+  var O = ollaTotal(r, fecha, s);
+  h += '<div class="card"><h3>Para la olla' + (O.vianda ? ' (con las sobras para ma&ntilde;ana)' : '') + '</h3><ul class="lst">' +
+    Object.keys(O.tot).map(function(f){
+      var t = O.tot[f], a = ALI[f];
+      var q = Math.round(t.g / t.u[1] / (t.u[3] || .5)) * (t.u[3] || .5);
+      var cr = crudoTxt(f, t);
+      return '<li><div class="f1"><b>' + fq(q) + ' ' + (q <= 1 ? t.u[0] : t.u[2]) + '</b> ' + nombreCorto({a:a, u:t.u}) +
+        (cr ? '<div class="small muted">comprar o cocinar ' + cr + '</div>' : '') + '</div></li>';
+    }).join('') +
+    (r.x && r.x.length ? '<li><div class="small muted">Adem&aacute;s: ' + r.x.map(function(x){ return nombreIng(x[0]).toLowerCase(); }).join(', ') + '</div></li>' : '') +
+    '</ul></div>';
+  h += '<div class="card"><h3>Pasos</h3><ol class="pasos">' + r.pa.map(function(p){ return '<li>' + p + '</li>'; }).join('') + '</ol></div>';
+  if (r.tr) h += '<div class="aviso b">' + r.tr + '</div>';
+  var m = matchHeladera(r);
+  if (m.falta.length) h += '<div class="hint mb2">Seg&uacute;n la heladera falta: ' + m.falta.join(', ') + '</div>';
+  if (!r.combo){
+    var lk = (hogar().likes || {})[r.id];
+    h += '<div class="row mt2"><button class="btn sec f1' + (lk === 1 ? ' on' : '') + '" onclick="votar(\'' + r.id + '\',1);verReceta(\'' + id + '\'' + (fecha ? ',\'' + fecha + '\',\'' + s + '\'' : '') + ')">' + (lk === 1 ? '&#10003; Les gusta' : 'Nos gusta') + '</button>' +
+      '<button class="btn sec f1" onclick="closeModal();votar(\'' + r.id + '\',-1' + (fecha ? ',\'' + fecha + '\',\'' + s + '\'' : '') + ')">No la propongas</button></div>';
+  }
+  if (!fecha){
+    var hoy = hoyISO(), tipos = [];
+    if (r.t.indexOf('a') !== -1) tipos.push(['al','almuerzo']);
+    if (r.t.indexOf('c') !== -1) tipos.push(['ce','cena']);
+    if (r.t.indexOf('m') !== -1) tipos.push(['me','merienda']);
+    h += '<div class="row wrap mt2">' + tipos.map(function(t){
+      return '<button class="btn small f1" onclick="setSlot(\'' + hoy + '\',\'' + t[0] + '\',\'' + r.id + '\');closeModal();switchTab(\'hoy\');toast(\'Listo: va para hoy\',\'ok\')">Hoy de ' + t[1] + '</button>';
+    }).join('') + '</div>';
+  }
+  openModal(h);
+}
+
+/* ---------- AJUSTES ---------- */
+function openAjustes(){
+  var h = mh('Ajustes');
+  h += '<div class="section-t">Mi perfil</div>' + usuarios().filter(function(u){ return u.email === userEmail; }).map(function(u){
+    var ok = perfil(u.email) && perfil(u.email).alt;
+    return '<div class="card row"><div class="f1"><b>' + nombre(u.email) + '</b><div class="small muted">' + (ok ? fN(objetivo(u.email).kcal) + ' kcal por d&iacute;a' : 'Sin completar') + '</div></div>' +
+      '<button class="btn small sec" onclick="editarPerfil(\'' + u.email + '\')">Editar</button></div>';
+  }).join('');
+  var otros = usuarios().filter(function(u){ return u.email !== userEmail; });
+  if (otros.length) h += '<div class="hint mb2">' + otros.map(function(u){ return nombre(u.email) + (perfil(u.email) && perfil(u.email).alt ? ' ya complet&oacute; su perfil' : ' todav&iacute;a no entr&oacute;'); }).join(' &middot; ') + '.</div>';
+  var nos = Object.keys((hogar().likes || {})).filter(function(k){ return hogar().likes[k] === -1 && REC[k]; });
+  h += '<div class="section-t">La casa</div><div class="card pad0">' +
+    opt('Mis platos de siempre', 'Lo que propongo m&aacute;s seguido', 'editarGustos()') +
+    opt('Tipos de producto', 'Leche, queso, yogur... cambian las calor&iacute;as', 'editarTipos()') +
+    opt('Recetas propias', (hogar().recetas || []).length + ' cargadas', 'verRecetasPropias()') +
+    (nos.length ? opt('Recetas descartadas', nos.length + ' que no propongo', 'verDescartadas()') : '') + '</div>';
+  h += '<div class="section-t">Ayuda</div><div class="card pad0">' +
+    opt('C&oacute;mo se usa', '5 pantallas cortas', 'tourI=0;verTour()') +
+    opt('Gu&iacute;a para comer afuera', 'Qu&eacute; conviene pedir', 'verGuia()') + '</div>';
+  h += '<div class="section-t">Estilo</div><div class="pal">' + Object.keys(PALETAS).map(function(k){
+    var P = PALETAS[k];
+    return '<button class="' + (paletaActual() === k ? 'on' : '') + '" onclick="elegirPaleta(\'' + k + '\')"><div class="sw">' +
+      P.c.map(function(c){ return '<i style="background:' + c + '"></i>'; }).join('') + '</div>' + P.n + '</button>';
+  }).join('') + '</div>';
+  h += '<div class="section-t">App</div><button class="btn sec block" onclick="actualizarApp()">Actualizar</button>' +
+    '<p class="hint" style="text-align:center">Cerdapp ' + APP_VER + (DEMO ? ' &middot; demo' : '') + ' &middot; ' + esc(userEmail) + '</p>' +
+    '<button class="link danger" style="margin:0 auto;display:flex" onclick="salir()">Salir</button>';
+  openModal(h);
+}
+function verRecetasPropias(){
+  var mias = hogar().recetas || [];
+  var h = mh('Recetas propias') + '<p class="lead">Eligen los ingredientes y calculo cu&aacute;nto le toca a cada uno.</p>';
+  if (mias.length) h += '<div class="card pad0">' + mias.map(function(r){ return opt(r.n, '', 'editarReceta(\'' + r.id + '\')'); }).join('') + '</div>';
+  h += '<button class="btn block" onclick="nuevaReceta()">+ Receta nueva</button>';
+  openModal(h);
+}
+function verDescartadas(){
+  var nos = Object.keys((hogar().likes || {})).filter(function(k){ return hogar().likes[k] === -1 && REC[k]; });
+  var h = mh('Recetas descartadas') + '<p class="lead">No las propongo. Toc&aacute; una para que vuelva.</p><div class="card pad0">' +
+    nos.map(function(k){ return opt(REC[k].n, 'Volver a proponer', 'votar(\'' + k + '\',-1);verDescartadas()'); }).join('') + '</div>';
+  openModal(h);
+}
+
+/* ---------- GUIA DE USO (v16: 5 pantallas, al dia con la app) ---------- */
+function tourSlides(){
+  var gym = D.gym && D.gym.email === userEmail;
+  return [
+    ['Arranquemos por Hoy', '&#127869;', 'Hoy', 'Arriba ves cu&aacute;nto te queda del d&iacute;a. Abajo, la pr&oacute;xima comida abierta, con lo que le toca a cada uno en medidas caseras. Las otras quedan plegadas: tocalas para abrirlas.'],
+    ['Lo m&aacute;s importante', '&#10003;', 'Lo com&iacute;', 'Cuando termin&aacute;s, toc&aacute; <b>Lo com&iacute;</b>. Si comiste otra cantidad, afuera o nada, toc&aacute; <b>Otra cosa</b>. Lo que haga falta lo ajusto solo en las comidas que quedan.'],
+    ['Si no tienen ganas', '&#128260;', 'Cambiar', 'En cada comida, <b>Cambiar</b> te da otra idea, la lista entera, sumar otra receta o comer afuera. Tocando el nombre del plato ves la receta.'],
+    ['Los d&iacute;as distintos', '&#127979;', 'Colegio y algo suelto', 'La noche antes, contest&aacute; si ma&ntilde;ana hay colegio (Norte o Quilmes): ese d&iacute;a te muestro el men&uacute; del comedor y qu&eacute; conviene. Lo que comas entre comidas va en <b>Algo suelto</b>, al final de Hoy.'],
+    ['Y el resto', '&#128197;', 'Semana, heladera y progreso', 'La semana y la lista de compras se arman solas para los dos. En Heladera marc&aacute;s lo que hay y propongo con eso. En Progreso ves el peso y cu&aacute;nto comiste cada d&iacute;a contra tu objetivo.' +
+      (gym ? ' Tus entrenamientos salen de Gym Bro.' : ' Anot&aacute; tu actividad ah&iacute; o al final de Hoy.')]
+  ];
+}
+function tourHTML(fin){
+  var S = tourSlides(), i = clamp(tourI, 0, S.length - 1), t = S[i];
+  return '<div class="bubble">' + pigSVG() + '<div class="txt">' + t[0] + '</div></div>' +
+    '<div class="card" style="text-align:center;padding:26px 18px">' +
+    '<div class="tour-ico">' + t[1] + '</div>' +
+    '<h2>' + t[2] + '</h2><div class="muted" style="font-size:15px;line-height:1.5">' + t[3] + '</div>' +
+    '<div class="row" style="justify-content:center;gap:7px;margin-top:18px">' + S.map(function(x, j){
+      return '<i class="pt' + (j === i ? ' on' : '') + '"></i>';
+    }).join('') + '</div></div>' +
+    '<div class="row"><button class="btn sec" onclick="tourIr(-1)">Atr&aacute;s</button>' +
+    (i < S.length - 1 ? '<button class="btn f1" onclick="tourIr(1)">Siguiente</button>'
+                      : '<button class="btn acc f1" onclick="' + fin + '">&iexcl;A cocinar!</button>') + '</div>';
+}
+function marcarTour(){
+  var pf = perfil(userEmail); if (!pf || (pf.tour || 0) >= 2) return;
+  var p2 = JSON.parse(JSON.stringify(pf)); p2.tour = 2; setKV('perfil:' + userEmail, p2);
+}
+
+/* ==================================================================
    AUTH (mismo patron que Gym Bro: la sesion dura 30 dias)
    ================================================================== */
 var SESION_DIAS = 30;
@@ -3503,6 +3742,7 @@ window.addEventListener('load', function(){
   initAuth();
   setTimeout(buscarVersion, 2500);
 });
+
 </script>
 </body>
 </html>

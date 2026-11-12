@@ -881,7 +881,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v14';
+var APP_VER   = 'v15';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -949,7 +949,14 @@ var EXTRAS_COMIDA = [
   ['ddl','&#127855;','Cucharada de dulce de leche',60,1],
   ['chico','&#10133;','Otra cosa chica',100,2], ['mediano','&#10133;','Otra cosa mediana',250,5], ['grande','&#10133;','Otra cosa grande',500,10]
 ];
-var EXC = {}; EXTRAS_COMIDA.forEach(function(e){ EXC[e[0]] = e; });
+/* lo tipico de un desayuno, para cuando alguien desayuna en vez de solo mate */
+var DESAYUNO = [
+  ['cafeleche','&#9749;','Caf&eacute; con leche',90,5], ['tostadas2','&#127838;','2 tostadas con queso untable',200,7],
+  ['tostadasdulce','&#127838;','2 tostadas con mermelada o dulce',220,5], ['yogurcereal','&#129379;','Yogur con cereales o granola',220,8],
+  ['huevos2','&#129370;','2 huevos revueltos',180,13], ['licuado','&#129380;','Licuado de banana con leche',220,8],
+  ['medialunas2','&#129360;','2 medialunas',360,6], ['tostado','&#129386;','Tostado de jam&oacute;n y queso',300,16]
+];
+var EXC = {}; EXTRAS_COMIDA.concat(DESAYUNO).forEach(function(e){ EXC[e[0]] = e; });
 
 /* Carta tipica de restaurante: [id, categoria, emoji, nombre, kcal, prot, busqueda].
    Porciones de restaurante, no de casa. Se suman por persona o compartidas (la mitad). */
@@ -1353,16 +1360,37 @@ function excesoAfuera(fecha, em){
    de menos) se reparte en las comidas que quedan del dia. */
 function realDe(fecha, slot, em){ return (((dia(fecha).real || {})[slot]) || {})[em] || null; }
 /* el plato con las cantidades reales, si las hay. kProp = lo que se habia propuesto */
-function platoComido(r, em, slot, fecha){
-  var P = porciones(r, em, slot, fecha), R = realDe(fecha, slot, em);
-  P.kProp = P.kcal; P.real = !!R;
-  if (!R) return P;
+/* Al tildar se guarda el plato tal como se veia en ese momento (dia.snap), con el
+   ajuste del dia incluido. Si no, al quedar tildado se recalculaba sin ese ajuste y
+   lo comido cambiaba despues. */
+function snapDe(fecha, slot, em){ return (((dia(fecha).snap || {})[slot]) || {})[em] || null; }
+function fijarSnap(fecha, slot, em){
+  if (snapDe(fecha, slot, em)) return;
+  var r = recDe(fecha, slot); if (!r) return;
+  var P = porciones(r, em, slot, fecha), q = {};
+  P.it.forEach(function(x){ q[x.f] = x.q; });
+  var sn = JSON.parse(JSON.stringify(dia(fecha).snap || {})); sn[slot] = sn[slot] || {}; sn[slot][em] = q;
+  setSlot(fecha, 'snap', sn);
+}
+function borrarComido(fecha, slot, em){
+  ['real', 'snap'].forEach(function(k){
+    var o = JSON.parse(JSON.stringify(dia(fecha)[k] || {}));
+    if (o[slot] && o[slot][em]){ delete o[slot][em]; setSlot(fecha, k, o); }
+  });
+}
+function aplicarQ(P, Q){
   var tk = 0, tp = 0;
   P.it.forEach(function(x){
-    if (R[x.f] !== undefined){ x.q = R[x.f]; x.gr = x.q * x.u[1]; x.kcal = x.a.k * x.gr / 100; x.prot = x.a.p * x.gr / 100; }
+    if (Q[x.f] !== undefined){ x.q = Q[x.f]; x.gr = x.q * x.u[1]; x.kcal = x.a.k * x.gr / 100; x.prot = x.a.p * x.gr / 100; }
     tk += x.kcal; tp += x.prot;
   });
   P.kcal = tk; P.prot = tp;
+}
+function platoComido(r, em, slot, fecha){
+  var P = porciones(r, em, slot, fecha), S = snapDe(fecha, slot, em), R = realDe(fecha, slot, em);
+  if (S) aplicarQ(P, S);
+  P.kProp = P.kcal; P.pProp = P.prot; P.real = !!R;
+  if (R) aplicarQ(P, R);
   return P;
 }
 function excesoReal(fecha, em){
@@ -1372,13 +1400,80 @@ function excesoReal(fecha, em){
     var r = recDe(fecha, s); if (!r) return;
     var P = platoComido(r, em, s, fecha);
     k += P.kcal - P.kProp;
-    p += P.prot - porciones(r, em, s, fecha).prot;
+    p += P.prot - P.pProp;
   });
   return {k:k, p:p};
 }
+/* La manana de cada dia. El plan reserva para la manana lo del perfil (mate: 0,
+   mate y frutos secos: 125). Lo que se hizo de verdad ese dia puede ser otra cosa:
+   la diferencia se reparte en las comidas que quedan. */
+function manDe(fecha, em){ return ((dia(fecha).man || {})[em]) || (perfil(em) || {}).man || 'mate'; }
+function presupuestoManana(em){ return (perfil(em) || {}).man === 'matefs' ? 125 : 0; }
+function desaDe(fecha, em){
+  var ids = ((dia(fecha).desa || {})[em]) || [], k = 0, p = 0;
+  var l = ids.map(function(id, i){ var e = EXC[id] || EXC.chico; k += e[3]; p += e[4]; return {i:i, e:e}; });
+  return {l:l, k:k, p:p};
+}
+function kcalManana(fecha, em){
+  var m = manDe(fecha, em);
+  if (m === 'matefs') return {k:125, p:4};
+  if (m === 'desayuno'){ var d = desaDe(fecha, em); return {k:d.k, p:d.p}; }
+  return {k:0, p:0};
+}
+function excesoManana(fecha, em){
+  if ((perfil(em) || {}).man === 'desayuno') return {k:0, p:0};   /* ese perfil tiene su propia comida de desayuno */
+  var r = kcalManana(fecha, em);
+  return {k:r.k - presupuestoManana(em), p:r.p - (presupuestoManana(em) ? 4 : 0)};
+}
+function setManana(em, v){
+  var f = hoyISO(), m = JSON.parse(JSON.stringify(dia(f).man || {})); m[em] = v; setSlot(f, 'man', m);
+  if (v === 'desayuno' && !desaDe(f, em).l.length){ render(); abrirDesayuno(em); return; }
+  render();
+}
+function abrirDesayuno(em){
+  var h = mh('&iquest;Qu&eacute; desayun&oacute; ' + nombre(em) + '?');
+  h += '<p class="small muted" style="margin-top:0">Toc&aacute; lo que se parezca. Si fueron dos, tocalo dos veces.</p><div class="chips">' +
+    DESAYUNO.concat(EXTRAS_COMIDA).map(function(e){
+      return '<button class="chip" onclick="sumarDesayuno(\'' + em + '\',\'' + e[0] + '\')">' + e[1] + ' ' + e[2] + ' <span class="dim" style="font-weight:600">~' + e[3] + '</span></button>';
+    }).join('') + '</div>';
+  openModal(h);
+}
+function sumarDesayuno(em, id){
+  var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).desa || {}));
+  o[em] = o[em] || []; o[em].push(id); setSlot(f, 'desa', o);
+  var m = JSON.parse(JSON.stringify(dia(f).man || {})); m[em] = 'desayuno'; setSlot(f, 'man', m);
+  render(); toast('Anotado: ' + EXC[id][2], 'ok');
+}
+function quitarDesayuno(em, i){
+  var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).desa || {}));
+  (o[em] || []).splice(i, 1); setSlot(f, 'desa', o); render();
+}
+function mananaHTML(f){
+  var ps = personas().filter(function(em){ return (perfil(em) || {}).man !== 'desayuno'; });
+  if (!ps.length) return '';
+  var h = '<div class="card"><div class="row"><span style="font-size:20px">&#129481;</span><b style="flex:1">Ma&ntilde;ana</b></div>' +
+    '<div class="small muted" style="margin:2px 0 4px">&iquest;Qu&eacute; hiciste hoy a la ma&ntilde;ana? Si cambia lo de siempre, se ajusta el resto del d&iacute;a.</div>';
+  ps.forEach(function(em){
+    var m = manDe(f, em), d = desaDe(f, em), dif = excesoManana(f, em).k;
+    h += '<div style="padding:8px 0;border-top:1px solid var(--surface2)"><b>' + nombre(em) + '</b>' +
+      '<div class="row wrap" style="gap:6px;margin-top:6px">' + [['mate','Solo mate'],['matefs','Mate y frutos secos'],['desayuno','Desayun&eacute;']].map(function(o){
+        return '<button class="chip' + (m === o[0] ? ' on' : '') + '" style="min-height:32px;padding:4px 12px" onclick="setManana(\'' + em + '\',\'' + o[0] + '\')">' + o[1] + '</button>';
+      }).join('') + '</div>';
+    if (m === 'desayuno'){
+      h += '<div class="chips" style="margin-top:8px">' + d.l.map(function(x){
+        return '<span class="chip" style="cursor:default">' + x.e[1] + ' ' + x.e[2] +
+          ' <button class="vote" style="width:26px;height:26px;margin-left:4px;font-size:12px" onclick="quitarDesayuno(\'' + em + '\',' + x.i + ')" aria-label="Quitar">&#10005;</button></span>';
+      }).join('') + '<button class="chip" onclick="abrirDesayuno(\'' + em + '\')">+ Agregar</button></div>';
+    }
+    if (Math.abs(dif) >= 20) h += '<div class="small" style="margin-top:4px;font-weight:700;color:' + (dif > 0 ? 'var(--amber)' : 'var(--green)') + '">' +
+      (dif > 0 ? '+' + fN(dif) + ' kcal sobre lo de siempre: se descuentan de lo que queda.' : fN(-dif) + ' kcal menos que lo de siempre: te quedan para el resto del d&iacute;a.') + '</div>';
+    h += '</div>';
+  });
+  return h + '</div>';
+}
 function extraTotal(fecha, em){
-  var a = extrasDe(fecha, em), b = excesoAfuera(fecha, em), c = excesoReal(fecha, em);
-  return {k:a.k + b.k + c.k, p:a.p + b.p + c.p};
+  var a = extrasDe(fecha, em), b = excesoAfuera(fecha, em), c = excesoReal(fecha, em), d = excesoManana(fecha, em);
+  return {k:a.k + b.k + c.k + d.k, p:a.p + b.p + c.p + d.p};
 }
 function descuento(em, fecha, slot){
   if (!fecha) return {k:0, p:0};
@@ -1511,9 +1606,9 @@ function toggleComido(fecha, slot, em){
   o[slot] = o[slot] || {};
   if (o[slot][em]){
     delete o[slot][em];
-    /* destildar borra tambien las cantidades reales */
-    if (realDe(fecha, slot, em)){ var rl = JSON.parse(JSON.stringify(dia(fecha).real || {})); delete rl[slot][em]; setSlot(fecha, 'real', rl); }
-  } else o[slot][em] = 1;
+    /* destildar borra tambien lo guardado de ese plato */
+    borrarComido(fecha, slot, em);
+  } else { fijarSnap(fecha, slot, em); o[slot][em] = 1; }
   setSlot(fecha, 'ok', o); render();
 }
 /* ---------- "comi otra cantidad" ---------- */
@@ -1548,6 +1643,7 @@ function pintarEd(){
 }
 function pasoEd(f, d){ _ed.q[f] = Math.max(0, Math.round((_ed.q[f] + d) * 100) / 100); pintarEd(); }
 function guardarEd(){
+  fijarSnap(_ed.f, _ed.s, _ed.em);
   var rl = JSON.parse(JSON.stringify(dia(_ed.f).real || {}));
   rl[_ed.s] = rl[_ed.s] || {}; rl[_ed.s][_ed.em] = _ed.q;
   setSlot(_ed.f, 'real', rl);
@@ -1556,6 +1652,7 @@ function guardarEd(){
   closeModal(); render(); toast('Guardado lo que comi&oacute; ' + nombre(_ed.em), 'ok');
 }
 function volverPropuesta(){
+  fijarSnap(_ed.f, _ed.s, _ed.em);
   var rl = JSON.parse(JSON.stringify(dia(_ed.f).real || {}));
   if (rl[_ed.s]) delete rl[_ed.s][_ed.em];
   setSlot(_ed.f, 'real', rl);
@@ -1885,15 +1982,126 @@ function switchTab(t){
   render(); window.scrollTo(0, 0);
 }
 
+/* ==================================================================
+   LA CUENTA DEL DIA: lo comido contra el objetivo
+   Lo comido sale de lo tildado ("Lo comi", con cantidades reales si las hay), lo
+   anotado afuera, los snacks y la manana (mate y frutos secos se da por hecho).
+   Lo no tildado queda "sin marcar": no se suma, pero se muestra lo propuesto.
+   El objetivo de cada dia se guarda en dia.meta, para que el de ayer no cambie
+   si despues se recalculan las calorias.
+   ================================================================== */
+function metaDelDia(fecha, em){ return ((dia(fecha).meta || {})[em]) || (objetivo(em) || {}).kcal || 0; }
+function fijarMetas(fecha){
+  var m = JSON.parse(JSON.stringify(dia(fecha).meta || {})), cambio = false;
+  personas().forEach(function(em){ var o = objetivo(em); if (o && !m[em]){ m[em] = o.kcal; cambio = true; } });
+  if (cambio) setSlot(fecha, 'meta', m);
+}
+function resumenDia(fecha, em){
+  var pf = perfil(em) || {}, lin = [], tot = 0, prop = 0, sin = 0;
+  if (pf.man !== 'desayuno'){
+    var mm = manDe(fecha, em), km = kcalManana(fecha, em).k, pm = presupuestoManana(em);
+    var nm = mm === 'matefs' ? 'Mate y un pu&ntilde;adito de frutos secos' : mm === 'desayuno' ? 'Desayuno: ' + (desaDe(fecha, em).l.map(function(x){ return x.e[2]; }).join(', ') || 'sin anotar') : 'Solo mate';
+    var marcado = !!((dia(fecha).man || {})[em]);
+    lin.push({lb:'Ma&ntilde;ana', n:nm, k:km, p:pm, est:marcado ? 'manana' : 'asumido'}); tot += km; prop += pm;
+  }
+  slotsDe().forEach(function(s){
+    if (!enSlot(em, s)) return;
+    var mk = metaSlot(em, s).k;
+    if (comeAfuera(em, fecha, s)){
+      var R = restDe(fecha, s, em), lug = ((dia(fecha).rest || {})[s] || {}).lugar;
+      lin.push({s:s, lb:SLOTS[s][0], n:'Afuera' + (lug ? ': ' + esc(lug) : ''), k:R.k || null, p:mk, est:R.k ? 'afuera' : 'sin'});
+      if (R.k) tot += R.k; else sin++;
+      prop += mk; return;
+    }
+    var r = recDe(fecha, s); if (!r) return;
+    var P = platoComido(r, em, s, fecha);
+    if (comido(fecha, s, em)){ lin.push({s:s, lb:SLOTS[s][0], n:r.n, k:P.kcal, p:P.kProp, est:P.real ? 'real' : 'comido'}); tot += P.kcal; }
+    else { lin.push({s:s, lb:SLOTS[s][0], n:r.n, k:null, p:P.kProp, est:'sin'}); sin++; }
+    prop += P.kProp;
+  });
+  var ex = extrasDe(fecha, em);
+  if (ex.k){ lin.push({lb:'Snacks', n:ex.l.map(function(x){ return x.e[2]; }).join(', '), k:ex.k, p:0, est:'extra'}); tot += ex.k; }
+  var o = objetivo(em) || {};
+  return {meta:metaDelDia(fecha, em), tot:tot, prop:prop, sin:sin, lin:lin, tdee:o.tdee || 0};
+}
+function barra(v, max, col){
+  var pct = clamp(max ? v / max * 100 : 0, 0, 100), pasa = v > max;
+  return '<div style="height:8px;border-radius:5px;box-shadow:var(--in-s);overflow:hidden;margin:5px 0 3px">' +
+    '<div style="height:100%;width:' + pct + '%;background:' + (pasa ? 'var(--amber)' : col) + ';border-radius:5px"></div></div>';
+}
 function metasHTML(){
+  var hoy = hoyISO(), ayer = addDays(hoy, -1);
   return '<div class="metas">' + personas().map(function(em){
-    var o = objetivo(em);
+    var o = objetivo(em), Rh = resumenDia(hoy, em), Ra = resumenDia(ayer, em), col = idx(em) ? 'var(--p1)' : 'var(--p0)';
     return '<div class="meta p' + idx(em) + '"><div class="nm">' + nombre(em) + '</div>' +
       '<div class="kc">' + fN(o.kcal) + ' <span style="font-size:13px">kcal</span></div>' +
       '<div class="pr">' + o.prot + ' g de prote&iacute;na</div>' +
-      (extrasDe(hoyISO(), em).k ? '<div class="pr" style="color:var(--amber)">+' + fN(extrasDe(hoyISO(), em).k) + ' kcal fuera del plan</div>' : '') + '</div>';
+      barra(Rh.tot, Rh.meta, col) +
+      '<div class="pr" style="cursor:pointer" onclick="verDia(\'' + hoy + '\',\'' + em + '\')">Hoy ~<b>' + fN(Rh.tot) + '</b> de ' + fN(Rh.meta) + ' &rsaquo;</div>' +
+      '<div class="pr" style="cursor:pointer;margin-top:2px" onclick="verDia(\'' + ayer + '\',\'' + em + '\')">Ayer ~' + fN(Ra.tot) + ' de ' + fN(Ra.meta) +
+        (Ra.sin ? ' <span style="color:var(--amber)">(' + Ra.sin + ' sin marcar)</span>' : '') + ' &rsaquo;</div></div>';
   }).join('') + '</div>';
 }
+/* el detalle de un dia, con la cuenta y lo que falta tildar */
+var _vd = null;
+function verDia(fecha, em){
+  _vd = {f:fecha, em:em};
+  var R = resumenDia(fecha, em), dif = R.tot - R.meta, conSin = R.tot + R.lin.filter(function(l){ return l.est === 'sin'; }).reduce(function(a, l){ return a + l.p; }, 0);
+  var h = mh(cap(DIAS[parse(fecha).getDay()]) + ' ' + fechaCorta(fecha) + ' &middot; ' + nombre(em));
+  h += '<div class="stats" style="grid-template-columns:1fr 1fr 1fr"><div class="stat"><div class="v">' + fN(R.tot) + '</div><div class="l">comido (kcal)</div></div>' +
+    '<div class="stat"><div class="v">' + fN(R.meta) + '</div><div class="l">objetivo</div></div>' +
+    '<div class="stat"><div class="v" style="color:' + (dif > 50 ? 'var(--amber)' : 'var(--green)') + '">' + (dif > 0 ? '+' : '') + fN(dif) + '</div><div class="l">' + (dif > 50 ? 'de m&aacute;s' : 'dentro') + '</div></div></div>';
+  h += barra(R.tot, R.meta, idx(em) ? 'var(--p1)' : 'var(--p0)');
+  if (R.sin) h += '<div class="aviso a">' + R.sin + (R.sin === 1 ? ' comida sin marcar' : ' comidas sin marcar') +
+    ': no est&aacute;n sumadas. Si las comiste tal cual, el d&iacute;a da ~<b>' + fN(conSin) + '</b> kcal. Tildalas abajo y queda la cuenta completa.</div>';
+  else if (!R.lin.some(function(l){ return l.s && l.est !== 'sin'; }))
+    h += '<div class="aviso b">Ese d&iacute;a no tiene comidas registradas, as&iacute; que no hay cuenta para hacer.</div>';
+  else if (fecha < hoyISO()) h += '<div class="aviso ' + (dif > 50 ? 'a' : 'g') + '">' + (dif > 50 ? 'Te pasaste ~' + fN(dif) + ' kcal del objetivo. No pasa nada: el d&eacute;ficit se mira por semana.' :
+    '&#10004; Dentro del objetivo' + (R.tdee ? ': d&eacute;ficit de ~' + fN(R.tdee - R.tot) + ' kcal ese d&iacute;a.' : '.')) + '</div>';
+  h += '<div class="card" style="padding:4px 14px"><ul class="lst">' + R.lin.map(function(l){
+    var der = l.est === 'sin' ? '<span class="small muted">propuesto ~' + fN(l.p) + '</span>' : '<b>' + fN(l.k) + '</b>';
+    var sub = {asumido:'lo de siempre (se da por hecho)', manana:'lo que marcaste ese d&iacute;a', comido:'como se propuso', real:'otra cantidad (propuesto ~' + fN(l.p) + ')', afuera:'anotado afuera', extra:'fuera de las comidas', sin:'sin marcar'}[l.est];
+    var btn = l.est === 'sin' && l.s ? (comeAfuera(em, fecha, l.s)
+        ? '<button class="btn small sec" style="margin-top:6px" onclick="closeModal();abrirCarta(\'' + fecha + '\',\'' + l.s + '\')">&iquest;Qu&eacute; comi&oacute;?</button>'
+        : '<button class="btn small sec" style="margin-top:6px" onclick="tildarDesdeDia(\'' + l.s + '\')">Lo com&iacute;</button> ' +
+          '<button class="btn small sec" style="margin-top:6px" onclick="closeModal();editarComido(\'' + fecha + '\',\'' + l.s + '\',\'' + em + '\')">Otra cantidad</button>') : '';
+    return '<li style="align-items:flex-start"><div style="flex:1"><div class="small dim" style="font-weight:700;text-transform:uppercase;letter-spacing:.6px">' + l.lb + '</div>' +
+      '<div style="font-weight:600">' + l.n + '</div><div class="small ' + (l.est === 'sin' ? '' : 'muted') + '" style="' + (l.est === 'sin' ? 'color:var(--amber);font-weight:700' : '') + '">' + sub + '</div>' + btn + '</div>' +
+      '<div style="text-align:right;min-width:64px">' + der + '</div></li>';
+  }).join('') + '</ul></div>';
+  h += '<div class="small muted">El objetivo ya tiene el d&eacute;ficit adentro: comer eso o menos es bajar. Las kcal son estimadas por porciones caseras.</div>';
+  openModal(h);
+}
+function tildarDesdeDia(slot){
+  fijarSnap(_vd.f, slot, _vd.em);
+  var o = JSON.parse(JSON.stringify(dia(_vd.f).ok || {})); o[slot] = o[slot] || {}; o[slot][_vd.em] = 1;
+  setSlot(_vd.f, 'ok', o); render(); verDia(_vd.f, _vd.em);
+}
+function diaPorDiaHTML(em){
+  var hoy = hoyISO(), filas = '', semTot = 0, semMeta = 0, semTdee = 0, dias = 0, sinAlgo = 0;
+  for (var i = 6; i >= 0; i--){
+    var f = addDays(hoy, -i), R = resumenDia(f, em), col = idx(em) ? 'var(--p1)' : 'var(--p0)';
+    var conDatos = R.lin.some(function(l){ return l.s && l.est !== 'sin'; });
+    if (i > 0 && R.sin === 0 && conDatos){ semTot += R.tot; semMeta += R.meta; semTdee += R.tdee; dias++; }
+    if (i > 0 && R.sin) sinAlgo++;
+    filas += '<div style="padding:8px 0;border-top:1px solid var(--surface2);cursor:pointer" onclick="verDia(\'' + f + '\',\'' + em + '\')">' +
+      '<div class="row"><b style="width:76px">' + (i === 0 ? 'Hoy' : i === 1 ? 'Ayer' : DIASC[parse(f).getDay()] + ' ' + fechaCorta(f)) + '</b>' +
+      '<span class="small" style="flex:1">~' + fN(R.tot) + ' de ' + fN(R.meta) + '</span>' +
+      (R.sin ? '<span class="tag a">' + R.sin + ' sin marcar</span>' : (!conDatos ? '<span class="tag">sin datos</span>' :
+        (i > 0 ? (R.tot > R.meta + 50 ? '<span class="tag a">+' + fN(R.tot - R.meta) + '</span>' : '<span class="tag g">&#10004;</span>') : ''))) +
+      '</div>' + barra(R.tot, R.meta, col) + '</div>';
+  }
+  var h = '<div class="card"><h3>D&iacute;a por d&iacute;a</h3><div class="small muted" style="margin:-2px 0 4px">Lo comido contra el objetivo de cada d&iacute;a. Toc&aacute; un d&iacute;a para ver el detalle.</div>' + filas;
+  if (dias){
+    var def = semTdee - semTot;
+    h += '<div class="aviso ' + (semTot <= semMeta + 50 * dias ? 'g' : 'a') + '" style="margin-top:12px">En ' + dias + (dias === 1 ? ' d&iacute;a completo' : ' d&iacute;as completos') +
+      ': comiste ~<b>' + fN(semTot) + '</b> kcal contra ~' + fN(semMeta) + ' de objetivo. D&eacute;ficit real ~<b>' + fN(def) + ' kcal</b>' +
+      (def > 0 ? ' (&asymp; ' + (def < 770 ? fN(def / 7.7) + ' g' : fKg(def / 7700) + ' kg') + ' de grasa).' : '.') + '</div>';
+  } else h += '<div class="small muted" style="margin-top:8px">Cuando un d&iacute;a quede con todo tildado, ac&aacute; aparece el balance de la semana.</div>';
+  if (sinAlgo) h += '<div class="small muted">Los d&iacute;as con comidas sin marcar no entran al balance.</div>';
+  return h + '</div>';
+}
+
 
 function avisoDescuento(r, em, slot, P){
   if (P.dsc.k < 10) return '';
@@ -2249,16 +2457,10 @@ function renderHoy(){
   var f = hoyISO();
   completar(f, addDays(lunes(f), 6));
   var h = '<div class="title-day">' + cap(fechaLarga(f)) + '</div>';
+  fijarMetas(f);
   h += metasHTML();
-  /* manana: mate */
-  var man = personas().map(function(em){
-    var pf = perfil(em);
-    if (pf.man === 'matefs') return '<b>' + nombre(em) + ':</b> mate y 1 pu&ntilde;adito de frutos secos';
-    if (pf.man === 'mate') return '<b>' + nombre(em) + ':</b> mate solo';
-    return '';
-  }).filter(Boolean);
-  if (man.length) h += '<div class="card"><div class="row"><span style="font-size:20px">&#129481;</span><b>Ma&ntilde;ana</b></div>' +
-    '<div class="small" style="margin-top:4px">' + man.join('<br>') + '</div></div>';
+  /* manana: mate, mate y frutos secos o desayuno, editable cada dia */
+  h += mananaHTML(f);
   h += fueraPlanHTML(f);
   slotsDe().forEach(function(s){ h += comidaHTML(f, s); });
   /* actividad de hoy, para quien no tiene Gym Bro */
@@ -2487,6 +2689,7 @@ function renderProgreso(){
   h += '<div class="card"><h3>&iquest;Las calor&iacute;as est&aacute;n bien?</h3>' + sugerenciaAjuste(em) +
     '<div class="small muted">Hoy: <b>' + fN(o.kcal) + ' kcal</b> y <b>' + o.prot + ' g de prote&iacute;na</b>. ' +
     (em === userEmail ? '<a href="#" onclick="verCalculo(\'' + em + '\');return false" style="color:var(--pig-2)">C&oacute;mo se calcula</a>' : '') + '</div></div>';
+  h += diaPorDiaHTML(em);
   /* cuanto del plan se sigue */
   var ad = adherencia(em, 7);
   h += '<div class="card"><h3>Plan de los &uacute;ltimos 7 d&iacute;as</h3>' + (ad.usa && ad.plan

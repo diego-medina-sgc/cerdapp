@@ -947,7 +947,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v16';
+var APP_VER   = 'v17';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1206,16 +1206,80 @@ function idx(em){ var i = usuarios().map(function(u){ return u.email; }).indexOf
 function personas(){ return usuarios().map(function(u){ return u.email; }).filter(function(em){ var pf = perfil(em); return pf && pf.alt; }); }
 
 var _kvTimers = {}, _kvSucio = {};
+/* ==================================================================
+   v17: GUARDADO SIN PISARSE
+   Antes cada celular mandaba la semana (o la casa) entera, y el que tenia una
+   copia vieja borraba lo que el otro habia guardado. Ahora se manda tambien la
+   "base" (lo ultimo que ese celular leyo del servidor) y se combina en tres
+   partes: solo se aplica lo que este celular cambio; lo demas queda como esta.
+   Listas de objetos con id (recetas) se combinan por id; listas de valores
+   sueltos (heladera, algo suelto) se combinan contando repeticiones.
+   ================================================================== */
+function m3copia(o){ return o === undefined ? undefined : JSON.parse(JSON.stringify(o)); }
+function m3obj(o){ return !!o && typeof o === 'object' && !Array.isArray(o); }
+function m3igual(a, b){ return JSON.stringify(a) === JSON.stringify(b); }
+function m3conId(a){ return a.every(function(x){ return m3obj(x) && x.id; }); }
+function m3plano(a){ return a.every(function(x){ return x === null || typeof x !== 'object'; }); }
+function merge3(base, mine, cur){
+  if (m3igual(base, mine) || m3igual(cur, mine)) return m3copia(cur);
+  if (cur === undefined || m3igual(cur, base)) return m3copia(mine);
+  if (m3obj(mine) && m3obj(cur)){
+    var b = m3obj(base) ? base : {}, res = m3copia(cur);
+    Object.keys(b).concat(Object.keys(mine)).forEach(function(k){
+      if (!(k in mine)){ delete res[k]; return; }
+      var r = merge3(b[k], mine[k], cur[k]);
+      if (r === undefined) delete res[k]; else res[k] = r;
+    });
+    return res;
+  }
+  if (Array.isArray(mine) && Array.isArray(cur)){
+    var b2 = Array.isArray(base) ? base : [];
+    if (m3conId(mine) && m3conId(cur) && m3conId(b2)){
+      var porId = function(a){ var m = {}; a.forEach(function(x){ m[x.id] = x; }); return m; };
+      var B = porId(b2), M = porId(mine), C = porId(cur), out = [];
+      cur.forEach(function(x){ if (B[x.id] && !M[x.id]) return; out.push(M[x.id] ? merge3(B[x.id], M[x.id], x) : x); });
+      mine.forEach(function(x){ if (!C[x.id] && !(B[x.id] && !M[x.id])) out.push(x); });
+      return out;
+    }
+    if (m3plano(mine) && m3plano(cur) && m3plano(b2)){
+      var cuenta = function(a){ var m = {}; a.forEach(function(x){ var k = JSON.stringify(x); m[k] = (m[k] || 0) + 1; }); return m; };
+      var cb = cuenta(b2), cm = cuenta(mine), quitar = {}, out2 = [];
+      Object.keys(cb).forEach(function(k){ var d = cb[k] - (cm[k] || 0); if (d > 0) quitar[k] = d; });
+      cur.forEach(function(x){ var k = JSON.stringify(x); if (quitar[k]){ quitar[k]--; return; } out2.push(x); });
+      var vistos = {};
+      mine.forEach(function(x){ var k = JSON.stringify(x); vistos[k] = (vistos[k] || 0) + 1; if (vistos[k] > (cb[k] || 0)) out2.push(x); });
+      return out2;
+    }
+  }
+  return m3copia(mine);
+}
+
+var KV_BASE = {}, _kvVuelo = {};
 function setKV(k, v){
   KV[k] = v;
   if (DEMO){ guardarDemo(); return; }
   _kvSucio[k] = 1;
   clearTimeout(_kvTimers[k]);
-  _kvTimers[k] = setTimeout(function(){
-    apiPost('saveKV', {k:k, v:KV[k]})
-      .then(function(){ delete _kvSucio[k]; })
-      .catch(function(e){ delete _kvSucio[k]; toast('No pude guardar: ' + esc(e.message), 'err'); });
-  }, 500);
+  _kvTimers[k] = setTimeout(function(){ enviarKV(k); }, 500);
+}
+/* de a un envio por clave: el siguiente sale con la base que devolvio el anterior */
+function enviarKV(k){
+  if (_kvVuelo[k]){ _kvTimers[k] = setTimeout(function(){ enviarKV(k); }, 400); return; }
+  var mine = m3copia(KV[k]), base = KV_BASE.hasOwnProperty(k) ? KV_BASE[k] : null;
+  _kvVuelo[k] = 1;
+  apiPost('saveKV', {k:k, v:mine, base:base})
+    .then(function(j){
+      var srv = j.v !== undefined ? j.v : mine, antes = KV[k];
+      KV_BASE[k] = m3copia(srv);
+      KV[k] = m3igual(antes, mine) ? m3copia(srv) : merge3(mine, antes, srv);
+      delete _kvVuelo[k];
+      if (m3igual(antes, mine)) delete _kvSucio[k];
+      if (!m3igual(KV[k], antes)){
+        if (k === 'hogar'){ aplicarVariantes(); cargarPropias(); }
+        if (!$('modal').classList.contains('on') && !$('onb').classList.contains('on')) render();
+      }
+    })
+    .catch(function(e){ delete _kvVuelo[k]; delete _kvSucio[k]; toast('No pude guardar: ' + esc(e.message), 'err'); });
 }
 /* Lo compartido (heladera, semana, compras) lo cambian los dos. Al volver a la
    app se relee, salvo que haya algo propio sin mandar o un modal abierto. */
@@ -1793,6 +1857,34 @@ function migrarOficina(){
     var f = addDays(hoy, i), d = dia(f);
     if (d.of && (d.al === 'sobras' || fueraDe(f, 'al').indexOf(em) === -1)) aplicarOficina(f, 1);
   }
+}
+function recuperarRecetas(){
+  cargarPropias();
+  var h = hogar(), mias = h.recetas || [], nuevas = {}, orden = [];
+  Object.keys(KV).filter(function(k){ return k.indexOf('plan:') === 0; }).forEach(function(k){
+    var p = KV[k] || {};
+    Object.keys(p).forEach(function(f){ SLOT_COMIDA.forEach(function(sl){
+      var v = p[f] && p[f][sl]; if (!v || typeof v !== 'string') return;
+      (v.indexOf('combo:') === 0 ? v.slice(6).split('+') : [v]).forEach(function(id){
+        if (id.indexOf('r-') !== 0 || REC[id] || mias.some(function(r){ return r.id === id; })) return;
+        var r = nuevas[id]; if (!r){ r = nuevas[id] = {id:id, n:'', t:'', c:[], x:[], pa:[], min:0, f:f}; orden.push(id); }
+        var t = tipoSlot(sl); if (r.t.indexOf(t) === -1) r.t += t;
+        [((p[f].real || {})[sl]) || {}, ((p[f].snap || {})[sl]) || {}].forEach(function(o){
+          Object.keys(o).forEach(function(em){ Object.keys(o[em] || {}).forEach(function(fd){
+            if (fd.charAt(0) === '_' || !ALI[fd] || r.c.some(function(c){ return c[0] === fd; })) return;
+            var rol = rolDe(fd); r.c.push([fd, rol, baseDe(fd, rol)]);
+          }); });
+        });
+      });
+    }); });
+  });
+  var ok = orden.filter(function(id){ return nuevas[id].c.length; });
+  if (!ok.length) return;
+  var h2 = JSON.parse(JSON.stringify(h));
+  h2.recetas = mias.concat(ok.map(function(id){
+    var r = nuevas[id]; r.n = 'Receta recuperada (' + fechaCorta(r.f) + ')'; delete r.f; return r;
+  }));
+  setKV('hogar', h2); cargarPropias();
 }
 function tipoSlot(slot){ return slot === 'al' ? 'a' : slot === 'ce' ? 'c' : 'm'; }
 
@@ -3045,7 +3137,13 @@ function reintentar(){ $('offline').classList.add('hide'); $('h-update').innerHT
 function onDatos(data){
   if (!data || data.error){ hideLoad(); toast((data && data.error) || 'Respuesta vac&iacute;a', 'err'); return; }
   if (data.allowed_emails && data.allowed_emails.length && data.allowed_emails.indexOf(userEmail) === -1){ showDenied(); return; }
-  D = data; KV = D.kv || {}; _ultimaCarga = Date.now();
+  var srv = data.kv || {}, viejaBase = KV_BASE;
+  KV_BASE = m3copia(srv);
+  Object.keys(_kvSucio).forEach(function(k){
+    if (_kvVuelo[k]){ srv[k] = KV[k]; KV_BASE[k] = viejaBase[k]; return; }
+    srv[k] = merge3(viejaBase.hasOwnProperty(k) ? viejaBase[k] : null, KV[k], srv[k]);
+  });
+  D = data; KV = srv; _ultimaCarga = Date.now();
   D.pesos = D.pesos || []; D.actividad = D.actividad || []; D.gym = D.gym || {};
   try { localStorage.setItem('cerd_cache', JSON.stringify(data)); } catch(e){}
   $('h-update').innerHTML = APP_VER + ' &middot; ' + (D.lastUpdate || '');
@@ -3057,7 +3155,7 @@ function afterData(){
   if (!PAL_URL && hogar().pal && hogar().pal !== paletaActual()) aplicarPaleta(hogar().pal);
   else if (PAL_URL) aplicarPaleta(PAL_URL);
   migrarTipicos();
-  if (!faltaOnb()) migrarOficina();
+  if (!faltaOnb()){ migrarOficina(); recuperarRecetas(); }
   if (faltaOnb()){
     onbPaso = (perfil(userEmail) || {}).alt ? 1 : 0;
     onboarding(); return;
@@ -3070,7 +3168,7 @@ function afterData(){
 function tryCache(){
   try {
     var c = localStorage.getItem('cerd_cache');
-    if (c){ D = JSON.parse(c); KV = D.kv || {}; afterData(); hideLoad(); }
+    if (c){ D = JSON.parse(c); KV = D.kv || {}; KV_BASE = m3copia(KV); afterData(); hideLoad(); }
   } catch(e){}
 }
 

@@ -372,6 +372,14 @@ details.guia ul{margin:4px 0 0;padding-left:18px}
 @media (prefers-color-scheme: dark){
   .card,.meta,.day,.btn.sec,.chip,.iconbtn,.step,.vote{outline:1px solid rgba(255,255,255,.05);outline-offset:-1px}
 }
+
+/* ---------- v18: buscador y lista de lo comido ---------- */
+.buscar{display:flex;align-items:center;gap:10px;width:100%;border:0;border-radius:16px;padding:13px 16px;margin:0 0 18px;
+  background:var(--bg);box-shadow:var(--in-s);color:var(--muted);font-weight:700;font-size:15px;text-align:left;min-height:50px}
+.qrow{padding:2px 0 12px;gap:8px}
+.lst.ed li{display:flex;align-items:center;gap:8px;padding:9px 0}
+.lst.ed .step{width:40px;height:40px}
+.link.inl{display:inline;padding:0;min-height:0;font-size:12.5px}
 </style>
 </head>
 <body>
@@ -864,6 +872,164 @@ var GUIA = [
   ['Al d&iacute;a siguiente', ['No compensar ayunando: volver al plan normal.',
                               'Una comida libre no arruina la semana. El d&eacute;ficit se mira por semana, no por d&iacute;a.']]
 ];
+
+
+/* ==================================================================
+   v18: CATALOGO DE ALIMENTOS
+   Para anotar lo que se comio de verdad, no solo lo que traen las recetas.
+   Valores por 100 g tal como se sirve (tablas de composicion; aproximados).
+   [id, nombre, kcal, prot, carb, grasa, [unidad, gramos, plural, paso], heladera, seccion, alias, cubre]
+   "cubre": el ingrediente de receta (sin calorias) que este alimento reemplaza en la heladera.
+   ================================================================== */
+var CATALOGO = [
+  /* carnes, pescados y otras proteinas */
+  ['bondiola','Bondiola de cerdo',242,24,0,16,['palma',100,'palmas',.5],'prot','car','cerdo chancho'],
+  ['cerdo','Carr&eacute; o solomillo de cerdo',170,27,0,6.5,['palma',100,'palmas',.5],'prot','car','cerdo chancho lomo bife'],
+  ['polloasado','Pollo asado o al spiedo (con piel)',215,26,0,12,['presa',150,'presas',.5],'prot','car','pollo rotiseria spiedo'],
+  ['alitas','Alitas de pollo',250,24,0,17,['alita',35,'alitas',1],'prot','car','pollo'],
+  ['vacio','Vac&iacute;o o entra&ntilde;a',270,25,0,19,['palma',100,'palmas',.5],'prot','car','asado carne parrilla'],
+  ['bife','Bife de chorizo u ojo de bife',250,26,0,16,['palma',100,'palmas',.5],'prot','car','carne parrilla churrasco'],
+  ['chorizo','Chorizo',330,16,2,29,['chorizo',100,'chorizos',.5],'prot','car','parrilla'],
+  ['morcilla','Morcilla',380,14,5,34,['morcilla',100,'morcillas',.5],'prot','car','parrilla'],
+  ['salchicha','Salchicha',280,12,3,25,['salchicha',40,'salchichas',1],'prot','car','pancho viena'],
+  ['salmon','Salm&oacute;n',208,20,0,13,['filet',130,'filets',.5],'prot','car','pescado'],
+  ['trucha','Trucha',150,21,0,7,['filet',130,'filets',.5],'prot','car','pescado'],
+  ['langostinos','Langostinos o camarones',100,21,1,1.5,['taza',120,'tazas',.5],'prot','car','mariscos'],
+  ['atunaceite','At&uacute;n en aceite',200,25,0,11,['lata',120,'latas',.5],'prot','alm','atun lata'],
+  ['sardinas','Sardinas o caballa en lata',210,24,0,12,['lata',90,'latas',.5],'prot','alm','pescado lata'],
+  ['medallon','Medall&oacute;n de pollo o carne (comprado)',220,15,8,14,['medall&oacute;n',80,'medallones',1],'prot','car','hamburguesa patty congelado'],
+  ['hambveg','Hamburguesa o medall&oacute;n vegetal',190,10,15,9,['medall&oacute;n',80,'medallones',1],'prot','alm','veggie lentejas garbanzos'],
+  ['milasoja','Milanesa de soja',230,12,25,9,['milanesa',100,'milanesas',.5],'prot','alm','soja'],
+  ['tofu','Tofu',120,13,2,7,['porci&oacute;n',100,'porciones',.5],'prot','lac',''],
+  ['garbanzos','Garbanzos',164,9,27,2.6,['taza',160,'tazas',.25],'alm','alm','legumbres'],
+  ['porotosc','Porotos cocidos',127,8.7,23,.5,['taza',170,'tazas',.25],'alm','alm','legumbres alubias','porotos'],
+  ['clara','Clara de huevo',52,11,.7,.2,['clara',33,'claras',1],'lac','lac','huevo'],
+  ['huevofrito','Huevo frito',196,13.6,.8,15,['huevo',50,'huevos',1],'lac','lac','huevo'],
+  ['pavita','Fiambre de pavita o pollo',105,18,3,2,['feta',20,'fetas',1],'lac','lac','fiambre pechuga pavo'],
+  ['jamoncrudo','Jam&oacute;n crudo',250,28,0,15,['feta',15,'fetas',1],'lac','lac','fiambre'],
+  ['salame','Salame o salam&iacute;n',420,22,2,36,['feta',10,'fetas',1],'lac','lac','fiambre picada'],
+  ['mortadela','Mortadela o paleta',300,14,3,26,['feta',20,'fetas',1],'lac','lac','fiambre'],
+  /* lacteos y quesos */
+  ['lecheent','Leche entera',62,3.2,4.8,3.3,['taza',240,'tazas',.5],'lac','lac',''],
+  ['yogurfruta','Yogur bebible o con fruta',85,3.5,14,1.5,['pote',190,'potes',.5],'lac','lac',''],
+  ['yogurgriego','Yogur griego',110,8,5,6,['pote',160,'potes',.5],'lac','lac',''],
+  ['ricotaf','Ricota',140,11,3,9,['cucharada',30,'cucharadas',1],'lac','lac','','ricota'],
+  ['quesocrema','Queso crema',300,6,4,29,['cucharada',15,'cucharadas',1],'lac','lac','philadelphia casancrem'],
+  ['quesoduro','Queso duro (sardo, reggianito)',390,30,3,29,['cubito',15,'cubitos',1],'lac','lac','parmesano'],
+  ['quesoentero','Queso cremoso o de m&aacute;quina (entero)',320,22,2,25,['feta',25,'fetas',1],'lac','lac','tybo dambo por salut'],
+  ['burrata','Burrata o mozzarella fresca',300,15,2,26,['bocha',125,'bochas',.25],'lac','lac','mozzarella bufala'],
+  ['provoleta','Provoleta',350,25,2,27,['provoleta',150,'provoletas',.25],'lac','lac','queso parrilla'],
+  ['ddl','Dulce de leche',315,7,55,7.5,['cucharada',20,'cucharadas',.5],'lac','lac',''],
+  /* verduras */
+  ['tomatef','Tomate',18,.9,3.9,.2,['tomate',120,'tomates',.5],'ver','ver','','tomate'],
+  ['cherry','Tomate cherry',18,.9,3.9,.2,['pu&ntilde;ado',80,'pu&ntilde;ados',.5],'ver','ver','tomatitos cherrys'],
+  ['lechugaf','Lechuga',15,1.4,2.9,.2,['plato',60,'platos',.5],'ver','ver','hojas verdes','lechuga'],
+  ['rucula','R&uacute;cula',25,2.6,3.7,.7,['pu&ntilde;ado',30,'pu&ntilde;ados',.5],'ver','ver','hojas verdes'],
+  ['zanahoriaf','Zanahoria',41,.9,10,.2,['zanahoria',80,'zanahorias',.5],'ver','ver','','zanahoria'],
+  ['cebollaf','Cebolla',40,1.1,9,.1,['cebolla',110,'cebollas',.5],'ver','ver','','cebolla'],
+  ['morronf','Morr&oacute;n',31,1,6,.3,['morr&oacute;n',150,'morrones',.5],'ver','ver','pimiento','morron'],
+  ['zapallitof','Zapallito o zucchini',17,1.2,3.1,.3,['zapallito',200,'zapallitos',.5],'ver','ver','','zapallito'],
+  ['berenjenaf','Berenjena',25,1,6,.2,['berenjena',250,'berenjenas',.5],'ver','ver','','berenjena'],
+  ['champif','Champi&ntilde;ones',22,3,3.3,.3,['taza',100,'tazas',.5],'ver','ver','hongos','champis'],
+  ['brocoli','Br&oacute;coli',35,2.8,7,.4,['taza',90,'tazas',.5],'ver','ver',''],
+  ['coliflor','Coliflor',25,1.9,5,.3,['taza',100,'tazas',.5],'ver','ver',''],
+  ['pepino','Pepino',15,.7,3.6,.1,['pepino',200,'pepinos',.5],'ver','ver',''],
+  ['remolacha','Remolacha',43,1.6,10,.2,['remolacha',130,'remolachas',.5],'ver','ver',''],
+  ['chauchas','Chauchas',31,1.8,7,.2,['taza',125,'tazas',.5],'ver','ver','judias'],
+  ['papines','Papines',87,1.9,20,.1,['pap&iacute;n',30,'papines',1],'ver','ver','papas chicas papa'],
+  ['pure','Pur&eacute; de papa',110,2,16,4,['taza',210,'tazas',.25],'ver','ver','papa'],
+  ['papasfritas','Papas fritas',312,3.4,41,15,['porci&oacute;n',120,'porciones',.25],'ver','ver','papa fritas'],
+  ['mandioca','Mandioca',160,1.4,38,.3,['taza',140,'tazas',.25],'ver','ver','yuca'],
+  ['aceitunas','Aceitunas',145,1,4,15,['aceituna',4,'aceitunas',1],'alm','alm',''],
+  ['palmitos','Palmitos',40,2.5,6,.6,['palmito',40,'palmitos',1],'alm','alm',''],
+  ['ensrusa','Ensalada rusa',150,2,12,10,['taza',150,'tazas',.25],'ver','ver','mayonesa papa'],
+  ['sopa','Sopa de verduras',35,1.5,6,.6,['plato hondo',300,'platos hondos',.5],'ver','ver','caldo'],
+  /* frutas */
+  ['manzana','Manzana',52,.3,14,.2,['manzana',180,'manzanas',.5],'ver','ver','fruta'],
+  ['naranja','Naranja',47,.9,12,.1,['naranja',180,'naranjas',.5],'ver','ver','fruta'],
+  ['mandarina','Mandarina',53,.8,13,.3,['mandarina',90,'mandarinas',1],'ver','ver','fruta'],
+  ['pera','Pera',57,.4,15,.1,['pera',180,'peras',.5],'ver','ver','fruta'],
+  ['frutillas','Frutillas',32,.7,7.7,.3,['taza',150,'tazas',.5],'ver','ver','fruta fresas'],
+  ['uvas','Uvas',69,.7,18,.2,['taza',150,'tazas',.5],'ver','ver','fruta'],
+  ['durazno','Durazno',39,.9,10,.3,['durazno',150,'duraznos',.5],'ver','ver','fruta pelon'],
+  ['kiwi','Kiwi',61,1.1,15,.5,['kiwi',75,'kiwis',1],'ver','ver','fruta'],
+  ['anana','Anan&aacute;',50,.5,13,.1,['taza',160,'tazas',.5],'ver','ver','fruta pina'],
+  ['melon','Mel&oacute;n o sand&iacute;a',32,.7,8,.2,['taza',160,'tazas',.5],'ver','ver','fruta sandia'],
+  ['arandanos','Ar&aacute;ndanos o frutos rojos',57,.7,14,.3,['taza',150,'tazas',.5],'ver','ver','fruta berries'],
+  ['mango','Mango',60,.8,15,.4,['taza',165,'tazas',.5],'ver','ver','fruta'],
+  ['ciruela','Ciruela',46,.7,11,.3,['ciruela',65,'ciruelas',1],'ver','ver','fruta'],
+  ['datiles','D&aacute;tiles o pasas',290,2.5,75,.4,['cucharada',15,'cucharadas',1],'alm','alm','fruta seca pasas de uva'],
+  /* panes, facturas y dulces */
+  ['tostada','Tostada o pan lactal',270,9,49,4,['tostada',25,'tostadas',.5],'alm','pan','pan molde lactal'],
+  ['factura','Factura (vigilante, ca&ntilde;oncito, bola de fraile)',400,6,50,20,['factura',55,'facturas',.5],'alm','pan','panaderia'],
+  ['scon','Scon',360,7,50,15,['scon',60,'scones',.25],'alm','pan','scone brunch'],
+  ['croissant','Croissant',400,8,45,21,['croissant',60,'croissants',.5],'alm','pan','medialuna'],
+  ['budincomp','Bud&iacute;n o bizcochuelo',380,5,55,16,['porci&oacute;n',60,'porciones',.25],'alm','alm','torta'],
+  ['torta','Torta o tarta dulce',380,5,45,20,['porci&oacute;n',100,'porciones',.25],'alm','alm','postre cheesecake lemon pie'],
+  ['brownie','Brownie o alfajor de maicena',460,6,55,24,['porci&oacute;n',50,'porciones',.25],'alm','alm','dulce'],
+  ['cookie','Galletita dulce o cookie',480,6,65,22,['galletita',12,'galletitas',1],'alm','alm','galletas dulces'],
+  ['galleagua','Galletita de agua',420,10,70,11,['galletita',7,'galletitas',1],'alm','alm','crackers'],
+  ['alfajor','Alfajor',450,5,62,20,['alfajor',50,'alfajores',.5],'alm','alm','golosina'],
+  ['chocolate','Chocolate',540,6,55,32,['cuadradito',10,'cuadraditos',1],'alm','alm','golosina'],
+  ['helado','Helado',200,3.5,24,10,['bocha',80,'bochas',.5],'alm','alm','postre'],
+  ['flan','Flan o postre de leche',140,4,23,4,['porci&oacute;n',120,'porciones',.5],'lac','lac','postre'],
+  ['granola','Granola o cereales',420,9,65,14,['pu&ntilde;ado',30,'pu&ntilde;ados',.5],'alm','alm','cereal copos'],
+  ['barrita','Barrita de cereal',400,6,70,10,['barrita',25,'barritas',1],'alm','alm',''],
+  /* platos y comida al paso */
+  ['tostado','Tostado de jam&oacute;n y queso',270,14,28,11,['tostado',110,'tostados',.5],'alm','pan','sandwich'],
+  ['miga','S&aacute;ndwich de miga',260,10,25,13,['s&aacute;ndwich',50,'s&aacute;ndwiches',1],'alm','pan','sandwich'],
+  ['sandwich','S&aacute;ndwich de pan con fiambre o milanesa',260,13,28,10,['s&aacute;ndwich',200,'s&aacute;ndwiches',.5],'alm','pan','sandwich lomito'],
+  ['pizzacomp','Pizza de muzzarella (de pizzer&iacute;a)',270,11,30,11,['porci&oacute;n',120,'porciones',.5],'alm','alm','pizza'],
+  ['pancho','Pancho',270,10,25,14,['pancho',110,'panchos',.5],'alm','pan','salchicha'],
+  ['choripan','Chorip&aacute;n',290,12,22,17,['chorip&aacute;n',200,'choripanes',.5],'alm','pan','chorizo parrilla'],
+  ['hambcomp','Hamburguesa completa (con pan)',250,13,22,12,['hamburguesa',220,'hamburguesas',.5],'alm','pan','burger'],
+  ['empfrita','Empanada frita',330,11,30,18,['empanada',80,'empanadas',1],'alm','alm',''],
+  ['sushi','Sushi',150,5,25,3,['pieza',30,'piezas',1],'alm','alm','rolls'],
+  ['tortpapa','Tortilla de papa',160,6,15,9,['porci&oacute;n',150,'porciones',.5],'alm','alm','tortilla espanola'],
+  ['guiso','Guiso o estofado',110,7,11,4,['plato hondo',350,'platos hondos',.5],'alm','alm','lentejas carne'],
+  ['lasana','Lasa&ntilde;a o canelones de carne',160,9,13,8,['porci&oacute;n',250,'porciones',.5],'alm','alm','pasta'],
+  ['sorrentinos','Sorrentinos o pastas rellenas',220,9,30,7,['taza',150,'tazas',.25],'alm','alm','pasta ravioles'],
+  ['arrozint','Arroz integral',112,2.6,24,.9,['taza',160,'tazas',.25],'alm','alm','arroz'],
+  ['quinoa','Quinoa',120,4.4,21,1.9,['taza',185,'tazas',.25],'alm','alm',''],
+  ['cuscus','Cusc&uacute;s',112,3.8,23,.2,['taza',160,'tazas',.25],'alm','alm',''],
+  /* untables, salsas y extras */
+  ['hummus','Hummus',170,8,14,10,['cucharada',20,'cucharadas',1],'alm','alm','garbanzos'],
+  ['guacamole','Guacamole',155,2,8,14,['cucharada',20,'cucharadas',1],'ver','ver','palta'],
+  ['pesto','Pesto o chimichurri',450,4,4,47,['cucharada',15,'cucharadas',1],'alm','alm','salsa'],
+  ['ketchup','Ketchup o salsa golf',200,1,20,13,['cucharada',15,'cucharadas',1],'alm','alm','salsa aderezo'],
+  ['salsablanca','Salsa blanca',130,4,10,8,['cuchar&oacute;n',100,'cucharones',.5],'alm','alm','bechamel'],
+  ['oliva','Aceite de oliva',884,0,0,100,['cucharadita',5,'cucharaditas',1],'alm','alm','aceite'],
+  ['semillas','Semillas (lino, ch&iacute;a, girasol)',520,18,30,42,['cucharada',10,'cucharadas',1],'alm','alm','lino chia girasol sesamo'],
+  ['mani','Man&iacute;',570,26,16,49,['pu&ntilde;adito',20,'pu&ntilde;aditos',.5],'alm','alm','frutos secos'],
+  ['mantmani','Mantequilla de man&iacute;',590,25,20,50,['cucharada',16,'cucharadas',1],'alm','alm','pasta de mani'],
+  ['papitas','Papitas o snacks de paquete',536,6,53,34,['pu&ntilde;ado',25,'pu&ntilde;ados',.5],'alm','alm','chips palitos'],
+  /* bebidas */
+  ['cafeleche','Caf&eacute; con leche',40,2.5,4,1.6,['taza',220,'tazas',.5],'lac','lac','cortado latte'],
+  ['capuchino','Capuchino o lagrima',55,3,6,2,['taza',240,'tazas',.5],'lac','lac','cafe'],
+  ['te','T&eacute;, mate o caf&eacute; solo',1,0,.2,0,['taza',200,'tazas',1],'alm','alm','infusion mate cafe'],
+  ['chocolatada','Chocolatada o submarino',75,3.3,11,2,['taza',240,'tazas',.5],'lac','lac','leche chocolate'],
+  ['jugo','Jugo de naranja exprimido',45,.7,10,.2,['vaso',200,'vasos',.5],'ver','ver','jugo'],
+  ['gaseosa','Gaseosa o jugo envasado',42,0,10.6,0,['vaso',250,'vasos',.5],'alm','alm','coca jugo'],
+  ['zero','Gaseosa zero o agua saborizada',1,0,.2,0,['vaso',250,'vasos',1],'alm','alm','light coca'],
+  ['licuado','Licuado con leche',75,3,13,1.5,['vaso',300,'vasos',.5],'lac','lac','batido smoothie'],
+  ['cerveza','Cerveza',43,.5,3.6,0,['lata',350,'latas',.5],'alm','alm','birra'],
+  ['vino','Vino',85,0,2.6,0,['copa',150,'copas',.5],'alm','alm',''],
+  ['fernet','Fernet con coca',80,0,8,0,['vaso',250,'vasos',.5],'alm','alm','trago'],
+  ['trago','Trago (gin tonic, aperol)',90,0,8,0,['vaso',250,'vasos',.5],'alm','alm','gin aperol']
+];
+CATALOGO.forEach(function(c){
+  if (ALI[c[0]]) return;
+  ALI[c[0]] = {n:c[1], k:c[2], p:c[3], c:c[4], g:c[5], u:c[6], h:c[7], s:c[8], al:c[9] || '', cubre:c[10] || '', cat:1};
+});
+/* alias de los que ya estaban, para encontrarlos como se diga */
+(function(){
+  var A = {pollo:'pechuga suprema', carne:'nalga cuadril peceto bife vaca', picada:'carne picada', asado:'vacio entrana',
+    papa:'papas', panint:'pan integral salvado tostada', pan:'pan frances flauta', galletas:'galletas de arroz',
+    rapiditas:'tortillas wraps tacos', fsecos:'nueces almendras', yogur:'yogurt', muzza:'queso mozzarella cremoso',
+    untable:'queso crema light', leche:'leche descremada', ensalada:'lechuga tomate', verdurah:'verduras salteadas',
+    medialuna:'factura', huevo:'huevos', espinaca:'acelga', fruta:'manzana naranja pera'};
+  Object.keys(A).forEach(function(k){ if (ALI[k]) ALI[k].al = A[k]; });
+})();
 /* ==================================================================
    EL CERDITO
    Personaje propio en estilo plano y redondo: cara que llena el cuadro, ojos
@@ -947,7 +1113,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v17';
+var APP_VER   = 'v18';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1462,22 +1628,12 @@ function metaSlot(em, slot){
 /* dia.extra = {email: [ids de EXTRAS_COMIDA]}. Se descuenta de las comidas del dia que
    todavia no se tildaron como comidas, en proporcion a cada una, sin bajar ninguna
    de la mitad. Lo ya comido no se toca. */
-function extrasDe(fecha, em){
-  var ids = ((dia(fecha).extra || {})[em]) || [], k = 0, p = 0;
-  var l = ids.map(function(id, i){ var e = EXC[id] || EXC.chico; k += e[3]; p += e[4]; return {i:i, e:e}; });
-  return {l:l, k:k, p:p};
-}
 function slotsRestantes(em, fecha){
   return slotsDe().filter(function(s){
     return presente(em, fecha, s) && dia(fecha)[s] !== 'afuera' && recDe(fecha, s) && !comido(fecha, s, em);
   });
 }
 /* dia.rest = {slot: {lugar, it: {email: [[id, fraccion], ...]}}} */
-function restDe(fecha, slot, em){
-  var l = ((((dia(fecha).rest || {})[slot] || {}).it || {})[em]) || [], k = 0, p = 0;
-  l.forEach(function(x){ var c = CAR[x[0]]; if (c){ k += c[4] * x[1]; p += c[5] * x[1]; } });
-  return {l:l, k:k, p:p};
-}
 function comeAfuera(em, fecha, slot){ return enSlot(em, slot) && (dia(fecha)[slot] === 'afuera' || fueraDe(fecha, slot).indexOf(em) !== -1); }
 /* lo que se paso afuera, por encima de lo que tocaba en esa comida */
 function excesoAfuera(fecha, em){
@@ -1513,17 +1669,6 @@ function borrarComido(fecha, slot, em){
   });
 }
 /* aplica cantidades (Q) y, si el snap guardo las kcal de ese dia (KP._k), usa esas */
-function aplicarQ(P, Q, KP){
-  var tk = 0, tp = 0;
-  P.it.forEach(function(x){
-    if (Q && Q[x.f] !== undefined) x.q = Q[x.f];
-    var k100 = KP && KP._k && KP._k[x.f] != null ? KP._k[x.f] : x.a.k;
-    var p100 = KP && KP._p && KP._p[x.f] != null ? KP._p[x.f] : x.a.p;
-    x.gr = x.q * x.u[1]; x.kcal = k100 * x.gr / 100; x.prot = p100 * x.gr / 100;
-    tk += x.kcal; tp += x.prot;
-  });
-  P.kcal = tk; P.prot = tp;
-}
 function platoComido(r, em, slot, fecha){
   var P = porciones(r, em, slot, fecha), S = snapDe(fecha, slot, em), R = realDe(fecha, slot, em);
   if (S) aplicarQ(P, S, S);
@@ -1550,11 +1695,6 @@ function excesoTildados(fecha, em){
    la diferencia se reparte en las comidas que quedan. */
 function manDe(fecha, em){ return ((dia(fecha).man || {})[em]) || (perfil(em) || {}).man || 'mate'; }
 function presupuestoManana(em){ return (perfil(em) || {}).man === 'matefs' ? 125 : 0; }
-function desaDe(fecha, em){
-  var ids = ((dia(fecha).desa || {})[em]) || [], k = 0, p = 0;
-  var l = ids.map(function(id, i){ var e = EXC[id] || EXC.chico; k += e[3]; p += e[4]; return {i:i, e:e}; });
-  return {l:l, k:k, p:p};
-}
 function kcalManana(fecha, em){
   var m = manDe(fecha, em);
   if (m === 'matefs') return {k:125, p:4};
@@ -1571,19 +1711,11 @@ function setManana(em, v){
   if (v === 'desayuno' && !desaDe(f, em).l.length){ render(); abrirDesayuno(em); return; }
   render();
 }
-function abrirDesayuno(em){
-  var h = mh(em === userEmail ? '&iquest;Qu&eacute; desayunaste?' : '&iquest;Qu&eacute; desayun&oacute; ' + nombre(em) + '?');
-  h += '<p class="small muted" style="margin-top:0">Toc&aacute; lo que se parezca. Si fueron dos, tocalo dos veces.</p><div class="chips">' +
-    DESAYUNO.concat(EXTRAS_COMIDA).map(function(e){
-      return '<button class="chip" onclick="sumarDesayuno(\'' + em + '\',\'' + e[0] + '\')">' + e[1] + ' ' + e[2] + ' <span class="dim" style="font-weight:600">~' + e[3] + '</span></button>';
-    }).join('') + '</div>';
-  openModal(h);
-}
 function sumarDesayuno(em, id){
   var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).desa || {}));
   o[em] = o[em] || []; o[em].push(id); setSlot(f, 'desa', o);
   var m = JSON.parse(JSON.stringify(dia(f).man || {})); m[em] = 'desayuno'; setSlot(f, 'man', m);
-  render(); toast('Anotado: ' + EXC[id][2], 'ok');
+  render(); toast('Anotado: ' + itemSuelto(id)[2], 'ok');
 }
 function quitarDesayuno(em, i){
   var f = hoyISO(), o = JSON.parse(JSON.stringify(dia(f).desa || {}));
@@ -1748,45 +1880,6 @@ function toggleComido(fecha, slot, em){
 }
 /* ---------- "comi otra cantidad" ---------- */
 var _ed = null;
-function editarComido(fecha, slot, em){
-  var r = recDe(fecha, slot); if (!r) return;
-  var P = platoComido(r, em, slot, fecha);
-  _ed = {f:fecha, s:slot, em:em, prop:P.kProp, q:{}};
-  P.it.forEach(function(x){ _ed.q[x.f] = x.q; });
-  pintarEd();
-}
-function pintarEd(){
-  var r = recDe(_ed.f, _ed.s), P = porciones(r, _ed.em, _ed.s, _ed.f), S = snapDe(_ed.f, _ed.s, _ed.em), tot = 0;
-  if (S) aplicarQ(P, S, S);
-  var filas = P.it.map(function(x){
-    var q = _ed.q[x.f], st = x.u[3] || .5, k100 = S && S._k && S._k[x.f] != null ? S._k[x.f] : x.a.k, k = k100 * q * x.u[1] / 100; tot += k;
-    var cambio = Math.abs(q - x.q) > 1e-9;
-    return '<li><div style="flex:1"><b>' + fq(q) + ' ' + (q <= 1 ? x.u[0] : x.u[2]) + '</b> ' + nombreCorto(x) +
-      '<div class="small ' + (cambio ? '' : 'muted') + '" style="' + (cambio ? 'color:var(--amber);font-weight:700' : '') + '">' +
-      (cambio ? 'Propuesto: ' + fq(x.q) + ' ' + (x.q <= 1 ? x.u[0] : x.u[2]) + ' &middot; ' : '') + '~' + fN(k) + ' kcal</div></div>' +
-      '<button class="step" onclick="pasoEd(\'' + x.f + '\',-' + st + ')" aria-label="Menos">&minus;</button>' +
-      '<button class="step" onclick="pasoEd(\'' + x.f + '\',' + st + ')" aria-label="M&aacute;s">+</button></li>';
-  }).join('');
-  var dif = tot - _ed.prop;
-  var h = mh(_ed.em === userEmail ? '&iquest;Cu&aacute;nto comiste?' : '&iquest;Cu&aacute;nto comi&oacute; ' + nombre(_ed.em) + '?');
-  h += '<p class="small muted" style="margin-top:0">' + r.n + '. Sub&iacute; o baj&aacute; lo que haga falta.</p>';
-  h += '<div class="card" style="padding:4px 14px"><ul class="lst">' + filas + '</ul></div>';
-  h += '<div class="aviso ' + (dif > 15 ? 'a' : 'g') + '">Total ~<b>' + fN(tot) + ' kcal</b> (propuesta ~' + fN(_ed.prop) + ').' +
-    (Math.abs(dif) > 15 ? ' La diferencia (' + (dif > 0 ? '+' : '') + fN(dif) + ') se ajusta en lo que queda del d&iacute;a.' : '') + '</div>';
-  h += '<button class="btn block" onclick="guardarEd()">Guardar</button>';
-  h += '<button class="btn sec block" style="margin-top:12px" onclick="volverPropuesta()">Fue lo propuesto</button>';
-  openModal(h);
-}
-function pasoEd(f, d){ _ed.q[f] = Math.max(0, Math.round((_ed.q[f] + d) * 100) / 100); pintarEd(); }
-function guardarEd(){
-  fijarSnap(_ed.f, _ed.s, _ed.em);
-  var rl = JSON.parse(JSON.stringify(dia(_ed.f).real || {}));
-  rl[_ed.s] = rl[_ed.s] || {}; rl[_ed.s][_ed.em] = _ed.q;
-  setSlot(_ed.f, 'real', rl);
-  var o = JSON.parse(JSON.stringify(dia(_ed.f).ok || {})); o[_ed.s] = o[_ed.s] || {}; o[_ed.s][_ed.em] = 1;
-  setSlot(_ed.f, 'ok', o);
-  closeModal(); render(); toast('Guardado lo que comi&oacute; ' + nombre(_ed.em), 'ok');
-}
 function volverPropuesta(){
   fijarSnap(_ed.f, _ed.s, _ed.em);
   var rl = JSON.parse(JSON.stringify(dia(_ed.f).real || {}));
@@ -2047,7 +2140,6 @@ function otra(fecha, slot){
    HELADERA
    ================================================================== */
 function despensa(){ return KV.despensa || []; }
-function tengo(k){ return despensa().indexOf(k) !== -1; }
 function reqDe(r){
   var req = [];
   r.c.forEach(function(c){
@@ -2198,7 +2290,7 @@ function resumenDia(fecha, em){
     prop += P.kProp;
   });
   var ex = extrasDe(fecha, em);
-  if (ex.k){ lin.push({lb:'Snacks', n:ex.l.map(function(x){ return x.e[2]; }).join(', '), k:ex.k, p:0, est:'extra'}); tot += ex.k; }
+  if (ex.k){ lin.push({lb:'Algo suelto', n:ex.l.map(function(x){ return x.e[2]; }).join(', '), k:ex.k, p:0, est:'extra'}); tot += ex.k; }
   var o = objetivo(em) || {};
   return {meta:metaDelDia(fecha, em), tot:tot, prop:prop, sin:sin, lin:lin, tdee:o.tdee || 0};
 }
@@ -2244,12 +2336,6 @@ function tildarDesdeDia(slot){
 }
 /* lo que comio una persona afuera, dentro de la tarjeta de la comida */
 /* nombre del plato afuera: el real si vino del menu/ticket, si no el de la carta */
-function nomRest(x){
-  var c = CAR[x[0]];
-  if (!x[2]) return c[3];
-  var igual = quitarAcentos(esc(x[2])).indexOf(quitarAcentos(c[3]).split(' (')[0]) !== -1;
-  return esc(x[2]) + (igual ? '' : ' <span class="g">(&asymp; ' + c[3] + ')</span>');
-}
 /* Lee un menu o ticket pegado: una linea por plato. Saca cantidades, precios y
    las lineas de la factura, y busca el plato de la carta mas parecido por palabras.
    Sin API ni servidor: todo pasa en el telefono. */
@@ -2511,20 +2597,12 @@ function pintarCarta(){
     return '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>~' + fN(R.k) + ' kcal</span></div>' +
       (R.l.length ? '<ul>' + R.l.map(function(x, i){
         var c = CAR[x[0]];
-        return '<li class="row" style="gap:6px"><span style="flex:1">' + nomRest(x) + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</span>' +
+        return '<li class="row" style="gap:6px"><span style="flex:1">' + nomRest(x) + (c && x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</span>' +
           '<button class="vote" style="width:26px;height:26px;font-size:12px" onclick="quitarCarta(\'' + em + '\',' + i + ')" aria-label="Quitar">&#10005;</button></li>';
       }).join('') + '</ul>' : '<div class="small muted">Todav&iacute;a nada.</div>') +
+      '<button class="link" onclick="alimentoAfuera(\'' + em + '\')">+ Alimento suelto (scon, tostada&hellip;)</button>' +
       '<div class="small muted" style="margin-top:4px">Esta comida ten&iacute;a ~' + fN(m.k) + ' kcal.</div></div>';
   }).join('') + '</div>';
-}
-function abrirExtra(em, fecha){
-  fecha = fecha || hoyISO();
-  var h = mh(em === 'ambos' ? 'Algo suelto de los dos' : 'Algo suelto ' + (em === userEmail ? '(vos)' : 'de ' + nombre(em)));
-  h += '<p class="lead">Un snack o picoteo fuera de las comidas' + (fecha !== hoyISO() ? ', el ' + fechaCorta(fecha) : '') + '. Toc&aacute; lo que se parezca; si fueron dos, tocalo dos veces.</p><div class="chips">' +
-    EXTRAS_COMIDA.map(function(e){
-      return '<button class="chip" onclick="sumarExtra(\'' + em + '\',\'' + e[0] + '\',\'' + fecha + '\')">' + e[1] + ' ' + e[2] + ' <span class="muted" style="font-weight:600">~' + e[3] + '</span></button>';
-    }).join('') + '</div>';
-  openModal(h);
 }
 function sumarExtra(em, id, fecha){
   var f = fecha || hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
@@ -2532,7 +2610,7 @@ function sumarExtra(em, id, fecha){
   quienes.forEach(function(e){ o[e] = o[e] || []; o[e].push(id); });
   setSlot(f, 'extra', o); render();
   var n = o[quienes[0]].filter(function(x){ return x === id; }).length;
-  toast('Anotado: ' + EXC[id][2] + (n > 1 ? ' (x' + n + ')' : '') + (em === 'ambos' ? ' para los dos' : '') + '. Se descuenta de lo que queda del d&iacute;a.', 'ok');
+  toast('Anotado: ' + itemSuelto(id)[2] + (n > 1 ? ' (x' + n + ')' : '') + (em === 'ambos' ? ' para los dos' : '') + '. Se descuenta de lo que queda del d&iacute;a.', 'ok');
 }
 function quitarExtra(em, i, fecha){
   var f = fecha || hoyISO(), o = JSON.parse(JSON.stringify(dia(f).extra || {}));
@@ -2651,6 +2729,7 @@ function rearmar(){
    calorias, la verdura es fija. hogar.recetas = [{id, n, t, c, x, pa}]
    ================================================================== */
 function cargarPropias(){
+  registrarPropios();
   for (var i = RECETAS.length - 1; i >= 0; i--) if (RECETAS[i].propia){ delete REC[RECETAS[i].id]; RECETAS.splice(i, 1); }
   (hogar().recetas || []).forEach(function(r){
     var o = JSON.parse(JSON.stringify(r));
@@ -2700,13 +2779,7 @@ function pintarRD(){
       '<button class="vote" onclick="_rd.c.splice(' + i + ',1);pintarRD()" aria-label="Sacar">&#10005;</button></li>';
   }).join('') + (r.x.length ? '<li><div class="small muted">Adem&aacute;s: ' + r.x.map(function(x){ return nombreIng(x[0]).toLowerCase(); }).join(', ') + '</div></li>' : '') +
     '</ul></div>' : '<div class="small muted" style="margin-bottom:8px">Toc&aacute; lo que lleva. Las cantidades las pongo yo para cada uno.</div>');
-  var grupos = {prot:[], lac:[], ver:[], alm:[]}, usados = r.c.map(function(c){ return c[0]; });
-  grupos.arm = [];
-  Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (usados.indexOf(k) === -1) (a.ing ? grupos.arm : grupos[a.h]).push(k); });
-  ['prot','lac','ver','alm','arm'].forEach(function(g){
-    h += '<div class="sub">' + (g === 'arm' ? 'Platos ya armados' : GRUPO_H[g].split(':')[0]) + '</div><div class="chips">' +
-      grupos[g].map(function(k){ return '<button class="chip" onclick="sumarIng(\'' + k + '\')">' + ALI[k].n + '</button>'; }).join('') + '</div>';
-  });
+  h += '<button class="buscar" onclick="buscarIng()"><span>&#128269;</span> Agregar ingrediente</button>';
   h += '<div class="small" style="font-weight:700;margin:10px 4px 6px">No se calculan (solo para la heladera)</div><div class="chips">' +
     Object.keys(EXTRA).filter(function(k){ return EXTRA_CALORICO.indexOf(k) === -1; }).concat(propios().map(function(x){ return x.id; })).map(function(k){
       var on = r.x.some(function(x){ return x[0] === k; });
@@ -2721,6 +2794,9 @@ function pintarRD(){
   openModal(h);
 }
 function toggleRT(t){ var i = _rd.t.indexOf(t); _rd.t = i === -1 ? _rd.t + t : _rd.t.replace(t, ''); pintarRD(); }
+function buscarIng(){
+  abrirBuscador({titulo:'Ingrediente', pick:function(id){ if (!_rd.c.some(function(c){ return c[0] === id; })) sumarIng(id); else pintarRD(); }});
+}
 function sumarIng(k){ var rol = rolDe(k); _rd.c.push([k, rol, baseDe(k, rol)]); pintarRD(); }
 function toggleRX(k){ var i = -1; _rd.x.forEach(function(x, j){ if (x[0] === k) i = j; }); if (i === -1) _rd.x.push([k, 1]); else _rd.x.splice(i, 1); pintarRD(); }
 function recetaDeRD(){
@@ -3155,7 +3231,7 @@ function afterData(){
   if (!PAL_URL && hogar().pal && hogar().pal !== paletaActual()) aplicarPaleta(hogar().pal);
   else if (PAL_URL) aplicarPaleta(PAL_URL);
   migrarTipicos();
-  if (!faltaOnb()){ migrarOficina(); recuperarRecetas(); }
+  if (!faltaOnb()){ migrarOficina(); recuperarRecetas(); limpiarDespensa(); }
   if (faltaOnb()){
     onbPaso = (perfil(userEmail) || {}).alt ? 1 : 0;
     onboarding(); return;
@@ -3272,7 +3348,7 @@ function afueraPP(fecha, slot, em){
   var h = '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + (R.k ? '~' + fN(R.k) + ' kcal' : lugar) + '</span></div>';
   if (R.l.length){
     if (R.k) h += '<div class="small muted">' + lugar + '</div>';
-    h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + c[2] + ' ' + nomRest(x) + (x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
+    h += '<ul>' + R.l.map(function(x){ var c = CAR[x[0]]; return '<li>' + (c ? c[2] + ' ' : '') + nomRest(x) + (c && x[1] < 1 ? ' <span class="g">(compartido)</span>' : '') + '</li>'; }).join('') + '</ul>';
     var d = R.k - m.k;
     h += d > 30 ? '<div class="nota a">' + fN(d) + ' kcal m&aacute;s que esta comida: ajusto lo que queda.</div>'
        : d < -30 ? '<div class="nota g">' + fN(-d) + ' kcal menos: quedan para despu&eacute;s.</div>'
@@ -3294,7 +3370,7 @@ function afueraPP(fecha, slot, em){
 function ppCasa(r, em, slot, fecha){
   var P = platoComido(r, em, slot, fecha), ok = comido(fecha, slot, em);
   var h = '<div class="pp p' + idx(em) + '"><div class="who"><span>' + nombre(em) + '</span><span>' + fN(P.kcal) + ' kcal</span></div><ul>' +
-    P.it.map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul>' + avisoDescuento(r, em, slot, P, fecha);
+    P.it.filter(function(x){ return x.q > 0; }).map(function(x){ return '<li>' + cantTxt(x) + '</li>'; }).join('') + '</ul>' + avisoDescuento(r, em, slot, P, fecha);
   if (P.real && ok) h += '<div class="nota ' + (P.kcal > P.kProp + 15 ? 'a' : 'g') + '">' + vos(em, 'Comiste', 'Comi&oacute;') + ' ~' + fN(P.kcal) + ' (propuesta ~' + fN(P.kProp) + ').</div>';
   if (fecha <= hoyISO())
     h += '<button class="btn sec block tick' + (ok ? ' on' : '') + '" onclick="toggleComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')">' + (ok ? '&#10003; Comido' : 'Lo com&iacute;') + '</button>' +
@@ -3379,14 +3455,6 @@ function renderHoy(){
 }
 
 /* ---------- "Otra cosa": lo que paso de verdad con una comida ---------- */
-function abrirOtraCosa(fecha, slot, em){
-  var cole = slot === 'al' && esOficina(fecha) && em === oficinista(), comida = SLOTS[slot][0].toLowerCase();
-  var h = mh(vos(em, '&iquest;Qu&eacute; pas&oacute; con tu ' + comida + '?', '&iquest;Qu&eacute; pas&oacute; con la ' + comida + ' de {n}?'));
-  h += opt(vos(em, 'Com&iacute; otra cantidad', 'Comi&oacute; otra cantidad'), 'Sub&iacute; o baj&aacute; lo del plato', 'closeModal();editarComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')') +
-    opt(cole ? vos(em, 'Com&iacute; en el colegio', 'Comi&oacute; en el colegio') : vos(em, 'Com&iacute; afuera', 'Comi&oacute; afuera'), 'Anot&aacute; lo que pidi&oacute; y ajusto el resto', 'closeModal();setFuera(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')') +
-    opt(vos(em, 'No com&iacute;', 'No comi&oacute;'), 'Se saltea: lo que no comi&oacute; queda para despu&eacute;s', 'noComi(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')');
-  openModal(h);
-}
 function opt(t, sub, js){
   return '<button class="opt" onclick="' + js + '"><span class="f1"><b>' + t + '</b>' + (sub ? '<span class="small muted">' + sub + '</span>' : '') + '</span>' + ICO_CHEV + '</button>';
 }
@@ -3407,7 +3475,6 @@ function abrirCambiar(fecha, slot){
   if (v === 'afuera') h += opt('Comen los dos en casa', 'Vuelve la propuesta', 'setFuera(\'' + fecha + '\',\'' + slot + '\',\'casa\')');
   h += opt('Otra idea', 'Te propongo otra receta', 'closeModal();otra(\'' + fecha + '\',\'' + slot + '\')') +
     opt('Elegir de la lista', 'Todas las recetas, las que mejor van primero', 'elegirSlot(\'' + fecha + '\',\'' + slot + '\')');
-  if (r && v !== 'afuera' && v !== 'sobras') h += opt('Sumar otra receta', 'Ej: caf&eacute; fr&iacute;o + tostado, repartido en esta comida', 'sumarAlSlot(\'' + fecha + '\',\'' + slot + '\')');
   if (v !== 'afuera') h += opt('Comen afuera', 'Los dos o uno solo', 'elegirAfuera(\'' + fecha + '\',\'' + slot + '\')');
   if (slot !== 'me' && ayerCe && v !== 'sobras') h += opt('Sobras de anoche', ayerCe.n, 'setSlot(\'' + fecha + '\',\'' + slot + '\',\'sobras\');closeModal();render()');
   if (r && !r.combo){
@@ -3539,46 +3606,6 @@ function elegirSlot(fecha, slot){
 
 /* ---------- HELADERA: primero lo que pueden cocinar ---------- */
 var _verMas = false;
-function renderHeladera(){
-  var h = '<div class="title-day">&iquest;Qu&eacute; hay en casa?</div><p class="lead">Marc&aacute; lo que tengan (lo ven los dos) y propongo con eso.</p>';
-  var lista = RECETAS.map(function(r){ return {r:r, m:matchHeladera(r)}; })
-    .filter(function(x){ return (hogar().likes || {})[x.r.id] !== -1; })
-    .sort(function(a, b){ return b.m.pct - a.m.pct; });
-  h += '<div class="card"><div class="card-h"><span class="em">&#127859;</span><h3>Con esto pueden hacer</h3></div>';
-  if (!despensa().length) h += '<div class="muted">Marc&aacute; abajo lo que tengan y te digo qu&eacute; sale.</div>';
-  else {
-    h += lista.slice(0, _verMas ? 12 : 4).map(function(x){
-      var p = Math.round(x.m.pct * 100), cls = p === 100 ? 'g' : p >= 60 ? 'a' : '';
-      return '<button class="match" onclick="verReceta(\'' + x.r.id + '\')"><span class="pct ' + cls + '">' + p + '%</span>' +
-        '<span class="f1"><span class="nm">' + x.r.n + '</span><span class="small muted">' +
-        (x.m.falta.length ? 'Falta: ' + x.m.falta.join(', ') : '&#10003; Tienen todo') + '</span></span>' + ICO_CHEV + '</button>';
-    }).join('');
-    h += '<button class="link" onclick="_verMas=!_verMas;renderHeladera()">' + (_verMas ? 'Ver menos' : 'Ver m&aacute;s') + ' ' + ICO_CHEV + '</button>' +
-      '<button class="btn block mt2" onclick="rearmarConHeladera()">Rehacer con lo que hay</button>' +
-      '<div class="hint">Rehace hoy y los pr&oacute;ximos 2 d&iacute;as. Lo ya comido, lo de afuera y el colegio no se tocan.</div>';
-  }
-  h += '</div>';
-  var grupos = {prot:[], lac:[], ver:[], alm:[]};
-  Object.keys(ALI).forEach(function(k){ var a = ALI[k]; if (a.base || a.alt || a.ing) return; grupos[a.h].push([k, a.n]); });
-  Object.keys(EXTRA).forEach(function(k){ var e = EXTRA[k]; grupos[e[1] === 'lac' ? 'lac' : e[1] === 'ver' ? 'ver' : 'alm'].push([k, e[0]]); });
-  propios().forEach(function(x){ (grupos[x.h] || grupos.alm).push([x.id, esc(x.n), 1]); });
-  ['prot','lac','ver','alm'].forEach(function(g){
-    h += '<div class="card"><h3>' + GRUPO_H[g] + '</h3><div class="chips">' +
-      grupos[g].map(function(x){
-        if (x[2]) return '<span class="chip quita' + (tengo(x[0]) ? ' on' : '') + '"><span onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</span>' +
-          '<button class="x" onclick="borrarPropio(\'' + x[0] + '\')" aria-label="Borrar">&#10005;</button></span>';
-        return '<button class="chip' + (tengo(x[0]) ? ' on' : '') + '" onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</button>';
-      }).join('') + '</div></div>';
-  });
-  h += '<div class="card"><h3>&iquest;Algo que no est&aacute;?</h3>' +
-    '<div class="fld"><input id="np-n" type="text" placeholder="Ej: hummus, tofu, kale"></div>' +
-    '<div class="row"><div class="fld f1" style="margin:0"><select id="np-h">' +
-    ['prot','lac','ver','alm'].map(function(g){ return '<option value="' + g + '"' + (g === 'alm' ? ' selected' : '') + '>' + GRUPO_H[g].split(':')[0] + '</option>'; }).join('') +
-    '</select></div><button class="btn" onclick="agregarPropio()">Agregar</button></div>' +
-    '<div class="hint">Queda en la heladera de los dos. Las recetas usan los ingredientes de la lista.</div></div>';
-  if (despensa().length) h += '<button class="link danger" onclick="if(confirm(\'Vaciar la heladera?\')){setKV(\'despensa\',[]);renderHeladera();}">Vaciar la heladera</button>';
-  $('p-heladera').innerHTML = h;
-}
 function editarTipos(){
   var h = mh('Tipos de producto');
   h += '<p class="lead">Lo que compran. Pod&eacute;s marcar m&aacute;s de uno: calculo con el m&aacute;s liviano que haya.</p><div class="card">' +
@@ -3789,6 +3816,376 @@ function tourHTML(fin){
 function marcarTour(){
   var pf = perfil(userEmail); if (!pf || (pf.tour || 0) >= 2) return;
   var p2 = JSON.parse(JSON.stringify(pf)); p2.tour = 2; setKV('perfil:' + userEmail, p2);
+}
+
+/* ==================================================================
+   v18: EL ALIMENTO ES LA UNIDAD, LA RECETA ES UN ATAJO
+   Lo comido es una lista de alimentos con su cantidad (dia.real ya lo era). Se
+   arranca del plato propuesto y se suma, se saca o se cambia lo que haga falta,
+   con un unico buscador que sirve en toda la app: lo comido, algo suelto, el
+   desayuno, lo de afuera, la heladera y las recetas propias.
+   Algo suelto y desayuno guardan 'a:<alimento>:<cantidad>' junto a los ids viejos.
+   Afuera guarda ['a:<alimento>', cantidad] junto a los platos de la carta.
+   ================================================================== */
+function kcalDe(id, q){ var a = ALI[id]; return a ? a.k * q * a.u[1] / 100 : 0; }
+function protDe(id, q){ var a = ALI[id]; return a ? a.p * q * a.u[1] / 100 : 0; }
+function cantU(id, q){
+  var a = ALI[id]; if (!a) return id;
+  return fq(q) + ' ' + (q <= 1 ? a.u[0] : a.u[2]) + ' ' + nombreCorto({a:a, u:a.u});
+}
+/* un item de algo suelto o desayuno, con la forma de EXC: [id, emoji, nombre, kcal, prot] */
+function itemSuelto(s){
+  if (String(s).indexOf('a:') === 0){
+    var p = s.split(':'), q = +p[2] || 1;
+    if (!ALI[p[1]]) return [s, '', p[1], 0, 0];
+    return [s, '', cantU(p[1], q), kcalDe(p[1], q), protDe(p[1], q)];
+  }
+  return EXC[s] || EXC.chico;
+}
+function extrasDe(fecha, em){
+  var ids = ((dia(fecha).extra || {})[em]) || [], k = 0, p = 0;
+  var l = ids.map(function(id, i){ var e = itemSuelto(id); k += e[3]; p += e[4]; return {i:i, e:e}; });
+  return {l:l, k:k, p:p};
+}
+function desaDe(fecha, em){
+  var ids = ((dia(fecha).desa || {})[em]) || [], k = 0, p = 0;
+  var l = ids.map(function(id, i){ var e = itemSuelto(id); k += e[3]; p += e[4]; return {i:i, e:e}; });
+  return {l:l, k:k, p:p};
+}
+/* afuera: platos de la carta y alimentos sueltos */
+function restDe(fecha, slot, em){
+  var l = ((((dia(fecha).rest || {})[slot] || {}).it || {})[em]) || [], k = 0, p = 0;
+  l.forEach(function(x){
+    if (String(x[0]).indexOf('a:') === 0){ var id = x[0].slice(2); k += kcalDe(id, x[1]); p += protDe(id, x[1]); return; }
+    var c = CAR[x[0]]; if (c){ k += c[4] * x[1]; p += c[5] * x[1]; }
+  });
+  return {l:l, k:k, p:p};
+}
+function nomRest(x){
+  if (String(x[0]).indexOf('a:') === 0) return cantU(x[0].slice(2), x[1]);
+  var c = CAR[x[0]];
+  if (!c) return esc(x[2] || x[0]);
+  if (!x[2]) return c[3];
+  var igual = quitarAcentos(esc(x[2])).indexOf(quitarAcentos(c[3]).split(' (')[0]) !== -1;
+  return esc(x[2]) + (igual ? '' : ' <span class="g">(&asymp; ' + c[3] + ')</span>');
+}
+/* un alimento del plan que no esta en la receta se suma al plato */
+function aplicarQ(P, Q, KP){
+  if (Q) Object.keys(Q).forEach(function(f){
+    if (f.charAt(0) === '_' || !ALI[f] || P.it.some(function(x){ return x.f === f; })) return;
+    P.it.push({f:f, a:ALI[f], r:rolDe(f), g:0, u:ALI[f].u, q:0, extra:1});
+  });
+  var tk = 0, tp = 0;
+  P.it.forEach(function(x){
+    if (Q && Q[x.f] !== undefined) x.q = Q[x.f];
+    var k100 = KP && KP._k && KP._k[x.f] != null ? KP._k[x.f] : x.a.k;
+    var p100 = KP && KP._p && KP._p[x.f] != null ? KP._p[x.f] : x.a.p;
+    x.gr = x.q * x.u[1]; x.kcal = k100 * x.gr / 100; x.prot = p100 * x.gr / 100;
+    tk += x.kcal; tp += x.prot;
+  });
+  P.kcal = tk; P.prot = tp;
+}
+/* heladera: un alimento del catalogo cuenta como el ingrediente que cubre */
+function tengo(k){
+  var d = despensa();
+  return d.indexOf(k) !== -1 || d.some(function(x){ return ALI[x] && ALI[x].cubre === k; });
+}
+
+/* ---------- el buscador ---------- */
+var _bus = null, _busIdx = null;
+function busIndice(){
+  if (_busIdx) return _busIdx;
+  _busIdx = Object.keys(ALI).map(function(k){
+    var a = ALI[k]; return {id:k, t:' ' + quitarAcentos(a.n + ' ' + (a.al || '')).replace(/[^a-z0-9]+/g, ' ') + ' ', n:quitarAcentos(a.n)};
+  });
+  return _busIdx;
+}
+/* lo que mas usan, para que aparezca primero */
+function busFrecuencia(){
+  var f = {};
+  Object.keys(KV).filter(function(k){ return k.indexOf('plan:') === 0; }).forEach(function(k){
+    var p = KV[k] || {};
+    Object.keys(p).forEach(function(d){
+      var x = p[d] || {};
+      Object.keys(x.real || {}).forEach(function(s){ Object.keys(x.real[s] || {}).forEach(function(em){
+        Object.keys(x.real[s][em] || {}).forEach(function(id){ if (x.real[s][em][id] > 0) f[id] = (f[id] || 0) + 1; });
+      }); });
+      ['extra', 'desa'].forEach(function(c){ Object.keys(x[c] || {}).forEach(function(em){
+        (x[c][em] || []).forEach(function(s){ if (String(s).indexOf('a:') === 0){ var id = s.split(':')[1]; f[id] = (f[id] || 0) + 2; } });
+      }); });
+    });
+  });
+  return f;
+}
+/* cfg: {titulo, sub, cant, presets, heladera, pick(id, q), volver} */
+function abrirBuscador(cfg){
+  _bus = cfg; _bus.sel = null; _bus.frec = busFrecuencia(); _bus.ok = [];
+  var h = mh(cfg.titulo) + (cfg.sub ? '<p class="lead">' + cfg.sub + '</p>' : '') +
+    '<div class="fld"><input id="bu-q" type="search" autocomplete="off" placeholder="Buscar: pollo, palta, scon..." oninput="_bus.sel=null;pintarBus()"></div>' +
+    '<div id="bu-ok"></div><div id="bu-res"></div>' +
+    (cfg.volver ? '<button class="btn block mt3" onclick="_bus.volver()">Listo</button>' : '');
+  openModal(h); pintarBus();
+}
+function busOpciones(id){
+  var st = ALI[id].u[3] || .5;
+  return st <= .25 ? [.25, .5, .75, 1, 1.5, 2] : st <= .5 ? [.5, 1, 1.5, 2, 3] : [1, 2, 3, 4, 6];
+}
+function busFila(id){
+  var a = ALI[id], k1 = kcalDe(id, 1), on = _bus.sel === id, ya = _bus.heladera && tengo(id);
+  var sub = _bus.heladera ? (GRUPO_H[a.h] || '').split(':')[0] : '1 ' + a.u[0] + ' ~' + fN(k1) + ' kcal';
+  var h = '<button class="opt" onclick="elegirBus(\'' + id + '\')"><span class="f1"><b>' + a.n + '</b><span class="small muted">' + sub + '</span></span>' +
+    (ya ? '<span class="ok-t">&#10003;</span>' : '<span class="chev">+</span>') + '</button>';
+  if (on && _bus.cant) h += '<div class="chips qrow">' + busOpciones(id).map(function(q){
+    return '<button class="chip" onclick="pickBus(\'' + id + '\',' + q + ')">' + fq(q) + ' ' + (q <= 1 ? a.u[0] : a.u[2]) +
+      ' <span class="muted">~' + fN(kcalDe(id, q)) + '</span></button>';
+  }).join('') + '</div>';
+  return h;
+}
+function pintarBus(){
+  var raw = String(($('bu-q') || {}).value || '').trim(), q = quitarAcentos(esc(raw)).replace(/[^a-z0-9]+/g, ' ').trim();
+  /* plural tolerante: "tomates" encuentra "tomate", "papas" encuentra "papa" */
+  var ws = q ? q.split(' ').map(function(w){ return w.length > 3 && w.slice(-1) === 's' ? w.slice(0, -1) : w; }) : [], fr = _bus.frec, h = '';
+  var idx = busIndice();
+  var pres = (_bus.presets || []).filter(function(e){
+    if (!ws.length) return true; var t = ' ' + quitarAcentos(e[2]) + ' ';
+    return ws.every(function(w){ return t.indexOf(w) !== -1; });
+  });
+  if (!ws.length){
+    var top = idx.filter(function(x){ return fr[x.id]; }).sort(function(a, b){ return fr[b.id] - fr[a.id]; }).slice(0, 8);
+    if (pres.length) h += '<div class="sub">Porciones t&iacute;picas</div><div class="chips">' + pres.map(function(e){
+      return '<button class="chip" onclick="pickBus(\'' + e[0] + '\',null)">' + e[1] + ' ' + e[2] + ' <span class="muted">~' + e[3] + '</span></button>';
+    }).join('') + '</div>';
+    if (top.length) h += '<div class="sub">Lo que m&aacute;s usan</div>' + top.map(function(x){ return busFila(x.id); }).join('');
+    if (!pres.length && !top.length) h += '<div class="hint">Escrib&iacute; lo que comiste: pollo, tomate cherry, scon, tostada&hellip;</div>';
+    $('bu-res').innerHTML = h; return;
+  }
+  var res = idx.filter(function(x){ return ws.every(function(w){ return x.t.indexOf(' ' + w) !== -1; }); })
+    .sort(function(a, b){
+      var sa = a.n.indexOf(ws[0]) === 0 ? 1 : 0, sb = b.n.indexOf(ws[0]) === 0 ? 1 : 0;
+      return (sb - sa) || ((fr[b.id] || 0) - (fr[a.id] || 0)) || (a.n.length - b.n.length);
+    }).slice(0, 25);
+  if (pres.length) h += '<div class="chips mb2">' + pres.map(function(e){
+    return '<button class="chip" onclick="pickBus(\'' + e[0] + '\',null)">' + e[1] + ' ' + e[2] + ' <span class="muted">~' + e[3] + '</span></button>';
+  }).join('') + '</div>';
+  h += res.map(function(x){ return busFila(x.id); }).join('');
+  if (_bus.heladera){
+    h += Object.keys(EXTRA).filter(function(k){
+      var t = ' ' + quitarAcentos(EXTRA[k][0]) + ' '; return ws.every(function(w){ return t.indexOf(' ' + w) !== -1; });
+    }).map(function(k){
+      return '<button class="opt" onclick="pickBus(\'' + k + '\',null)"><span class="f1"><b>' + EXTRA[k][0] + '</b><span class="small muted">Para cocinar</span></span>' +
+        (tengo(k) ? '<span class="ok-t">&#10003;</span>' : '<span class="chev">+</span>') + '</button>';
+    }).join('');
+  }
+  h += '<button class="opt" onclick="crearAlimento()"><span class="f1"><b>&iquest;No est&aacute;? Agregar &laquo;' + esc(raw) + '&raquo;</b>' +
+    '<span class="small muted">Te pregunto a qu&eacute; se parece y le pongo calor&iacute;as aproximadas</span></span><span class="chev">+</span></button>';
+  $('bu-res').innerHTML = h;
+}
+function elegirBus(id){
+  if (!_bus.cant){ pickBus(id, 1); return; }
+  _bus.sel = _bus.sel === id ? null : id; pintarBus();
+}
+function pickBus(id, q){
+  _bus.pick(id, q);
+  if (!$('modal').classList.contains('on') || !$('bu-res')) return;   /* el pick cambio de pantalla */
+  _bus.sel = null;
+  var nm = q == null ? (EXC[id] ? EXC[id][2] : EXTRA[id] ? EXTRA[id][0] : ALI[id] ? ALI[id].n : id) : cantU(id, q);
+  _bus.ok.push(nm);
+  $('bu-ok').innerHTML = '<div class="nota g">&#10003; ' + _bus.ok.join(' &middot; ') + '</div>';
+  var i = $('bu-q'); if (i){ i.value = ''; }
+  pintarBus();
+}
+/* alimento propio: siempre con calorias aproximadas, nunca en cero */
+var PARECIDO = [
+  ['ver', 'taza', 'tazas', 25, 1.5, 'Verdura'], ['ver', 'unidad', 'unidades', 70, 1, 'Fruta'],
+  ['alm', 'porci&oacute;n', 'porciones', 90, 3, 'Pan, galletita o cereal'], ['lac', 'porci&oacute;n', 'porciones', 80, 6, 'Queso, fiambre o l&aacute;cteo'],
+  ['prot', 'porci&oacute;n', 'porciones', 180, 25, 'Carne, pollo o pescado'], ['alm', 'porci&oacute;n', 'porciones', 220, 3, 'Dulce, postre o golosina'],
+  ['alm', 'vaso', 'vasos', 100, 0, 'Bebida con calor&iacute;as'], ['alm', 'cucharada', 'cucharadas', 60, 0, 'Salsa, aderezo o untable'],
+  ['alm', 'pizca', 'pizcas', 3, 0, 'Casi nada (especia, condimento)']
+];
+function crearAlimento(){
+  var n = String(($('bu-q') || {}).value || '').trim();
+  if (!n){ toast('Escrib&iacute; qu&eacute; es', 'err'); return; }
+  _bus.nuevo = n.slice(0, 40);
+  var h = mh('&iquest;A qu&eacute; se parece?') + '<p class="lead">&laquo;' + esc(_bus.nuevo) + '&raquo;: elijo calor&iacute;as aproximadas para una porci&oacute;n.</p><div class="card pad0">' +
+    PARECIDO.map(function(x, i){ return opt(x[5], '1 ' + x[1] + ' ~' + x[3] + ' kcal', 'guardarAlimento(' + i + ')'); }).join('') + '</div>';
+  openModal(h);
+}
+function guardarAlimento(i){
+  var x = PARECIDO[i], id = 'u-' + Date.now().toString(36);
+  var h = JSON.parse(JSON.stringify(hogar())); h.propios = h.propios || [];
+  h.propios.push({id:id, n:_bus.nuevo, h:x[0], k:x[3], p:x[4], un:x[1], pl:x[2]});
+  setKV('hogar', h); registrarPropios(); _busIdx = null;
+  var cfg = _bus; abrirBuscador(cfg);
+  pickBus(id, cfg.cant ? 1 : null);
+}
+function registrarPropios(){
+  propios().forEach(function(x){
+    if (x.k == null) return;
+    ALI[x.id] = {n:esc(x.n), k:x.k, p:x.p || 0, c:0, g:0, u:[x.un || 'porci&oacute;n', 100, x.pl || 'porciones', .5], h:x.h || 'alm', s:'alm', al:'', cat:1, propio:1};
+  });
+}
+
+/* ---------- lo comido: una lista que se edita ---------- */
+function editarComido(fecha, slot, em, cero){
+  var r = recDe(fecha, slot); if (!r) return;
+  var P = platoComido(r, em, slot, fecha);
+  _ed = {f:fecha, s:slot, em:em, prop:P.kProp, q:{}, receta:false, nom:'', cero:!!cero};
+  P.it.forEach(function(x){ _ed.q[x.f] = cero ? 0 : x.q; });
+  pintarEd();
+}
+function platoEd(){
+  var r = recDe(_ed.f, _ed.s), P = porciones(r, _ed.em, _ed.s, _ed.f), S = snapDe(_ed.f, _ed.s, _ed.em), prop = {};
+  if (S) aplicarQ(P, S, S);
+  P.it.forEach(function(x){ prop[x.f] = x.q; });
+  aplicarQ(P, _ed.q, S);
+  return {P:P, prop:prop, r:r};
+}
+function pintarEd(){
+  var E = platoEd(), P = E.P, prop = E.prop, tot = 0, sacados = [];
+  var filas = P.it.map(function(x){
+    tot += x.kcal;
+    if (x.q <= 0){ if (prop[x.f] > 0) sacados.push(x); return ''; }
+    var st = x.u[3] || .5, cambio = prop[x.f] !== undefined && Math.abs(x.q - prop[x.f]) > 1e-9;
+    var nota = prop[x.f] === undefined ? '<span class="ok-t">agregado</span> &middot; ' : cambio ? 'Propuesto: ' + fq(prop[x.f]) + ' &middot; ' : '';
+    return '<li><div class="f1"><b>' + fq(x.q) + ' ' + (x.q <= 1 ? x.u[0] : x.u[2]) + '</b> ' + nombreCorto(x) +
+      '<div class="small muted">' + nota + '~' + fN(x.kcal) + ' kcal</div></div>' +
+      '<button class="step" onclick="pasoEd(\'' + x.f + '\',-' + st + ')" aria-label="Menos">&minus;</button>' +
+      '<button class="step" onclick="pasoEd(\'' + x.f + '\',' + st + ')" aria-label="M&aacute;s">+</button>' +
+      '<button class="x" onclick="sacarEd(\'' + x.f + '\')" aria-label="Sacar">&#10005;</button></li>';
+  }).join('');
+  var dif = tot - _ed.prop, yo = _ed.em === userEmail;
+  var h = mh(_ed.cero ? (yo ? '&iquest;Qu&eacute; comiste?' : '&iquest;Qu&eacute; comi&oacute; ' + nombre(_ed.em) + '?') : (yo ? '&iquest;Cu&aacute;nto comiste?' : '&iquest;Cu&aacute;nto comi&oacute; ' + nombre(_ed.em) + '?'));
+  h += '<p class="lead">' + (_ed.cero ? (yo ? 'Sum&aacute; lo que comiste' : 'Sum&aacute; lo que comi&oacute;') + ', alimento por alimento. Si fue un poco, eleg&iacute; &frac14; o &frac12;.' : E.r.n + '. Cambi&aacute; cantidades, sac&aacute; o sum&aacute; lo que haga falta.') + '</p>';
+  h += '<div class="card pad0"><ul class="lst ed">' + (filas || '<li class="muted">Todav&iacute;a nada.</li>') + '</ul>' +
+    '<button class="link" onclick="agregarEd()">+ Agregar alimento</button></div>';
+  if (sacados.length) h += '<div class="hint mb2">Sacaste: ' + sacados.map(function(x){
+    return x.a.n + ' <button class="link inl" onclick="pasoEd(\'' + x.f + '\',' + prop[x.f] + ')">volver</button>';
+  }).join(' &middot; ') + '</div>';
+  h += '<div class="aviso ' + (dif > 15 ? 'a' : 'g') + '">Total ~<b>' + fN(tot) + ' kcal</b> (propuesta ~' + fN(_ed.prop) + ').' +
+    (Math.abs(dif) > 15 ? ' La diferencia (' + (dif > 0 ? '+' : '') + fN(dif) + ') se ajusta en lo que queda del d&iacute;a.' : '') + '</div>';
+  h += '<label class="row mb2" style="gap:10px"><input type="checkbox" class="ck"' + (_ed.receta ? ' checked' : '') + ' onchange="_ed.receta=this.checked;pintarEd()">' +
+    '<span class="small"><b>Lo comemos seguido:</b> guardarlo como receta</span></label>';
+  if (_ed.receta) h += '<div class="fld"><input type="text" placeholder="Nombre: Pollo con papines y palta" value="' + esc(_ed.nom) + '" onchange="_ed.nom=this.value"></div>';
+  h += '<button class="btn block" onclick="guardarEd()">Guardar</button>';
+  if (!_ed.cero) h += '<div class="row mt2"><button class="link f1" onclick="volverPropuesta()">Fue lo propuesto</button>' +
+    '<button class="link" onclick="deCeroEd()">Empezar de cero</button></div>';
+  openModal(h);
+}
+function pasoEd(f, d){ _ed.q[f] = Math.max(0, Math.round(((_ed.q[f] || 0) + d) * 100) / 100); pintarEd(); }
+function sacarEd(f){ _ed.q[f] = 0; pintarEd(); }
+function deCeroEd(){ Object.keys(_ed.q).forEach(function(f){ _ed.q[f] = 0; }); _ed.cero = true; pintarEd(); }
+function agregarEd(){
+  abrirBuscador({titulo:'Agregar a la ' + SLOTS[_ed.s][0].toLowerCase(), cant:true, volver:pintarEd,
+    pick:function(id, q){ _ed.q[id] = Math.round(((_ed.q[id] || 0) + q) * 100) / 100; }});
+}
+function guardarEd(){
+  var nueva = null;
+  if (_ed.receta){
+    var nom = String(_ed.nom || '').trim();
+    if (!nom){ toast('Ponele un nombre a la receta', 'err'); return; }
+    var c = Object.keys(_ed.q).filter(function(f){ return _ed.q[f] > 0 && ALI[f]; }).map(function(f){ var rol = rolDe(f); return [f, rol, baseDe(f, rol)]; });
+    if (!c.some(function(x){ return x[1] === 'P' || x[1] === 'H' || x[1] === 'U'; })){ toast('Para guardarla como receta tiene que tener una prote&iacute;na o un hidrato', 'err'); return; }
+    nueva = {id:'r-' + Date.now().toString(36), n:esc(nom.slice(0, 60)), t:tipoSlot(_ed.s), c:c, x:[], pa:[], min:0};
+  }
+  fijarSnap(_ed.f, _ed.s, _ed.em);
+  var rl = JSON.parse(JSON.stringify(dia(_ed.f).real || {}));
+  rl[_ed.s] = rl[_ed.s] || {}; rl[_ed.s][_ed.em] = _ed.q;
+  setSlot(_ed.f, 'real', rl);
+  var o = JSON.parse(JSON.stringify(dia(_ed.f).ok || {})); o[_ed.s] = o[_ed.s] || {}; o[_ed.s][_ed.em] = 1;
+  setSlot(_ed.f, 'ok', o);
+  if (nueva){ var h = JSON.parse(JSON.stringify(hogar())); h.recetas = (h.recetas || []).concat([nueva]); setKV('hogar', h); cargarPropias(); }
+  closeModal(); render();
+  toast(nueva ? 'Guardado, y la receta queda para proponerla' : (_ed.em === userEmail ? 'Guardado lo que comiste' : 'Guardado lo que comi&oacute; ' + nombre(_ed.em)), 'ok');
+}
+
+/* ---------- "Otra cosa" ---------- */
+function abrirOtraCosa(fecha, slot, em){
+  var cole = slot === 'al' && esOficina(fecha) && em === oficinista(), comida = SLOTS[slot][0].toLowerCase();
+  var h = mh(vos(em, '&iquest;Qu&eacute; pas&oacute; con tu ' + comida + '?', '&iquest;Qu&eacute; pas&oacute; con la ' + comida + ' de {n}?'));
+  h += opt(vos(em, 'Com&iacute; otra cantidad o algo m&aacute;s', 'Comi&oacute; otra cantidad o algo m&aacute;s'), 'Cambi&aacute; cantidades, sac&aacute; o sum&aacute; alimentos', 'editarComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')') +
+    opt(vos(em, 'Com&iacute; otra cosa', 'Comi&oacute; otra cosa'), 'Armalo alimento por alimento: scon, tostada, caf&eacute;&hellip;', 'editarComido(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\',1)') +
+    opt(cole ? vos(em, 'Com&iacute; en el colegio', 'Comi&oacute; en el colegio') : vos(em, 'Com&iacute; afuera', 'Comi&oacute; afuera'), 'Con platos de la carta o alimentos', 'closeModal();setFuera(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')') +
+    opt(vos(em, 'No com&iacute;', 'No comi&oacute;'), 'Se saltea: lo que no comi&oacute; queda para despu&eacute;s', 'noComi(\'' + fecha + '\',\'' + slot + '\',\'' + em + '\')');
+  openModal(h);
+}
+
+/* ---------- algo suelto y desayuno con el buscador ---------- */
+function abrirExtra(em, fecha){
+  fecha = fecha || hoyISO();
+  abrirBuscador({titulo:em === 'ambos' ? 'Algo suelto de los dos' : 'Algo suelto' + (em === userEmail ? '' : ' de ' + nombre(em)),
+    sub:'Un snack o picoteo fuera de las comidas' + (fecha !== hoyISO() ? ', el ' + fechaCorta(fecha) : '') + '. Se descuenta de lo que queda del d&iacute;a.',
+    cant:true, presets:EXTRAS_COMIDA.filter(function(e){ return ['chico', 'mediano', 'grande'].indexOf(e[0]) === -1; }), volver:closeModal,
+    pick:function(id, q){ sumarExtra(em, q == null ? id : 'a:' + id + ':' + q, fecha); }});
+}
+function abrirDesayuno(em){
+  abrirBuscador({titulo:em === userEmail ? '&iquest;Qu&eacute; desayunaste?' : '&iquest;Qu&eacute; desayun&oacute; ' + nombre(em) + '?',
+    cant:true, presets:DESAYUNO, volver:closeModal,
+    pick:function(id, q){ sumarDesayuno(em, q == null ? id : 'a:' + id + ':' + q); }});
+}
+/* afuera: alimento suelto para una persona (el brunch, la merienda en un bar) */
+function alimentoAfuera(em){
+  var f = _carta.f, s = _carta.s;
+  abrirBuscador({titulo:vos(em, 'Lo que comiste', 'Lo que comi&oacute; {n}'), sub:'Si fue un poco de cada cosa, eleg&iacute; &frac14; o &frac12;.', cant:true,
+    volver:function(){ abrirCarta(f, s); },
+    pick:function(id, q){
+      var r = JSON.parse(JSON.stringify(dia(f).rest || {})); r[s] = r[s] || {it:{}}; r[s].it = r[s].it || {};
+      r[s].it[em] = r[s].it[em] || []; r[s].it[em].push(['a:' + id, q]); setSlot(f, 'rest', r); render();
+    }});
+}
+
+/* ---------- heladera: lo que hay, y un buscador para sumar ---------- */
+function renderHeladera(){
+  var h = '<div class="title-day">&iquest;Qu&eacute; hay en casa?</div><p class="lead">Lo que tengan (lo ven los dos). Propongo con eso.</p>';
+  var lista = RECETAS.map(function(r){ return {r:r, m:matchHeladera(r)}; })
+    .filter(function(x){ return (hogar().likes || {})[x.r.id] !== -1; })
+    .sort(function(a, b){ return b.m.pct - a.m.pct; });
+  h += '<div class="card"><div class="card-h"><span class="em">&#127859;</span><h3>Con esto pueden hacer</h3></div>';
+  if (!despensa().length) h += '<div class="muted">Sum&aacute; abajo lo que tengan y te digo qu&eacute; sale.</div>';
+  else {
+    h += lista.slice(0, _verMas ? 12 : 4).map(function(x){
+      var p = Math.round(x.m.pct * 100), cls = p === 100 ? 'g' : p >= 60 ? 'a' : '';
+      return '<button class="match" onclick="verReceta(\'' + x.r.id + '\')"><span class="pct ' + cls + '">' + p + '%</span>' +
+        '<span class="f1"><span class="nm">' + x.r.n + '</span><span class="small muted">' +
+        (x.m.falta.length ? 'Falta: ' + x.m.falta.join(', ') : '&#10003; Tienen todo') + '</span></span>' + ICO_CHEV + '</button>';
+    }).join('');
+    h += '<button class="link" onclick="_verMas=!_verMas;renderHeladera()">' + (_verMas ? 'Ver menos' : 'Ver m&aacute;s') + ' ' + ICO_CHEV + '</button>' +
+      '<button class="btn block mt2" onclick="rearmarConHeladera()">Rehacer con lo que hay</button>' +
+      '<div class="hint">Rehace hoy y los pr&oacute;ximos 2 d&iacute;as. Lo ya comido, lo de afuera y el colegio no se tocan.</div>';
+  }
+  h += '</div>';
+  h += '<button class="buscar" onclick="buscarHeladera()"><span>&#128269;</span> Agregar: busc&aacute; un alimento</button>';
+  var grupos = {prot:[], lac:[], ver:[], alm:[]};
+  despensa().forEach(function(k){
+    var pr = propios().filter(function(x){ return x.id === k; })[0];
+    var nm = ALI[k] ? ALI[k].n : EXTRA[k] ? EXTRA[k][0] : pr ? esc(pr.n) : null; if (!nm) return;
+    var g = ALI[k] ? ALI[k].h : pr ? pr.h : EXTRA[k][1] === 'lac' ? 'lac' : EXTRA[k][1] === 'ver' ? 'ver' : 'alm';
+    (grupos[g] || grupos.alm).push([k, nm]);
+  });
+  var hay = 0;
+  ['prot', 'lac', 'ver', 'alm'].forEach(function(g){
+    if (!grupos[g].length) return; hay++;
+    h += '<div class="card"><h3>' + GRUPO_H[g] + '</h3><div class="chips">' + grupos[g].map(function(x){
+      return '<span class="chip quita on">' + x[1] + '<button class="x" onclick="toggleDespensa(\'' + x[0] + '\')" aria-label="Ya no hay">&#10005;</button></span>';
+    }).join('') + '</div></div>';
+  });
+  if (!hay) h += '<div class="hint mb3">La heladera est&aacute; vac&iacute;a.</div>';
+  var rapido = Object.keys(ALI).filter(function(k){ var a = ALI[k]; return !a.cat && !a.base && !a.alt && !a.ing && !tengo(k); })
+    .map(function(k){ return [k, ALI[k].n]; })
+    .concat(Object.keys(EXTRA).filter(function(k){ return !tengo(k); }).map(function(k){ return [k, EXTRA[k][0]]; }));
+  h += '<details class="guia"><summary>Marcar r&aacute;pido lo de siempre</summary><div class="chips mt2">' + rapido.map(function(x){
+    return '<button class="chip" onclick="toggleDespensa(\'' + x[0] + '\')">' + x[1] + '</button>';
+  }).join('') + '</div></details>';
+  if (despensa().length) h += '<button class="link danger" onclick="if(confirm(\'Vaciar la heladera?\')){setKV(\'despensa\',[]);renderHeladera();}">Vaciar la heladera</button>';
+  $('p-heladera').innerHTML = h;
+}
+function buscarHeladera(){
+  abrirBuscador({titulo:'Agregar a la heladera', heladera:true, volver:function(){ closeModal(); renderHeladera(); },
+    pick:function(id){ var d = despensa().slice(); if (d.indexOf(id) === -1){ d.push(id); setKV('despensa', d); } }});
+}
+/* limpia de la heladera lo propio que ya no existe */
+function limpiarDespensa(){
+  var d = despensa(), ok = d.filter(function(k){ return ALI[k] || EXTRA[k] || propios().some(function(x){ return x.id === k; }); });
+  if (ok.length !== d.length) setKV('despensa', ok);
 }
 
 /* ==================================================================

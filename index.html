@@ -380,6 +380,7 @@ details.guia ul{margin:4px 0 0;padding-left:18px}
 .lst.ed li{display:flex;align-items:center;gap:8px;padding:9px 0}
 .lst.ed .step{width:40px;height:40px}
 .link.inl{display:inline;padding:0;min-height:0;font-size:12.5px}
+#h-update.warn{color:var(--amber);font-weight:800}
 </style>
 </head>
 <body>
@@ -1113,7 +1114,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v18';
+var APP_VER   = 'v19';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -1420,36 +1421,91 @@ function merge3(base, mine, cur){
   return m3copia(mine);
 }
 
-var KV_BASE = {}, _kvVuelo = {};
+var KV_BASE = {}, _kvVuelo = {}, _kvError = 0;
+/* ------------------------------------------------------------------
+   v19: GUARDADO CONFIABLE
+   Antes, si el celular cortaba un envio (pantalla bloqueada, app cerrada) la
+   promesa no terminaba nunca: esa clave quedaba "en vuelo" para siempre, no se
+   mandaba nada mas y tampoco se recargaba al volver. Ahora:
+   - cada cambio se anota primero en el celular (localStorage 'cerd_pend', con su
+     base) y recien despues se manda; si la app se cierra, se manda al volver;
+   - el envio tiene tiempo limite (30 s) y se reintenta solo;
+   - al salir de la app se manda lo pendiente con keepalive;
+   - el encabezado dice "Guardando..." / "Guardado" / "Sin guardar".
+   ------------------------------------------------------------------ */
+function pendLeer(){ try { var o = JSON.parse(localStorage.getItem('cerd_pend') || '{}'); return o && typeof o === 'object' ? o : {}; } catch(e){ return {}; } }
+function pendGuardar(o){ try { localStorage.setItem('cerd_pend', JSON.stringify(o)); } catch(e){} }
+function pendMios(){ var o = pendLeer(), r = {}; Object.keys(o).forEach(function(k){ if (o[k] && o[k].u === userEmail) r[k] = o[k]; }); return r; }
 function setKV(k, v){
   KV[k] = v;
   if (DEMO){ guardarDemo(); return; }
-  _kvSucio[k] = 1;
+  var P = pendLeer();
+  P[k] = {base:P[k] && P[k].u === userEmail ? P[k].base : (KV_BASE.hasOwnProperty(k) ? KV_BASE[k] : null), v:v, u:userEmail};
+  pendGuardar(P);
+  _kvSucio[k] = 1; estadoGuardado();
   clearTimeout(_kvTimers[k]);
-  _kvTimers[k] = setTimeout(function(){ enviarKV(k); }, 500);
+  _kvTimers[k] = setTimeout(function(){ enviarKV(k); }, 300);
 }
-/* de a un envio por clave: el siguiente sale con la base que devolvio el anterior */
-function enviarKV(k){
-  if (_kvVuelo[k]){ _kvTimers[k] = setTimeout(function(){ enviarKV(k); }, 400); return; }
-  var mine = m3copia(KV[k]), base = KV_BASE.hasOwnProperty(k) ? KV_BASE[k] : null;
-  _kvVuelo[k] = 1;
-  apiPost('saveKV', {k:k, v:mine, base:base})
+function enviarKV(k, salir){
+  var e = pendMios()[k]; if (!e){ delete _kvSucio[k]; estadoGuardado(); return; }
+  if (_kvVuelo[k] && Date.now() - _kvVuelo[k] < 35000){ _kvTimers[k] = setTimeout(function(){ enviarKV(k); }, 600); return; }
+  var mine = m3copia(KV[k] !== undefined ? KV[k] : e.v), base = e.base, marca = Date.now();
+  _kvVuelo[k] = marca;
+  apiPost('saveKV', {k:k, v:mine, base:base}, null, salir)
     .then(function(j){
+      if (_kvVuelo[k] !== marca) return;
+      delete _kvVuelo[k]; _kvError = 0;
       var srv = j.v !== undefined ? j.v : mine, antes = KV[k];
       KV_BASE[k] = m3copia(srv);
-      KV[k] = m3igual(antes, mine) ? m3copia(srv) : merge3(mine, antes, srv);
-      delete _kvVuelo[k];
-      if (m3igual(antes, mine)) delete _kvSucio[k];
+      var P = pendLeer();
+      if (m3igual(antes, mine)){ KV[k] = m3copia(srv); delete P[k]; delete _kvSucio[k]; }
+      else { KV[k] = merge3(mine, antes, srv); P[k] = {base:m3copia(srv), v:KV[k], u:userEmail}; }
+      pendGuardar(P); guardarCache(); estadoGuardado();
       if (!m3igual(KV[k], antes)){
         if (k === 'hogar'){ aplicarVariantes(); cargarPropias(); }
         if (!$('modal').classList.contains('on') && !$('onb').classList.contains('on')) render();
       }
     })
-    .catch(function(e){ delete _kvVuelo[k]; delete _kvSucio[k]; toast('No pude guardar: ' + esc(e.message), 'err'); });
+    .catch(function(){
+      if (_kvVuelo[k] !== marca) return;
+      delete _kvVuelo[k]; _kvError++; estadoGuardado();
+      clearTimeout(_kvTimers[k]);
+      _kvTimers[k] = setTimeout(function(){ enviarKV(k); }, Math.min(60000, 5000 * _kvError));
+    });
+}
+function enviarPendientes(salir){
+  Object.keys(pendMios()).forEach(function(k){ clearTimeout(_kvTimers[k]); enviarKV(k, salir); });
+}
+/* lo pendiente del celular, combinado con lo que vino del servidor (o del cache) */
+function aplicarPendientes(srv){
+  var P = pendMios();
+  Object.keys(P).forEach(function(k){
+    _kvSucio[k] = 1;
+    if (_kvVuelo[k]){ srv[k] = KV[k]; return; }
+    srv[k] = merge3(P[k].base, P[k].v, srv[k]);
+  });
+  return srv;
+}
+function guardarCache(){ try { if (D && !DEMO){ D.kv = KV; localStorage.setItem('cerd_cache', JSON.stringify(D)); } } catch(e){} }
+var _hBase = '';
+function estadoGuardado(){
+  var el = $('h-update'); if (!el || DEMO) return;
+  var n = Object.keys(pendMios()).length;
+  if (!n){ el.innerHTML = _hBase || APP_VER; el.classList.remove('warn'); return; }
+  el.innerHTML = _kvError ? 'Sin guardar: reintento solo' : 'Guardando&hellip;';
+  if (_kvError) el.classList.add('warn'); else el.classList.remove('warn');
 }
 /* Lo compartido (heladera, semana, compras) lo cambian los dos. Al volver a la
    app se relee, salvo que haya algo propio sin mandar o un modal abierto. */
 var _ultimaCarga = 0;
+document.addEventListener('visibilitychange', function(){ if (document.visibilityState === 'hidden' && !DEMO) enviarPendientes(true); });
+window.addEventListener('pagehide', function(){ if (!DEMO) enviarPendientes(true); });
+/* con la app abierta, cada 90 s se trae lo que cargo el otro */
+setInterval(function(){
+  if (DEMO || !D || document.visibilityState !== 'visible') return;
+  if ($('modal').classList.contains('on') || $('onb').classList.contains('on')) return;
+  if (Date.now() - _ultimaCarga > 90000) fetchData();
+}, 30000);
 /* ---------- version nueva ----------
    Con la app en la pantalla de inicio, iOS guarda el HTML viejo y "Actualizar"
    solo traia los datos. Ahora se compara APP_VER con el publicado al abrir y al
@@ -1474,7 +1530,8 @@ function mostrarNueva(v){
 }
 function actualizarApp(){
   /* si hay algo sin mandar a la planilla, se espera un momento */
-  var espera = Object.keys(_kvSucio).length ? 1500 : 0;
+  enviarPendientes(true);
+  var espera = Object.keys(pendMios()).length ? 2500 : 0;
   setTimeout(function(){ location.replace(location.pathname + '?v=' + Date.now()); }, espera);
 }
 var _diaVisto = '';
@@ -1484,7 +1541,8 @@ document.addEventListener('visibilitychange', function(){
 setInterval(function(){ if (D && _diaVisto && _diaVisto !== hoyISO() && !$('modal').classList.contains('on')) render(); }, 60000);
 document.addEventListener('visibilitychange', function(){
   if (document.visibilityState !== 'visible' || DEMO || !D) return;
-  if (Date.now() - _ultimaCarga < 60000 || Object.keys(_kvSucio).length) return;
+  enviarPendientes();
+  if (Date.now() - _ultimaCarga < 15000) return;
   if ($('modal').classList.contains('on') || $('onb').classList.contains('on')) return;
   fetchData();
 });
@@ -1655,9 +1713,10 @@ function realDe(fecha, slot, em){ return (((dia(fecha).real || {})[slot]) || {})
    lo comido cambiaba despues. */
 function snapDe(fecha, slot, em){ return (((dia(fecha).snap || {})[slot]) || {})[em] || null; }
 function fijarSnap(fecha, slot, em){
-  if (snapDe(fecha, slot, em)) return;
   var r = recDe(fecha, slot); if (!r) return;
-  var P = porciones(r, em, slot, fecha), q = {_k:{}, _p:{}};
+  var S0 = snapDe(fecha, slot, em);
+  if (S0 && (!S0._r || S0._r === r.id)) return;
+  var P = porciones(r, em, slot, fecha), q = {_k:{}, _p:{}, _r:r.id};
   P.it.forEach(function(x){ q[x.f] = x.q; q._k[x.f] = x.a.k; q._p[x.f] = x.a.p; });
   var sn = JSON.parse(JSON.stringify(dia(fecha).snap || {})); sn[slot] = sn[slot] || {}; sn[slot][em] = q;
   setSlot(fecha, 'snap', sn);
@@ -1670,7 +1729,10 @@ function borrarComido(fecha, slot, em){
 }
 /* aplica cantidades (Q) y, si el snap guardo las kcal de ese dia (KP._k), usa esas */
 function platoComido(r, em, slot, fecha){
-  var P = porciones(r, em, slot, fecha), S = snapDe(fecha, slot, em), R = realDe(fecha, slot, em);
+  var S = snapDe(fecha, slot, em), R = realDe(fecha, slot, em);
+  /* si despues cambiaron el plato de esa comida, lo comido sigue siendo lo que se marco */
+  if (S && S._r && S._r !== r.id && REC[S._r]) r = REC[S._r];
+  var P = porciones(r, em, slot, fecha);
   if (S) aplicarQ(P, S, S);
   P.kProp = P.kcal; P.pProp = P.prot; P.real = !!R;
   if (R) aplicarQ(P, R, S);
@@ -2162,7 +2224,8 @@ function nombreIng(k){
 /* Lo propio que ya existe en la lista (por la primera palabra del nombre) pasa a ser
    ese ingrediente: asi tiene calorias y sirve para las recetas. */
 function aliPorNombre(n){
-  function pal(t){ return quitarAcentos(t).split(/[^a-z]+/).filter(function(w){ return w && w !== 'de' && w !== 'o'; }); }
+  function pal(t){ return quitarAcentos(t).split(/[^a-z]+/).filter(function(w){ return w && w !== 'de' && w !== 'o'; })
+    .map(function(w){ return w.length > 3 && w.slice(-1) === 's' ? w.slice(0, -1) : w; }); }   /* "Tomates cherry" = "Tomate cherry" */
   var p = pal(esc(n)); if (!p.length) return null;
   /* una palabra: alcanza la primera ("Cafe"). Dos o mas: tienen que coincidir las dos
      primeras ("Queso crema" no es "Queso rallado"). */
@@ -3182,14 +3245,17 @@ function migrarTipicos(){
 /* ==================================================================
    API
    ================================================================== */
-function apiPost(action, payload, btn){
+function apiPost(action, payload, btn, salir){
   if (API_URL.indexOf('PEGAR_ACA') === 0) return Promise.reject(new Error('Falta la URL del Apps Script'));
   var old = '';
   if (btn){ btn.disabled = true; old = btn.innerHTML; btn.innerHTML = 'Guardando...'; }
-  return fetch(API_URL, {
-    method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body:JSON.stringify({action:action, secret:SECRET, email:userEmail, payload:payload})
-  }).then(function(r){ return r.json(); })
+  var body = JSON.stringify({action:action, secret:SECRET, email:userEmail, payload:payload});
+  var ctrl = null, timer = null;
+  try { ctrl = new AbortController(); timer = setTimeout(function(){ try { ctrl.abort(); } catch(e){} }, 30000); } catch(e){}
+  var op = {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:body};
+  if (ctrl) op.signal = ctrl.signal;
+  if (salir && body.length < 60000) op.keepalive = true;
+  return fetch(API_URL, op).then(function(r){ clearTimeout(timer); return r.json(); }, function(e){ clearTimeout(timer); throw e; })
     .then(function(j){ if (!j.ok) throw new Error(j.error || 'error desconocido'); return j; })
     .finally(function(){ if (btn){ btn.disabled = false; btn.innerHTML = old; } });
 }
@@ -3213,18 +3279,16 @@ function reintentar(){ $('offline').classList.add('hide'); $('h-update').innerHT
 function onDatos(data){
   if (!data || data.error){ hideLoad(); toast((data && data.error) || 'Respuesta vac&iacute;a', 'err'); return; }
   if (data.allowed_emails && data.allowed_emails.length && data.allowed_emails.indexOf(userEmail) === -1){ showDenied(); return; }
-  var srv = data.kv || {}, viejaBase = KV_BASE;
+  var srv = data.kv || {};
   KV_BASE = m3copia(srv);
-  Object.keys(_kvSucio).forEach(function(k){
-    if (_kvVuelo[k]){ srv[k] = KV[k]; KV_BASE[k] = viejaBase[k]; return; }
-    srv[k] = merge3(viejaBase.hasOwnProperty(k) ? viejaBase[k] : null, KV[k], srv[k]);
-  });
-  D = data; KV = srv; _ultimaCarga = Date.now();
+  srv = aplicarPendientes(srv);
+  D = data; D.kv = srv; KV = srv; _ultimaCarga = Date.now();
   D.pesos = D.pesos || []; D.actividad = D.actividad || []; D.gym = D.gym || {};
   try { localStorage.setItem('cerd_cache', JSON.stringify(data)); } catch(e){}
-  $('h-update').innerHTML = APP_VER + ' &middot; ' + (D.lastUpdate || '');
+  _hBase = APP_VER + ' &middot; ' + (D.lastUpdate || '');
   $('offline').classList.add('hide');
-  afterData(); hideLoad();
+  afterData(); hideLoad(); estadoGuardado();
+  setTimeout(function(){ enviarPendientes(); }, 200);
 }
 function afterData(){
   migrarPropios();
@@ -3244,7 +3308,7 @@ function afterData(){
 function tryCache(){
   try {
     var c = localStorage.getItem('cerd_cache');
-    if (c){ D = JSON.parse(c); KV = D.kv || {}; KV_BASE = m3copia(KV); afterData(); hideLoad(); }
+    if (c){ D = JSON.parse(c); KV = D.kv || {}; KV_BASE = m3copia(KV); KV = aplicarPendientes(KV); D.kv = KV; afterData(); hideLoad(); estadoGuardado(); }
   } catch(e){}
 }
 
@@ -4034,7 +4098,9 @@ function editarComido(fecha, slot, em, cero){
   pintarEd();
 }
 function platoEd(){
-  var r = recDe(_ed.f, _ed.s), P = porciones(r, _ed.em, _ed.s, _ed.f), S = snapDe(_ed.f, _ed.s, _ed.em), prop = {};
+  var r = recDe(_ed.f, _ed.s), S = snapDe(_ed.f, _ed.s, _ed.em), prop = {};
+  if (S && S._r && S._r !== r.id && REC[S._r]) r = REC[S._r];
+  var P = porciones(r, _ed.em, _ed.s, _ed.f);
   if (S) aplicarQ(P, S, S);
   P.it.forEach(function(x){ prop[x.f] = x.q; });
   aplicarQ(P, _ed.q, S);

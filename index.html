@@ -408,6 +408,10 @@ details.guia ul{margin:4px 0 0;padding-left:18px}
 .bl-bar i.bs,.dotl.bs{background:var(--muted)} .bl-bar i.ac,.dotl.ac{background:var(--green)}
 .bl-bar i.gap{background:repeating-linear-gradient(135deg,var(--green-lt) 0 5px,transparent 5px 10px)}
 .dotl{display:inline-block;width:9px;height:9px;border-radius:3px;margin-right:4px;vertical-align:0}
+ul.nov{list-style:none;margin:0;padding:0}
+ul.nov li{display:flex;gap:10px;padding:7px 0;font-size:14px;line-height:1.4;border-top:1px solid var(--surface2)}
+ul.nov li:first-child{border-top:0}
+ul.nov .em{width:24px;flex:none;text-align:center;font-size:16px}
 </style>
 </head>
 <body>
@@ -1141,7 +1145,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v20';
+var APP_VER   = 'v21';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
@@ -3339,6 +3343,7 @@ function afterData(){
   switchTab(activeTab);
   window.scrollTo(0, y);
   if (!DEMO && perfil(userEmail) && (perfil(userEmail).tour || 0) < 2){ marcarTour(); tourI = 0; verTour(); }
+  else chequearNovedades();
 }
 function tryCache(){
   try {
@@ -3857,6 +3862,7 @@ function openAjustes(){
     opt('Recetas propias', (hogar().recetas || []).length + ' cargadas', 'verRecetasPropias()') +
     (nos.length ? opt('Recetas descartadas', nos.length + ' que no propongo', 'verDescartadas()') : '') + '</div>';
   h += '<div class="section-t">Ayuda</div><div class="card pad0">' +
+    opt('Novedades', 'Lo &uacute;ltimo que cambi&oacute; en la app', 'verNovedades(' + (versionNum(APP_VER) - 3) + ')') +
     opt('C&oacute;mo se usa', '5 pantallas cortas', 'tourI=0;verTour()') +
     opt('Gu&iacute;a para comer afuera', 'Qu&eacute; conviene pedir', 'verGuia()') + '</div>';
   h += '<div class="section-t">Estilo</div><div class="pal">' + Object.keys(PALETAS).map(function(k){
@@ -4405,6 +4411,53 @@ function editarActividad(id){
   var a = (D.actividad || []).filter(function(x){ return x.id === id; })[0]; if (!a) return;
   actDraft = {email:a.email, date:a.date, tipo:a.tipo, min:+a.min, int:+a.int || 0, zonas:(a.zonas || []).slice(), notas:a.notas || '', edit:a.id};
   pintarActividad();
+}
+
+/* ==================================================================
+   v21: NOVEDADES
+   Al entrar, cada uno ve una vez lo nuevo desde la ultima version que vio
+   (perfil.nov). Se puede volver a ver en Ajustes > Ayuda.
+   [version, titulo, [[emoji, texto], ...]]
+   ================================================================== */
+var NOVEDADES = [
+  [21, 'Novedades al entrar', [
+    ['&#128227;', 'Cada vez que haya cambios en la app, te los cuento ac&aacute; al entrar. Tambi&eacute;n est&aacute;n en <b>Ajustes &rsaquo; Novedades</b>.']]],
+  [20, 'Corregir d&iacute;as y ver c&oacute;mo vas', [
+    ['&#8249;&#8250;', '<b>D&iacute;as pasados</b>: en Hoy, con las flechas de arriba, volv&eacute;s hasta 30 d&iacute;as atr&aacute;s y correg&iacute;s lo comido, algo suelto, la ma&ntilde;ana o el entrenamiento.'],
+    ['&#129496;', '<b>Pilates y actividad</b>: toc&aacute; una ya cargada (en Progreso o en Hoy) para corregirla.'],
+    ['&#128207;', '<b>Medidor en vivo</b>: al cambiar cantidades, una barra muestra c&oacute;mo queda el d&iacute;a contra el objetivo. Si te pas&aacute;s, se marca en naranja el &minus; que conviene tocar.'],
+    ['&#128202;', '<b>La semana</b>: arriba de Semana, lo comido m&aacute;s lo que falta contra el objetivo de toda la semana.'],
+    ['&#127919;', '<b>Progreso</b>: &ldquo;C&oacute;mo se arma tu objetivo&rdquo;. Lo que quem&aacute;s ya est&aacute; adentro: comer el objetivo es estar en d&eacute;ficit.'],
+    ['&#127828;', 'Las hamburguesas caseras no se proponen m&aacute;s. En comer afuera est&aacute;n las de cadena (McDonald&#39;s, Dean &amp; Dennys).']]],
+  [19, 'Guardado que no se pierde', [
+    ['&#9989;', 'Lo que carg&aacute;s queda primero en el celular y se manda solo, aunque se corte o cierres la app. Arriba dice <b>Guardando&hellip;</b> y despu&eacute;s la hora: ah&iacute; ya est&aacute; guardado.'],
+    ['&#128101;', 'Lo que carga el otro aparece al volver a la app.']]],
+  [18, 'Anotar alimento por alimento', [
+    ['&#128269;', '<b>Buscador</b> con casi 190 alimentos con calor&iacute;as: pollo, papines, palta, cherry, scon, tostada&hellip;'],
+    ['&#9998;', '<b>Otra cosa &rsaquo; Com&iacute; otra cantidad o algo m&aacute;s</b>: sac&aacute; o sum&aacute; alimentos al plato, sin armar recetas. Si fue un poco, eleg&iacute; &frac14; o &frac12;.'],
+    ['&#129360;', '<b>Com&iacute; otra cosa</b>: la lista arranca vac&iacute;a (un brunch, una merienda afuera).'],
+    ['&#11088;', 'Si lo comen seguido, un tilde lo guarda como receta.']]]
+];
+function versionNum(v){ return +String(v || '').replace(/[^0-9]/g, '') || 0; }
+function chequearNovedades(){
+  if (DEMO || !userEmail) return;
+  var pf = perfil(userEmail); if (!pf || (pf.tour || 0) < 2) return;
+  if ($('modal').classList.contains('on') || $('onb').classList.contains('on')) return;
+  var actual = versionNum(APP_VER), vista = pf.nov != null ? +pf.nov : 17;
+  if (vista >= actual) return;
+  var p2 = JSON.parse(JSON.stringify(pf)); p2.nov = actual; setKV('perfil:' + userEmail, p2);
+  verNovedades(vista);
+}
+function verNovedades(desde){
+  var lst = NOVEDADES.filter(function(n){ return n[0] > (desde || 0); }).slice(0, 4);
+  if (!lst.length) lst = NOVEDADES.slice(0, 2);
+  var h = '<div class="bubble">' + pigSVG() + '<div class="txt">&iexcl;Hay cosas nuevas!</div></div>';
+  lst.forEach(function(n){
+    h += '<div class="card"><div class="card-h"><h3>' + n[1] + '</h3><span class="sp"></span><span class="tag">v' + n[0] + '</span></div>' +
+      '<ul class="nov">' + n[2].map(function(x){ return '<li><span class="em">' + x[0] + '</span><span class="f1">' + x[1] + '</span></li>'; }).join('') + '</ul></div>';
+  });
+  h += '<button class="btn acc block" onclick="closeModal()">Entendido</button>';
+  openModal(h);
 }
 
 /* ==================================================================

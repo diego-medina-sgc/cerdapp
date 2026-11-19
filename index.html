@@ -1177,7 +1177,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v23';
+var APP_VER   = 'v24';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 /* v23: sin SECRET. El .gs valida el login de Google y emite una sesion firmada (SESION). */
@@ -1836,6 +1836,15 @@ function excesoManana(fecha, em){
   if ((perfil(em) || {}).man === 'desayuno') return {k:0, p:0};   /* ese perfil tiene su propia comida de desayuno */
   var r = kcalManana(fecha, em);
   return {k:r.k - presupuestoManana(em), p:r.p - (presupuestoManana(em) ? 4 : 0)};
+}
+/* v24 (19/11/2026): agua por vasos (pendiente viejo del Plan de Gym Bro, que se mudo aca).
+   dia.agua = {email: vasos}. Meta: 8 vasos de 250 ml (~2 L). No entra en las calorias. */
+var AGUA_META = 8;
+function aguaDe(f, em){ return +((dia(f).agua || {})[em] || 0); }
+function setAgua(em, delta, fecha){
+  var f = fecha || hoyISO(), o = JSON.parse(JSON.stringify(dia(f).agua || {}));
+  o[em] = Math.max(0, Math.min(20, (+o[em] || 0) + delta)); setSlot(f, 'agua', o);
+  render();
 }
 function setManana(em, v, fecha){
   var f = fecha || hoyISO(), m = JSON.parse(JSON.stringify(dia(f).man || {})); m[em] = v; setSlot(f, 'man', m);
@@ -3679,6 +3688,14 @@ function loDemasHTML(f){
     h += '</div>';
   });
   if (ps.length > 1) h += '<button class="link" onclick="abrirExtra(\'ambos\',\'' + f + '\')">Lo mismo para los dos ' + ICO_CHEV + '</button>';
+  h += '<div class="sub">Agua</div><div class="lead">Un toque por vaso (250 ml). La meta es ' + AGUA_META + ' vasos, unos 2 litros.</div>';
+  ps.forEach(function(em){
+    var v = aguaDe(f, em), pct = Math.min(100, Math.round(v / AGUA_META * 100));
+    h += '<div class="fila"><div class="row"><b class="f1">' + nombre(em) + ' <span class="small muted">' + v + ' de ' + AGUA_META + (v >= AGUA_META ? ' &#10003;' : '') + '</span></b>' +
+      '<button class="btn small sec" onclick="setAgua(\'' + em + '\',-1,\'' + f + '\')" aria-label="Un vaso menos"' + (v ? '' : ' disabled') + '>&minus;</button> ' +
+      '<button class="btn small acc" onclick="setAgua(\'' + em + '\',1,\'' + f + '\')" aria-label="Un vaso m&aacute;s">+ Vaso</button></div>' +
+      '<div style="height:6px;border-radius:3px;background:var(--dim,rgba(0,0,0,.08));margin-top:8px;overflow:hidden"><div style="height:100%;width:' + pct + '%;background:var(--hi,#0E7490)"></div></div></div>';
+  });
   var yo = personas().filter(function(em){ return em === userEmail && !(D.gym && D.gym.email === em); })[0];
   if (yo){
     var hoyA = actsDe(yo).filter(function(a){ return a.date === f; });
@@ -4517,6 +4534,9 @@ function editarActividad(id){
    [version, titulo, [[emoji, texto], ...]]
    ================================================================== */
 var NOVEDADES = [
+  [24, 'Agua por vasos', [
+    ['&#128167;', 'En Hoy, en <b>Lo dem&aacute;s del d&iacute;a</b>: un toque por vaso de agua, cada uno el suyo. La meta es 8 vasos, unos 2 litros.']
+  ]],
   [23, 'Tus datos, solo para ustedes', [
     ['&#128274;', 'Ahora la app pide entrar con Google <b>una vez</b> y despu&eacute;s te recuerda 30 d&iacute;as. Antes, quien tuviera la direcci&oacute;n del servidor pod&iacute;a ver los datos.'],
     ['&#9989;', 'No se pierde nada: lo que no se haya guardado se manda solo despu&eacute;s de entrar.']

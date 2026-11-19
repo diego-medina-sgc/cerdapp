@@ -1177,7 +1177,7 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v24';
+var APP_VER   = 'v25';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
 /* v23: sin SECRET. El .gs valida el login de Google y emite una sesion firmada (SESION). */
@@ -2825,7 +2825,7 @@ function gymHTML(A){
    MODALES
    ================================================================== */
 function openModal(html){ $('modal-box').innerHTML = html; $('modal').classList.add('on'); document.body.classList.add('modal-open'); $('modal-box').scrollTop = 0; }
-function closeModal(){ $('modal').classList.remove('on'); document.body.classList.remove('modal-open'); }
+function closeModal(){ pararScan(); $('modal').classList.remove('on'); document.body.classList.remove('modal-open'); }
 function mh(t){ return '<div class="mh"><h2>' + t + '</h2><button class="iconbtn" onclick="closeModal()" aria-label="Cerrar">&#10005;</button></div>'; }
 
 /* Lo que hay que cocinar en total: todos los que comen esa comida y, si al dia
@@ -3028,8 +3028,14 @@ function verCompras(){
     var e = EXTRA[k]; if (!e) return;
     (secs[e[1]] = secs[e[1]] || []).push({k:k, n:e[0], txt:ext[k] > 1 ? 'x' + ext[k] : ''});
   });
+  _comprasTxt = ['car','ver','lac','alm','pan'].filter(function(s){ return secs[s]; }).map(function(s){
+    var it = secs[s].filter(function(x){ return !tengo(x.k) && !chk[x.k]; });
+    return it.length ? txtPlano(SECCION[s]).toUpperCase() + '\n' + it.map(function(x){ return '- ' + txtPlano(x.n) + (x.txt ? ' ' + txtPlano(x.txt) : ''); }).join('\n') : '';
+  }).filter(Boolean).join('\n\n');
+  if (_comprasTxt) _comprasTxt = 'Lista de compras (Cerdapp)\n\n' + _comprasTxt;
   var h = mh('Lista de compras');
-  h += '<p class="small muted" style="margin-top:0">Del ' + fechaCorta(desde) + ' al ' + fechaCorta(fin) + ', para los dos. Lo que ya est&aacute; en la heladera aparece tachado.</p>';
+  h += '<p class="small muted" style="margin-top:0">Del ' + fechaCorta(desde) + ' al ' + fechaCorta(fin) + ', para los dos. Lo que ya est&aacute; en la heladera aparece tachado.</p>' +
+    '<button class="btn sec block mb3" onclick="compartirCompras()">&#128228; Compartir lo que falta</button>';
   ['car','ver','lac','alm','pan'].forEach(function(s){
     if (!secs[s]) return;
     h += '<div class="card"><h3>' + SECCION[s] + '</h3><ul class="lst">' + secs[s].map(function(x){
@@ -3112,6 +3118,8 @@ function guardarPeso(em){
   if (!(v > 30 && v < 250)){ toast('Ese peso no parece v&aacute;lido', 'err'); return; }
   var reg = {email:em, date:hoyISO(), peso:v};
   var aplicar = function(){
+    var prev = (D.pesos || []).filter(function(p){ return p.email === em && p.date === reg.date; })[0];
+    if (prev && prev.cintura) reg.cintura = prev.cintura;
     D.pesos = (D.pesos || []).filter(function(p){ return !(p.email === em && p.date === reg.date); }).concat([reg]);
     render(); toast('Peso guardado', 'ok');
   };
@@ -3841,6 +3849,7 @@ function renderProgreso(){
     '<div class="stat"><div class="v">' + (primero && ultimo ? (ultimo.t - primero.t > 0 ? '+' : '') + fKg(ultimo.t - primero.t) : '&mdash;') + '</div><div class="l">desde el ' + (primero ? fechaCorta(primero.date) : 'inicio') + '</div></div>' +
     '<div class="stat"><div class="v">' + (pf.meta ? fKg(+pf.meta) : '&mdash;') + '</div><div class="l">peso meta</div></div></div>' +
     chartPeso(em) + '</div>';
+  h += cinturaHTML(em, mio);
   h += balanceHTML(em) + diaPorDiaHTML(em);
   h += '<div class="card"><h3>&iquest;Las calor&iacute;as est&aacute;n bien?</h3>' + sugerenciaAjuste(em) +
     '<div class="small muted">Objetivo de hoy: <b>' + fN(metaDelDia(hoyISO(), em)) + ' kcal</b> y <b>' + o.prot + ' g de prote&iacute;na</b>.</div>' +
@@ -4162,6 +4171,144 @@ function pickBus(id, q){
   pintarBus();
 }
 /* alimento propio: siempre con calorias aproximadas, nunca en cero */
+/* ==================================================================
+   v25 (19/11/2026): funciones tomadas de gnutry (la app de nutricion de Franco)
+   - cintura en Progreso (Diego: CORPORAL de Gym DB; el resto: PESOS col. Cintura)
+   - racha, semaforo de la semana y estrellas entre los dos (en Hoy)
+   - compartir la lista de compras
+   - codigo de barras + Open Food Facts (gratis, sin clave ni IA) para productos envasados
+   ================================================================== */
+function cinturasDe(em){
+  return ((D && D.pesos) || []).filter(function(p){ return p.email === em && +p.cintura > 0; })
+    .map(function(p){ return {date:p.date, c:+p.cintura}; })
+    .sort(function(a, b){ return a.date < b.date ? -1 : 1; });
+}
+function chartCintura(em){
+  var c = cinturasDe(em).slice(-20); if (c.length < 2) return '';
+  var W = 300, H = 70, min = Math.min.apply(null, c.map(function(x){ return x.c; })) - 1, max = Math.max.apply(null, c.map(function(x){ return x.c; })) + 1;
+  var pts = c.map(function(x, i){ return (i / (c.length - 1) * W).toFixed(1) + ',' + (H - (x.c - min) / (max - min) * H).toFixed(1); }).join(' ');
+  return '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width:100%;height:70px;margin-top:8px" preserveAspectRatio="none"><polyline points="' + pts + '" fill="none" stroke="var(--hi,#0E7490)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+}
+function cinturaHTML(em, mio){
+  var c = cinturasDe(em), u = c.length ? c[c.length - 1] : null, pr = c.length ? c[0] : null;
+  var h = '<div class="card"><h3>Cintura</h3><div class="lead">Mide mejor que la balanza lo que busca Cerdapp: bajar la panza. A la altura del ombligo, una vez por semana.</div>';
+  if (mio) h += '<div class="row"><div class="fld f1" style="margin:0"><input id="pp-cin" type="number" inputmode="decimal" step="0.5" placeholder="Cintura de hoy (cm)"></div>' +
+    '<button class="btn" id="btn-cin" onclick="guardarCintura(\'' + em + '\')">Guardar</button></div>' +
+    (D.gym && D.gym.email === em ? '<div class="hint">Se guarda tambi&eacute;n en Gym Bro.</div>' : '');
+  h += '<div class="stats"><div class="stat"><div class="v">' + (u ? fKg(u.c) : '&mdash;') + '</div><div class="l">&uacute;ltima (cm)</div></div>' +
+    '<div class="stat"><div class="v">' + (u && pr && c.length > 1 ? (u.c - pr.c > 0 ? '+' : '') + fKg(u.c - pr.c) : '&mdash;') + '</div><div class="l">desde el ' + (pr ? fechaCorta(pr.date) : 'inicio') + '</div></div></div>' +
+    chartCintura(em) + '</div>';
+  return h;
+}
+function guardarCintura(em){
+  var v = parseFloat(String($('pp-cin').value).replace(',', '.'));
+  if (!(v > 40 && v < 200)){ toast('Esa medida no parece v&aacute;lida', 'err'); return; }
+  var reg = {email:em, date:hoyISO(), cintura:v};
+  var aplicar = function(){
+    var ya = (D.pesos || []).filter(function(p){ return p.email === em && p.date === reg.date; })[0];
+    if (ya) ya.cintura = v; else (D.pesos = D.pesos || []).push({email:em, date:reg.date, peso:'', cintura:v});
+    render(); toast('Cintura guardada', 'ok');
+  };
+  if (DEMO){ aplicar(); guardarDemo(); return; }
+  apiPost('savePeso', reg, $('btn-cin')).then(aplicar).catch(function(e){ toast('No pude guardar: ' + esc(e.message), 'err'); });
+}
+
+/* Un dia "cumplido": todo marcado y dentro del objetivo (+50 kcal), igual que el tilde de "Ultimos 7 dias". */
+function diaCumplido(f, em){
+  var R = resumenDia(f, em), con = R.lin.some(function(l){ return l.s && l.est !== 'sin'; });
+  return con && R.sin === 0 && R.tot <= R.meta + 50;
+}
+function racha(em){
+  var n = diaCumplido(hoyISO(), em) ? 1 : 0, f = addDays(hoyISO(), -1);
+  for (var i = 0; i < 45 && diaCumplido(f, em); i++){ n++; f = addDays(f, -1); }
+  return n;
+}
+function semaforo(em){
+  var ok = 0; for (var i = 1; i <= 7; i++) if (diaCumplido(addDays(hoyISO(), -i), em)) ok++;
+  return {ok:ok, col:ok >= 5 ? 'var(--green,#15803d)' : ok >= 3 ? 'var(--amber,#b45309)' : 'var(--red,#c0392b)'};
+}
+function entrenoDia(f, em){
+  if (D.gym && D.gym.email === em) return (D.gym.ses || []).indexOf(f) !== -1 || (D.gym.cardio || []).some(function(c){ return c.date === f; });
+  return actsDe(em).some(function(a){ return a.date === f; });
+}
+/* Estrellas del dia: plan cumplido, 8 vasos de agua, entrenamiento. Del otro se ve solo el total. */
+function estrellasDia(f, em){ return (diaCumplido(f, em) ? 1 : 0) + (aguaDe(f, em) >= AGUA_META ? 1 : 0) + (entrenoDia(f, em) ? 1 : 0); }
+function estrellasSemana(em){
+  var t = 0, hoy = hoyISO(); for (var f = lunes(hoy); f <= hoy; f = addDays(f, 1)) t += estrellasDia(f, em);
+  return t;
+}
+function logrosHTML(){
+  var ps = personas(); if (!ps.length || DEMO && !D) return '';
+  var est = ps.map(function(em){ return {em:em, n:estrellasSemana(em)}; }), top = Math.max.apply(null, est.map(function(x){ return x.n; }));
+  var h = '<div class="card"><div class="card-h"><span class="em">&#11088;</span><h3>La semana</h3></div>';
+  ps.forEach(function(em, i){
+    var r = racha(em), S = semaforo(em), e = est[i].n;
+    h += '<div class="row" style="padding:6px 0"><b class="f1">' + nombre(em) + '</b>' +
+      '<span class="small" title="D&iacute;as seguidos con todo marcado y dentro del objetivo">&#128293; ' + r + (r === 1 ? ' d&iacute;a' : ' d&iacute;as') + '</span>' +
+      '<span class="small" style="margin-left:12px" title="D&iacute;as cumplidos de los &uacute;ltimos 7"><i style="display:inline-block;width:9px;height:9px;border-radius:50%;background:' + S.col + ';margin-right:4px"></i>' + S.ok + ' de 7</span>' +
+      '<span class="small" style="margin-left:12px"><b>' + e + '</b> &#11088;' + (ps.length > 1 && e === top && e > 0 ? ' &#128081;' : '') + '</span></div>';
+  });
+  h += '<div class="hint">Cada d&iacute;a da hasta 3 estrellas: plan cumplido, 8 vasos de agua y entrenar. Se cuentan de lunes a hoy.</div></div>';
+  return h;
+}
+
+function txtPlano(html){ var d = document.createElement('div'); d.innerHTML = html; return (d.textContent || '').replace(/\s+/g, ' ').trim(); }
+var _comprasTxt = '';
+function compartirCompras(){
+  if (!_comprasTxt){ toast('La lista est&aacute; vac&iacute;a', 'err'); return; }
+  if (navigator.share){ navigator.share({title:'Lista de compras', text:_comprasTxt}).catch(function(){}); return; }
+  try { navigator.clipboard.writeText(_comprasTxt).then(function(){ toast('Lista copiada: pegala en WhatsApp', 'ok'); }); }
+  catch(e){ toast('No pude compartirla desde este navegador', 'err'); }
+}
+
+var _scan = null;
+function pararScan(){ try { if (_scan) _scan.stop(); } catch(e){} _scan = null; }
+function escanearCodigo(){
+  var h = mh('Escanear el c&oacute;digo') + '<p class="lead">Apunt&aacute; la c&aacute;mara al c&oacute;digo de barras del envase. Los datos salen de Open Food Facts (gratis).</p>' +
+    '<video id="sc-vid" playsinline muted style="width:100%;border-radius:14px;background:#000;max-height:45vh"></video>' +
+    '<div class="fld mt2"><input id="sc-cod" inputmode="numeric" placeholder="O escrib&iacute; el n&uacute;mero del c&oacute;digo"></div>' +
+    '<button class="btn block" onclick="buscarCodigo($(\'sc-cod\').value)">Buscar</button><div id="sc-msg" class="small muted mt2"></div>';
+  openModal(h);
+  import('https://cdn.jsdelivr.net/npm/@zxing/browser@0.1.5/+esm').then(function(Z){
+    var lector = new Z.BrowserMultiFormatReader();
+    return lector.decodeFromVideoDevice(undefined, 'sc-vid', function(res, err, ctrl){
+      if (res){ try { ctrl.stop(); } catch(e){} _scan = null; buscarCodigo(res.getText()); }
+    }).then(function(c){ _scan = c; });
+  }).catch(function(){ if ($('sc-msg')) $('sc-msg').innerHTML = 'No pude abrir la c&aacute;mara: escrib&iacute; el n&uacute;mero.'; });
+}
+function buscarCodigo(cod){
+  cod = String(cod || '').replace(/\D/g, '');
+  if (cod.length < 8 || cod.length > 14){ toast('El c&oacute;digo tiene entre 8 y 14 n&uacute;meros', 'err'); return; }
+  pararScan();
+  var ya = propios().filter(function(x){ return x.bc === cod; })[0];
+  if (ya){ volverConPropio(ya.id, 'Ya lo ten&iacute;as: ' + esc(ya.n)); return; }
+  if ($('sc-msg')) $('sc-msg').innerHTML = 'Buscando ' + cod + '...';
+  fetch('https://world.openfoodfacts.org/api/v2/product/' + cod + '.json?fields=product_name,brands,nutriments,serving_quantity')
+    .then(function(r){ return r.json(); })
+    .then(function(j){
+      var P = j && j.product, n = (P && P.nutriments) || {};
+      var k100 = +n['energy-kcal_100g'] || (+n['energy_100g'] ? +n['energy_100g'] / 4.184 : 0);
+      if (!P || !(k100 > 0)){
+        if ($('sc-msg')) $('sc-msg').innerHTML = 'No lo encontr&eacute; con calor&iacute;as. Cerr&aacute; y us&aacute; &laquo;&iquest;A qu&eacute; se parece?&raquo;.';
+        return;
+      }
+      var sq = +P.serving_quantity, g = sq > 0 && sq < 1000 ? sq : 100;
+      var nom = String(P.product_name || (_bus && _bus.nuevo) || 'Producto').slice(0, 34) + (P.brands ? ' (' + String(P.brands).split(',')[0].trim().slice(0, 18) + ')' : '');
+      var un = sq > 0 && sq < 1000 ? 'porci&oacute;n de ' + Math.round(g) + ' g' : '100 g';
+      var id = 'u-' + Date.now().toString(36);
+      var h = JSON.parse(JSON.stringify(hogar())); h.propios = h.propios || [];
+      h.propios.push({id:id, n:nom, h:'alm', k:Math.round(k100 * g / 100), p:Math.round((+n.proteins_100g || 0) * g / 10) / 10, un:un, pl:un, bc:cod});
+      setKV('hogar', h);
+      volverConPropio(id, 'Agregado: ' + esc(nom) + ' (' + Math.round(k100 * g / 100) + ' kcal por ' + un + ')');
+    })
+    .catch(function(){ if ($('sc-msg')) $('sc-msg').innerHTML = 'No pude conectarme con Open Food Facts.'; });
+}
+function volverConPropio(id, msg){
+  registrarPropios(); _busIdx = null;
+  if (_bus){ var cfg = _bus; abrirBuscador(cfg); pickBus(id, cfg.cant ? 1 : null); } else closeModal();
+  toast(msg, 'ok');
+}
+
 var PARECIDO = [
   ['ver', 'taza', 'tazas', 25, 1.5, 'Verdura'], ['ver', 'unidad', 'unidades', 70, 1, 'Fruta'],
   ['alm', 'porci&oacute;n', 'porciones', 90, 3, 'Pan, galletita o cereal'], ['lac', 'porci&oacute;n', 'porciones', 80, 6, 'Queso, fiambre o l&aacute;cteo'],
@@ -4173,7 +4320,8 @@ function crearAlimento(){
   var n = String(($('bu-q') || {}).value || '').trim();
   if (!n){ toast('Escrib&iacute; qu&eacute; es', 'err'); return; }
   _bus.nuevo = n.slice(0, 40);
-  var h = mh('&iquest;A qu&eacute; se parece?') + '<p class="lead">&laquo;' + esc(_bus.nuevo) + '&raquo;: elijo calor&iacute;as aproximadas para una porci&oacute;n.</p><div class="card pad0">' +
+  var h = mh('&iquest;A qu&eacute; se parece?') + '<p class="lead">&laquo;' + esc(_bus.nuevo) + '&raquo;: elijo calor&iacute;as aproximadas para una porci&oacute;n.</p>' +
+    '<button class="btn block mb3" onclick="escanearCodigo()">&#128247; Es un envase: escanear el c&oacute;digo de barras</button><div class="card pad0">' +
     PARECIDO.map(function(x, i){ return opt(x[5], '1 ' + x[1] + ' ~' + x[3] + ' kcal', 'guardarAlimento(' + i + ')'); }).join('') + '</div>';
   openModal(h);
 }
@@ -4429,6 +4577,7 @@ function renderHoy(){
     (esHoy ? '<span style="width:44px"></span>' : '<button class="iconbtn" onclick="irDia(addDays(diaVista(),1))" aria-label="D&iacute;a siguiente">&rsaquo;</button>') + '</div>';
   if (!esHoy) h += '<button class="chip mb3" onclick="irDia(hoyISO())">Volver a hoy</button>';
   h += metasHTML(f);
+  if (esHoy) h += logrosHTML();
   if (esHoy) h += colegioHoyHTML(f);
   var prox = proximaComida(f);
   slotsDe().forEach(function(s){ h += (s === prox || _abierta[f + s]) ? comidaHTML(f, s) : comidaPlegada(f, s); });
@@ -4534,6 +4683,12 @@ function editarActividad(id){
    [version, titulo, [[emoji, texto], ...]]
    ================================================================== */
 var NOVEDADES = [
+  [25, 'Cintura, racha, estrellas y m&aacute;s', [
+    ['&#128207;', 'En <b>Progreso</b> se anota la <b>cintura</b> (una vez por semana, a la altura del ombligo): mide mejor que la balanza la panza que queremos bajar.'],
+    ['&#11088;', 'En <b>Hoy</b>, <b>La semana</b>: la racha de d&iacute;as cumplidos, el sem&aacute;foro de los &uacute;ltimos 7 y las estrellas de cada uno (plan, agua y entrenar).'],
+    ['&#128228;', 'La <b>lista de compras</b> se comparte por WhatsApp con lo que falta.'],
+    ['&#128247;', 'Para un producto envasado que no est&aacute;: <b>escane&aacute; el c&oacute;digo de barras</b> y entra con sus calor&iacute;as reales.']
+  ]],
   [24, 'Agua por vasos', [
     ['&#128167;', 'En Hoy, en <b>Lo dem&aacute;s del d&iacute;a</b>: un toque por vaso de agua, cada uno el suyo. La meta es 8 vasos, unos 2 litros.']
   ]],

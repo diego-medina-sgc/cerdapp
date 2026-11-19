@@ -1177,10 +1177,11 @@ function pigCiclo(){
 /* ==================================================================
    CONFIG
    ================================================================== */
-var APP_VER   = 'v22';
+var APP_VER   = 'v23';
 var CLIENT_ID = '124091853515-85ca8o8vd3nfd2nibct9qrq75tmqqdr1.apps.googleusercontent.com';
 var API_URL   = 'https://script.google.com/macros/s/AKfycbwiZWLVzqHseAQtBFi78jjB9EpuOQRC3D91wuOhAeJRICiql4GhU2YxSXULaM_PimO6MA/exec';
-var SECRET    = 'cerdapp-2026';   /* debe coincidir con el .gs */
+/* v23: sin SECRET. El .gs valida el login de Google y emite una sesion firmada (SESION). */
+var SESION    = '';
 var DEMO      = /[?&]demo=1/.test(location.search);
 
 var D = null, KV = {}, userEmail = '', accessToken = null, tokenClient = null;
@@ -3327,15 +3328,21 @@ function apiPost(action, payload, btn, salir){
   if (API_URL.indexOf('PEGAR_ACA') === 0) return Promise.reject(new Error('Falta la URL del Apps Script'));
   var old = '';
   if (btn){ btn.disabled = true; old = btn.innerHTML; btn.innerHTML = 'Guardando...'; }
-  var body = JSON.stringify({action:action, secret:SECRET, email:userEmail, payload:payload});
+  var body = JSON.stringify({action:action, sesion:SESION, payload:payload});
   var ctrl = null, timer = null;
   try { ctrl = new AbortController(); timer = setTimeout(function(){ try { ctrl.abort(); } catch(e){} }, 30000); } catch(e){}
   var op = {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:body};
   if (ctrl) op.signal = ctrl.signal;
   if (salir && body.length < 60000) op.keepalive = true;
   return fetch(API_URL, op).then(function(r){ clearTimeout(timer); return r.json(); }, function(e){ clearTimeout(timer); throw e; })
-    .then(function(j){ if (!j.ok) throw new Error(j.error || 'error desconocido'); return j; })
+    .then(function(j){ if (!j.ok){ if (j.error === 'SESION_INVALIDA') sesionVencida(); throw new Error(j.error || 'error desconocido'); } return j; })
     .finally(function(){ if (btn){ btn.disabled = false; btn.innerHTML = old; } });
+}
+/* La sesion vencio o no es valida: se vuelve a pedir el login (lo no guardado queda en cerd_pend). */
+function sesionVencida(){
+  SESION = '';
+  try { localStorage.removeItem('cerd_sesion'); localStorage.removeItem('cerd_exp'); } catch(e){}
+  hideLoad(); $('app').style.display = 'none'; $('login-screen').style.display = 'flex';
 }
 function fetchData(){
   if (DEMO){ cargarDemo(); return; }
@@ -3343,9 +3350,12 @@ function fetchData(){
   var ctrl = null, timer = null;
   try { ctrl = new AbortController(); } catch(e){}
   if (ctrl) timer = setTimeout(function(){ try { ctrl.abort(); } catch(e){} }, 30000);
-  fetch(API_URL + '?t=' + Date.now(), ctrl ? {signal:ctrl.signal} : {})
+  /* v23: la lectura va por POST con la sesion (el GET ya no devuelve datos). */
+  var op = {method:'POST', headers:{'Content-Type':'text/plain;charset=utf-8'}, body:JSON.stringify({action:'getData', sesion:SESION})};
+  if (ctrl) op.signal = ctrl.signal;
+  fetch(API_URL, op)
     .then(function(r){ if (!r.ok) throw new Error('El servidor respondi&oacute; ' + r.status); return r.json(); })
-    .then(function(data){ clearTimeout(timer); onDatos(data); })
+    .then(function(data){ clearTimeout(timer); if (data && data.error === 'SESION_INVALIDA'){ sesionVencida(); return; } onDatos(data); })
     .catch(function(e){
       clearTimeout(timer); hideLoad();
       var m = String(e && e.message ? e.message : e);
@@ -4507,6 +4517,10 @@ function editarActividad(id){
    [version, titulo, [[emoji, texto], ...]]
    ================================================================== */
 var NOVEDADES = [
+  [23, 'Tus datos, solo para ustedes', [
+    ['&#128274;', 'Ahora la app pide entrar con Google <b>una vez</b> y despu&eacute;s te recuerda 30 d&iacute;as. Antes, quien tuviera la direcci&oacute;n del servidor pod&iacute;a ver los datos.'],
+    ['&#9989;', 'No se pierde nada: lo que no se haya guardado se manda solo despu&eacute;s de entrar.']
+  ]],
   [22, 'Lo mismo para los dos', [
     ['&#128101;', 'Al cambiar lo que comiste, abajo aparece <b>Lo mismo para</b> el otro, ya tildado: se guarda para los dos con las cantidades de cada uno.'],
     ['&#129388;', 'M&aacute;s verduras y frutas en el buscador: repollo, acelga, apio, puerro, kale, esp&aacute;rragos, pomelo, cerezas y m&aacute;s.'],
@@ -4556,17 +4570,19 @@ function verNovedades(desde){
    AUTH (mismo patron que Gym Bro: la sesion dura 30 dias)
    ================================================================== */
 var SESION_DIAS = 30;
-function saveSess(){ try { localStorage.setItem('cerd_mail', userEmail); localStorage.setItem('cerd_exp', String(Date.now() + SESION_DIAS * 864e5)); } catch(e){} }
+function saveSess(){ try { localStorage.setItem('cerd_mail', userEmail); localStorage.setItem('cerd_sesion', SESION); localStorage.setItem('cerd_exp', String(Date.now() + SESION_DIAS * 864e5)); } catch(e){} }
 function loadSess(){
   try {
     var exp = parseInt(localStorage.getItem('cerd_exp') || '0', 10), em = (localStorage.getItem('cerd_mail') || '').toLowerCase().trim();
-    if (em && exp > Date.now()){ userEmail = em; return true; }
+    var ses = localStorage.getItem('cerd_sesion') || '';
+    /* v23: sin sesion firmada (instalaciones de v22 o antes) se pide el login una vez. */
+    if (em && ses && exp > Date.now()){ userEmail = em; SESION = ses; return true; }
   } catch(e){}
   return false;
 }
 function salir(){
   if (DEMO){ try { localStorage.removeItem('cerd_demo'); } catch(e){} location.href = location.pathname; return; }
-  try { localStorage.removeItem('cerd_mail'); localStorage.removeItem('cerd_exp'); localStorage.removeItem('cerd_cache'); } catch(e){}
+  try { localStorage.removeItem('cerd_mail'); localStorage.removeItem('cerd_sesion'); localStorage.removeItem('cerd_exp'); localStorage.removeItem('cerd_cache'); } catch(e){}
   location.reload();
 }
 function showApp(){ $('login-screen').style.display = 'none'; $('app').style.display = 'block'; }
@@ -4580,11 +4596,17 @@ function initAuth(){
     callback:function(r){
       if (r.error) return;
       accessToken = r.access_token;
-      fetch('https://www.googleapis.com/oauth2/v3/userinfo', {headers:{Authorization:'Bearer ' + accessToken}})
-        .then(function(res){ return res.json(); })
-        .then(function(info){ userEmail = (info.email || '').toLowerCase().trim(); })
-        .catch(function(){})
-        .then(function(){ saveSess(); showApp(); tryCache(); fetchData(); });
+      /* v23: el .gs valida el token con Google y devuelve la sesion firmada y el mail real. */
+      apiPost('login', {access_token: accessToken})
+        .then(function(j){
+          SESION = j.sesion; userEmail = (j.email || '').toLowerCase().trim();
+          saveSess(); showApp(); tryCache(); fetchData();
+        })
+        .catch(function(e){
+          var m = String(e && e.message ? e.message : e);
+          if (m.indexOf('Sin permiso') === 0){ userEmail = m.slice(13).trim(); showDenied(); return; }
+          toast('No pude iniciar sesi&oacute;n: ' + esc(m), 'err');
+        });
     }
   });
   if (loadSess()){ showApp(); tryCache(); fetchData(); }
